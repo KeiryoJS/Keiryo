@@ -9,13 +9,13 @@
     "feature-rich"
   ],
   "author": "MeLike2D <gino@melike2d.me>",
-  "homepage": "https://github.com/melike2d/neocord#readme",
+  "homepage": "https://github.com/neo-cord/neocord#readme",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "typings/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/melike2d/neocord.git"
+    "url": "git+https://github.com/neo-cord/neocord.git"
   },
   "scripts": {
     "build": "rm -rf dist && yarn tsc",

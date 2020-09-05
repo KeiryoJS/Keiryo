@@ -5,7 +5,6 @@
  */
 
 export * from "./caching/CachingManager";
-export * from "./caching/Proxy";
 export * from "./caching/Cache";
 export * from "./caching/CachingProvider";
 

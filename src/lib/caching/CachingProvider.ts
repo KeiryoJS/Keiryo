@@ -23,7 +23,7 @@ export class CachingProvider<C extends Cache<any> = Cache<any>> {
    * The cache class.
    * @private
    */
-  protected _cache: typeof Cache;
+  protected _cache!: typeof Cache;
 
   /**
    * Creates a new instance of CachingProvider.
@@ -31,7 +31,11 @@ export class CachingProvider<C extends Cache<any> = Cache<any>> {
    */
   public constructor(options: ProviderOptions) {
     this.caches = new Cacheables(options.caches);
-    this._cache = options.cache ?? Cache;
+
+    Object.defineProperty(this, "_cache", {
+      value: options.cache ?? Cache,
+      enumerable: false
+    });
   }
 
   /**

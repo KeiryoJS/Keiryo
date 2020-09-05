@@ -17,7 +17,7 @@ export class UserManager extends BaseManager<User> {
    * The user cache.
    * @protected
    */
-  protected cache: Cache<User>;
+  public cache: Cache<User>;
 
   /**
    * Creates a new instanceof UserManager.

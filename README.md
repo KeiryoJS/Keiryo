@@ -66,18 +66,12 @@ It also allows for the option of something we call Cache Providers, which allows
 You can also disable specific structures if you don't want them to be cached.
 
 ```ts
-import { Client, Cachable } from "neocord";
+import { Client, Cacheable } from "neocord"; 
 
 new Client({
   caching: {
     disable: [Cacheable.Role],
-    limits: new Map().set(Cacheable.Message, 100),
-    providers: [
-      new MemoryCachingProvider({
-        caches: [Cacheable.Message],
-        sweep: "5m"
-      })
-    ]
+    limits: new Map().set(Cacheable.Message, 100)
   }
 });
 ```

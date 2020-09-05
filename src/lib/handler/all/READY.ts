@@ -11,6 +11,7 @@ import type { GatewayReadyDispatch } from "discord-api-types/default";
 
 export default class READY extends Handler<GatewayReadyDispatch> {
   public handle(data: GatewayReadyDispatch): void {
+    for (const guild of data.d.guilds) this.client.guilds["_add"](guild);
     this.client.user = new ClientUser(this.client, data.d.user);
     this.client.users.set(this.client.user.id, this.client.user);
   }

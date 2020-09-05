@@ -25,7 +25,7 @@ export abstract class BaseManager<T extends Base> extends Collection<string, T> 
    * The cache for this manager.
    * @protected
    */
-  protected abstract cache: Cache<T>
+  public readonly abstract cache: Cache<T>
 
   /**
    * Creates a new instance of BaseManager.
@@ -105,6 +105,7 @@ export abstract class BaseManager<T extends Base> extends Collection<string, T> 
    * @private
    */
   protected _set(entry: T): T {
+    this.set(entry.id, entry);
     return entry;
   }
 
@@ -116,6 +117,6 @@ export abstract class BaseManager<T extends Base> extends Collection<string, T> 
   protected _add(data: Dictionary): T {
     const existing = this.get(data.id);
     if (existing) return existing["_patch"](data);
-    return this._set(new this.manages(this.client, data));
+    return this._set(new (this.manages)(this.client, data));
   }
 }

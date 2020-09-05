@@ -3,12 +3,22 @@ import { Emitter, Timers } from "@neocord/utils";
 import { API, APIEvent, APIOptions } from "@neocord/rest";
 import { Handlers } from "../handler/Helper";
 import { CachingManager, CachingOptions } from "../caching/CachingManager";
+
 import { UserManager } from "../../managers/UserManager";
+import { GuildManager } from "../../managers/GuildManager";
 
 import type { ClientUser } from "../../structures/other/ClientUser";
 
 export class Client extends Emitter {
+  /**
+   * The user manager for this client.
+   */
   public readonly users: UserManager;
+
+  /**
+   * The guild manager for this client.
+   */
+  public readonly guilds: GuildManager;
 
   /**
    * The current user.
@@ -23,24 +33,24 @@ export class Client extends Emitter {
   /**
    * The internal sharding manager for this client.
    */
-  private readonly _ws: InternalShardingManager;
+  private readonly _ws!: InternalShardingManager;
 
   /**
    * The caching manager.
    * @private
    */
-  private readonly _caching: CachingManager;
+  private readonly _caching!: CachingManager;
 
   /**
    * An interface for the discord api and cdn.
    */
-  private readonly _api: API;
+  private readonly _api!: API;
 
   /**
    * Handles the received packets on all shards.
    * @private
    */
-  private readonly _handlers: Handlers;
+  private readonly _handlers!: Handlers;
 
   /**
    * Creates a new Client.
@@ -49,12 +59,32 @@ export class Client extends Emitter {
   public constructor(options: ClientOptions = {}) {
     super();
 
-    this._ws = new InternalShardingManager(options.ws);
-    this._api = new API(options.rest);
-    this._handlers = new Handlers(this);
-    this._caching = new CachingManager(this, options.caching);
+    Object.defineProperty(this, "_ws", {
+      value: new InternalShardingManager(options.ws),
+      enumerable: false,
+      configurable: false,
+    });
+
+    Object.defineProperty(this, "_api", {
+      value: new API(options.rest),
+      enumerable: false,
+      configurable: false,
+    });
+
+    Object.defineProperty(this, "_handlers", {
+      value: new Handlers(this),
+      enumerable: false,
+      configurable: false,
+    });
+
+    Object.defineProperty(this, "_caching", {
+      value: new CachingManager(this, options.caching),
+      enumerable: false,
+      configurable: false,
+    });
 
     this.users = new UserManager(this);
+    this.guilds = new GuildManager(this);
 
     this._pass();
   }
