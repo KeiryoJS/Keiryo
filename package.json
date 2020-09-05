@@ -18,7 +18,8 @@
     "url": "git+https://github.com/melike2d/neocord.git"
   },
   "scripts": {
-    "build": "rm -rf dist && yarn tsc"
+    "build": "rm -rf dist && yarn tsc",
+    "lint": "eslint . --ext .ts"
   },
   "dependencies": {
     "@neocord/gateway": "1.0.5-2",
