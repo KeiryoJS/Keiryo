@@ -3,11 +3,15 @@
 ---
 
 > NeoCord: A powerful and feature-rich discord library.
+> See [in-depth](#in-depth) for more details on things listed below.
 
 - **Coverage:** NeoCord covers the Discord Gateway, API, and CDN. 
 - **Caching:** You can set a limit for each structure, set different providers, and even disable them.
 
-See [in-depth](#in-depth) for more details on things listed above.
+<!-- 
+<h2 align="center">Why you should use NeoCord</h2>
+
+-->
 
 <h2 align="center">Installation and Usage</h2>
 
@@ -61,11 +65,22 @@ NeoCord allows the user to limit each structure (Message, Guild, etc...), this d
 It also allows for the option of something we call Cache Providers, which allows for external caching.
 You can also disable specific structures if you don't want them to be cached.
 
-**Why?**
+```ts
+import { Client, Cachable } from "neocord";
 
-Are you wondering why NeoCord exists?
-If so, lets just say [discord.js](https://discord.js.org) is getting pretty old, it's quite bad in some ways,
-and for [eris](https://github.com/abalabahaha/eris): it's bad... like awful, if it had better code quality and wasn't so lack-luster it would be a fantastic choice for any developer.
+new Client({
+  caching: {
+    disable: [Cacheable.Role],
+    limits: new Map().set(Cacheable.Message, 100),
+    providers: [
+      new MemoryCachingProvider({
+        caches: [Cacheable.Message],
+        sweep: "5m"
+      })
+    ]
+  }
+});
+```
 
 *work-in-progress, these are mostly concepts - with that in mind, the caching stuff might not happen, we'll have to find out.*
 
