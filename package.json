@@ -22,7 +22,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@neocord/gateway": "1.0.5-2",
+    "@neocord/gateway": "1.0.6",
     "@neocord/rest": "^1.0.1",
     "@neocord/utils": "^1.0.10",
     "discord-api-types": "^0.3.0"
