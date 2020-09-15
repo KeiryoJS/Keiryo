@@ -39,10 +39,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@neocord/gateway@1.0.5-2":
-  version "1.0.5-2"
-  resolved "https://registry.yarnpkg.com/@neocord/gateway/-/gateway-1.0.5-2.tgz#8e9f795d3e360cd12ed3f12793c936b69b5c43a1"
-  integrity sha512-YkKZmCMjo6iaVnWmjzcqCbLnHZK7avWZae+OHsD0ybiQGEuiYD9qVRuhGDuPQcNgM7BOR36BRVg5Y+WedLLOzw==
+"@neocord/gateway@1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@neocord/gateway/-/gateway-1.0.6.tgz#2ff2e1906599ee66dc7dd6c27a05341929f4ca1c"
+  integrity sha512-4WHjkPU8w5J84iV5jPB8wWePWe5rYN2bcd2J8QleuZ+Kbwck/X98C9R578DO7MnjdzJc4pg99nKSmE0JVWgi+w==
   dependencies:
     "@neocord/utils" "^1.0.10"
     rikuesuto "^1.0.3"
