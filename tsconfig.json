@@ -34,12 +34,16 @@
 
     /* Module Resolution */
     "resolveJsonModule": true,
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
   "include": [
     "./src/**/*"
   ],
   "exclude": [
     "./node_modules"
+  ],
+  "files": [
+    "./src/**/*",
+    "index.d.ts"
   ]
 }

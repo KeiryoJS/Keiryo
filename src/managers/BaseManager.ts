@@ -31,7 +31,7 @@ export abstract class BaseManager<S extends Base> extends Collection<string, S> 
   protected constructor(client: Client, item: Class<S>, iterable?: Iterable<S>) {
     super();
 
-    Object.defineProperty(this, "_client", { value: client })
+    Object.defineProperty(this, "_client", { value: client });
     Object.defineProperty(this, "_item", { value: item });
     if (iterable) {
       for (const i of iterable) {
