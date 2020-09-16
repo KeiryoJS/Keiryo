@@ -8,7 +8,7 @@ import { GatewayEvent, GatewayOpCode, Payload } from "@neocord/gateway";
 import { Class, Collection, isClass, walk } from "@neocord/utils";
 import { join } from "path";
 
-import type { Client } from "../client/Client";
+import type { Client } from "../Client";
 import type { Handler } from "./Handler";
 
 const packetWhitelist = [

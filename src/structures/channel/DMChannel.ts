@@ -4,7 +4,9 @@
  * See the LICENSE file in the project root for more details.
  */
 
-export enum ClientEvent {
-  GuildAvailable = "guildAvailable",
-  GuildUnavailable = "guildUnavailable"
+import { Channel } from "./Channel";
+import { ChannelType } from "discord-api-types";
+
+export class DMChannel extends Channel {
+  public type = ChannelType.DM;
 }

@@ -1,24 +1,23 @@
-import { GatewayEvent, InternalShardingManager, ISMEvent, ISMOptions } from "@neocord/gateway";
+import { GatewayEvent, ISMEvent, ISMOptions, ShardManager } from "@neocord/gateway";
 import { Emitter, Timers } from "@neocord/utils";
 import { API, APIEvent, APIOptions } from "@neocord/rest";
-import { Handlers } from "../handler/Helper";
-import { CachingManager, CachingOptions } from "../caching/CachingManager";
+import { Handlers } from "./handler/Helper";
 
-import { UserManager } from "../../managers/UserManager";
-import { GuildManager } from "../../managers/GuildManager";
+import { UserManager } from "../managers/UserManager";
+import { GuildManager } from "../managers/GuildManager";
 
-import type { ClientUser } from "../../structures/other/ClientUser";
+import type { ClientUser } from "../structures/other/ClientUser";
 
 export class Client extends Emitter {
   /**
-   * The user manager for this client.
-   */
-  public readonly users: UserManager;
-
-  /**
-   * The guild manager for this client.
+   * All cached guilds for the current user.
    */
   public readonly guilds: GuildManager;
+
+  /**
+   * All cached users for the current session.
+   */
+  public readonly users: UserManager;
 
   /**
    * The current user.
@@ -33,13 +32,13 @@ export class Client extends Emitter {
   /**
    * The internal sharding manager for this client.
    */
-  private readonly _ws!: InternalShardingManager;
+  private readonly _ws!: ShardManager;
 
   /**
    * The caching manager.
    * @private
    */
-  private readonly _caching!: CachingManager;
+  // private readonly _caching!: CachingManager;
 
   /**
    * An interface for the discord api and cdn.
@@ -60,7 +59,7 @@ export class Client extends Emitter {
     super();
 
     Object.defineProperty(this, "_ws", {
-      value: new InternalShardingManager(options.ws),
+      value: new ShardManager(options.ws),
       enumerable: false,
       configurable: false,
     });
@@ -77,14 +76,14 @@ export class Client extends Emitter {
       configurable: false,
     });
 
-    Object.defineProperty(this, "_caching", {
-      value: new CachingManager(this, options.caching),
-      enumerable: false,
-      configurable: false,
-    });
+    // Object.defineProperty(this, "_caching", {
+    //   value: new CachingManager(this, options.caching),
+    //   enumerable: false,
+    //   configurable: false,
+    // });
 
-    this.users = new UserManager(this);
     this.guilds = new GuildManager(this);
+    this.users = new UserManager(this);
 
     this._pass();
   }
@@ -92,7 +91,7 @@ export class Client extends Emitter {
   /**
    * The internal sharding manager instance.
    */
-  public get ws(): InternalShardingManager {
+  public get ws(): ShardManager {
     return this._ws;
   }
 
@@ -106,9 +105,9 @@ export class Client extends Emitter {
   /**
    * The caching manager for this client.
    */
-  public get caching(): CachingManager {
-    return this._caching;
-  }
+  // public get caching(): CachingManager {
+  //   return this._caching;
+  // }
 
   /**
    * Connects the bot to the discord gateway.
@@ -165,7 +164,7 @@ export interface ClientOptions {
   /**
    * Options for caching.
    */
-  caching?: CachingOptions;
+  // caching?: CachingOptions;
 
   /**
    * Tracks how many times a certain event is received.

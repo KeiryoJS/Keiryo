@@ -4,9 +4,10 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { WelcomeChannel } from "./WelcomeChannel";
+import { neo } from "../../Extender";
 
 import type { APIGuildWelcomeScreen } from "discord-api-types/default";
+import type { WelcomeChannel } from "./WelcomeChannel";
 import type { Guild } from "../Guild";
 
 export class WelcomeScreen {
@@ -44,11 +45,10 @@ export class WelcomeScreen {
     this.welcomeChannels = [];
 
     for (const channel of data.welcome_channels) {
-      const welcomeChannel = new WelcomeChannel(this, channel);
+      const welcomeChannel = new (neo.get("WelcomeChannel"))(this, channel);
       this.welcomeChannels.push(welcomeChannel);
     }
 
     return this;
   }
 }
-

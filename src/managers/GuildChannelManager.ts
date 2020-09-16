@@ -1,0 +1,97 @@
+/*
+ * Copyright (c) 2020. MeLike2D All Rights Reserved.
+ * Neo is licensed under the MIT License.
+ * See the LICENSE file in the project root for more details.
+ */
+
+import { BaseManager, BaseResolvable } from "./BaseManager";
+import { neo } from "../structures/Extender";
+import { Channel } from "../structures/channel/Channel";
+
+import type { APIChannel, RESTGetAPIChannelResult, RESTGetAPIGuildChannelsResult } from "discord-api-types";
+import type { GuildChannel } from "../structures/channel/guild/GuildChannel";
+import type { Guild } from "../structures/guild/Guild";
+
+export class GuildChannelManager extends BaseManager<GuildChannel> {
+  /**
+   * The guild this channel cache belongs to.
+   * @type {Guild}
+   */
+  public readonly guild: Guild;
+
+  /**
+   * Creates a new instanceof GuildChannelCache
+   * @param {Guild} guild The guild instance.
+   */
+  public constructor(guild: Guild) {
+    super(guild.client, neo.get("GuildChannel"));
+
+    this.guild = guild;
+  }
+
+  /**
+   * The amount of guild channels that can be cached at one point in time.
+   * @type {number}
+   */
+  public get limit(): number {
+    // todo: fetch limit from the client.
+    return Infinity;
+  }
+
+  /**
+   * Get a guild channel.
+   * @param {string} id ID of the channel to get.
+   * @returns {GuildChannel} The guild channel
+   */
+  public get<T extends GuildChannel = GuildChannel>(id: string): T | undefined {
+    return super.get(id) as T;
+  }
+
+  /**
+   * Removes a channel from the guild.
+   * @param {GuildChannel} channel The channel to remove.
+   * @returns {GuildChannel | null} The removed channel.
+   */
+  public async remove<T extends GuildChannel = GuildChannel>(channel: BaseResolvable<T>): Promise<T | null> {
+    const c = this.resolve(channel);
+    if (c) {
+      await this.client.api.delete(`/guilds/${this.guild.id}/channels/${c.id}`);
+      c.deleted = true;
+      return c as T;
+    }
+
+    return null;
+  }
+
+  /**
+   * Fetches a guild channel from the discord api.
+   * @param {string} channelId ID of the channel to fetch.
+   * @returns {GuildChannel} The fetched channel.
+   */
+  public async fetch<T extends GuildChannel = GuildChannel>(channelId: string): Promise<T>;
+  /**
+   * Fetches all channels in the guild.
+   * @returns {GuildChannelCache} The guild channel cache.
+   */
+  public async fetch(): Promise<GuildChannelManager>;
+  public async fetch(channel?: BaseResolvable<GuildChannel>): Promise<GuildChannelManager | GuildChannel> {
+    if (channel) {
+      const data = await this.client.api.get<RESTGetAPIChannelResult>(`/guilds/${this.guild.id}/channels/${channel}`);
+      return this._add(data);
+    }
+
+    const channels = await this.client.api.get<RESTGetAPIGuildChannelsResult>(`/guilds/${this.guild.id}`);
+    for (const channel of channels) this._add(channel);
+    return this;
+  }
+
+  /**
+   * Adds a new item to this manager.
+   * @private
+   */
+  protected _add(data: APIChannel): GuildChannel {
+    const existing = this.get(data.id);
+    if (existing) return existing["_patch"](data);
+    return this._set(Channel.create(this.client, data, this.guild) as GuildChannel);
+  }
+}

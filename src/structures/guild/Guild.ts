@@ -6,9 +6,14 @@
 
 import { Snowflake } from "@neocord/utils";
 import { Base } from "../Base";
-import { WelcomeScreen } from "./welcome/WelcomeScreen";
+import { neo } from "../Extender";
 
-import type { InternalShard } from "@neocord/gateway";
+import { RoleManager } from "../../managers/RoleManager";
+import { GuildChannelManager } from "../../managers/GuildChannelManager";
+import { VoiceStateManager } from "../../managers/VoiceStateManager";
+import { MemberManager } from "../../managers/MemberManager";
+
+import type { Shard } from "@neocord/gateway";
 import type {
   APIGuild,
   GuildExplicitContentFilter,
@@ -17,18 +22,51 @@ import type {
   GuildSystemChannelFlags,
   GuildVerificationLevel
 } from "discord-api-types/default";
+import type { WelcomeScreen } from "./welcome/WelcomeScreen";
 import type { Client } from "../../lib";
+import type { Member } from "./Member";
 
 export class Guild extends Base {
   /**
    * The ID of this guild.
+   * @type {string}
    */
   public readonly id: string;
 
   /**
    * The shard that this guild operates on.
+   * @type {Shard}
    */
-  public readonly shard: InternalShard;
+  public readonly shard: Shard;
+
+  /**
+   * All cached roles for this guild.
+   * @type {RoleManager}
+   */
+  public readonly roles: RoleManager;
+
+  /**
+   * All cached voice states for this guild.
+   * @type {VoiceStateManager}
+   */
+  public readonly voiceStates: VoiceStateManager;
+
+  /**
+   * All cached channels for this guild.
+   * @type {GuildChannelManager}
+   */
+  public readonly channels: GuildChannelManager;
+
+  /**
+   * All cached members for this guild.
+   * @type {MemberManager}
+   */
+  public readonly members: MemberManager;
+
+  /**
+   * Whether this guild has been deleted from the cache.
+   */
+  public deleted = false;
 
   /**
    * The name of this guild.
@@ -190,9 +228,22 @@ export class Guild extends Base {
 
     this.id = data.id;
 
-    const shardId = this.snowflake.timestamp % client.ws.shards.size;
-    this.shard = this.client.ws.shards.get(shardId) as InternalShard;
+    const shardId = (new Snowflake(data.id).timestamp) % client.ws.shards.size;
+    this.shard = this.client.ws.shards.get(shardId) as Shard;
+
+    this.roles = new RoleManager(this);
+    this.voiceStates = new VoiceStateManager(this);
+    this.channels = new GuildChannelManager(this);
+    this.members = new MemberManager(this);
+
     this._patch(data);
+  }
+
+  /**
+   * The client as a member of this guild.
+   */
+  public get me(): Member {
+    return this.members.get(this.client.user?.id as string) as Member;
   }
 
   /**
@@ -252,8 +303,31 @@ export class Guild extends Base {
     this.unavailable = data.unavailable ?? false;
 
     if (data.welcome_screen) {
-      if (!this.welcomeScreen) this.welcomeScreen = new WelcomeScreen(this, data.welcome_screen);
+      if (!this.welcomeScreen) this.welcomeScreen = new (neo.get("WelcomeScreen"))(this, data.welcome_screen);
       else this.welcomeScreen["_patch"](data.welcome_screen);
+    }
+
+    // 310 - 332 : todo: possibly make clearing of these managers optional?
+
+    if (data.roles) {
+      this.roles.clear();
+      for (const role of data.roles) {
+        this.roles["_add"](role);
+      }
+    }
+
+    if (data.members) {
+      this.members.clear();
+      for (const member of data.members) {
+        this.members["_add"](member);
+      }
+    }
+
+    if (data.voice_states) {
+      this.voiceStates.clear();
+      for (const voiceState of data.voice_states) {
+        this.voiceStates["_add"](voiceState);
+      }
     }
 
     return this;

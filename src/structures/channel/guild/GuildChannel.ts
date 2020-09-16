@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2020. MeLike2D All Rights Reserved.
+ * Neo is licensed under the MIT License.
+ * See the LICENSE file in the project root for more details.
+ */
+
+import { Channel } from "../Channel";
+import { PermissionOverwrite } from "../../guild/PermissionOverwrite";
+
+import type { CategoryChannel } from "./CategoryChannel";
+import type { APIChannel, APIOverwrite, RESTPatchAPIChannelResult } from "discord-api-types/default";
+import type { Client } from "../../../lib";
+import type { Guild } from "../../guild/Guild";
+
+export abstract class GuildChannel extends Channel {
+  /**
+   * The guild that this channel belongs to.
+   * @type {Guild}
+   */
+  public readonly guild: Guild;
+
+  /**
+   * The name of this channel.
+   * @type {string}
+   */
+  public name!: string;
+
+  /**
+   * The sorting position of this channel.
+   * @type {number}
+   */
+  public position!: number;
+
+  /**
+   * The ID of the parent category.
+   * @type {string}
+   */
+  public parentId!: string | null;
+
+  /**
+   * Whether this channel is deleted.
+   * @type {boolean}
+   */
+  public deleted = false;
+
+  /**
+   * Creates a new instanceof GuildChannel.
+   * @param {Client} client The client instance.
+   * @param {APIChannel} data The data returned from the api.
+   * @param {Guild} [guild] The guild instance.
+   */
+  public constructor(client: Client, data: APIChannel, guild?: Guild) {
+    super(client, data);
+
+    this.guild = guild ?? client.guilds.get(data.guild_id as string) as Guild;
+  }
+
+  public get parent(): CategoryChannel | null {
+    return this.parentId
+      ? this.guild.channels.get<CategoryChannel>(this.parentId) ?? null
+      : null;
+  }
+
+  /**
+   * Modifies this channel.
+   * @param data The channel modify options.
+   * @param reason The reason for updating this channel.
+   */
+  public async modify(data: ModifyGuildChannel, reason?: string): Promise<this> {
+    const result = await this.client.api.patch<RESTPatchAPIChannelResult>(`/channels/${this.id}`, {
+      reason,
+      body: {
+        name: data.name,
+        position: data.position,
+        permission_overwrites: data.permissionOverwrites
+          ? data.permissionOverwrites.map((o) => PermissionOverwrite.resolve(o, this.guild))
+          : data.permissionOverwrites,
+        parent_id: (data.parent as CategoryChannel).id ?? data.parent
+      }
+    });
+
+    return this._patch(result);
+  }
+
+  /**
+   * Updates this guild channel with data from the API.
+   * @protected
+   */
+  protected _patch(data: APIChannel): this {
+    this.name = data.name as string;
+    this.position = data.position;
+    this.parentId = data.parent_id ?? null;
+
+    return this;
+  }
+}
+
+
+export interface ModifyGuildChannel extends Dictionary {
+  name?: string;
+  position?: number | null;
+  permissionOverwrites?: (PermissionOverwrite | APIOverwrite)[] | null;
+  parent?: CategoryChannel | string;
+}

@@ -4,119 +4,123 @@
  * See the LICENSE file in the project root for more details.
  */
 
-
 import { Class, Collection } from "@neocord/utils";
 
 import type { Base } from "../structures/Base";
-import type { Cache, Client } from "../lib";
+import type { Client } from "../lib";
 
-export abstract class BaseManager<T extends Base> extends Collection<string, T> {
+export abstract class BaseManager<S extends Base> extends Collection<string, S> {
   /**
    * The client instance.
+   * @type {Client}
    */
-  public readonly client: Client;
+  private readonly _client!: Client;
 
   /**
-   * The thing this manager manages.
+   * The item this manager holds.
+   * @private
    */
-  public readonly manages: Class<T>;
+  private readonly _item!: Class<S>;
 
   /**
-   * The cache for this manager.
-   * @protected
+   * Creates a new instanceof BaseManager
+   * @param {Client} client The client instance.
+   * @param {Class} item The item this manager holds.
+   * @param {Iterable} [iterable] Pre-defined entries.
    */
-  public readonly abstract cache: Cache<T>
-
-  /**
-   * Creates a new instance of BaseManager.
-   * @param client The client instance.
-   * @param structure
-   */
-  protected constructor(client: Client, structure: Class<T>) {
+  protected constructor(client: Client, item: Class<S>, iterable?: Iterable<S>) {
     super();
 
-    this.client = client;
-    this.manages = structure;
+    Object.defineProperty(this, "_client", { value: client })
+    Object.defineProperty(this, "_item", { value: item });
+    if (iterable) {
+      for (const i of iterable) {
+        this._add(i);
+      }
+    }
   }
 
-  public resolve(data: unknown): T | null {
+  /**
+   * Defines the extensibility of this class.
+   */
+  public static get [Symbol.species](): typeof Collection {
+    return Collection;
+  }
+
+  /**
+   * The client instance.
+   * @type {Client}
+   */
+  public get client(): Client {
+    return this._client;
+  }
+
+  /**
+   * How many items this manager can hold.
+   */
+  public abstract get limit(): number;
+
+  /**
+   * Resolves something into a structure.
+   * @param {string | Base} data The data to resolve.
+   * @returns {Base | null} The resolved item or null if nothing was found.
+   */
+  public resolve(data: BaseResolvable<S>): S | null {
     const id = this.resolveId(data);
     if (!id) return null;
     return this.get(id) ?? null;
   }
 
   /**
-   * Attempts to resolve an id from a value.
-   * @param data
+   * Resolves something into an ID
+   * @param {string | Base} data The data to resolve.
+   * @returns {string} The resolved ID or null if nothing was found.
    */
-  public resolveId(data: unknown): string | null {
+  public resolveId(data: BaseResolvable<S>): string | null {
     if (typeof data === "string") return data;
-    if (data instanceof this.manages) return data.id;
+    if (data instanceof this._item || data.id) return data.id;
     return null;
   }
 
   /**
-   * Gets an entry from the cache.
-   * @param key The key of the entry to get.
+   * Sets a value to this store.
+   * @param {string} key The entry key.
+   * @param {Base} value The entry value.
+   * @returns {this}
    */
-  public get(key: string): T | undefined {
-    return this.cache.get(key);
+  public set(key: string, value: S): this {
+    if (this.limit === 0) return this;
+    if (this.size >= this.limit && !this.has(key)) this.delete(this.first?.id as string);
+    return super.set(key, value);
   }
 
   /**
-   * Sets an on the cache.
-   * @param key The entry key.
-   * @param value The entry value.
-   */
-  public set(key: string, value: T): this {
-    this.cache.set(key, value);
-    return this;
-  }
-
-  /**
-   * All of the keys in the cache.
-   */
-  public * keys(): IterableIterator<string> {
-    yield * this.cache.keys();
-  }
-
-  /**
-   * All of the values in the cache.
-   */
-  public * values(): IterableIterator<T> {
-    yield * this.cache.values();
-  }
-
-  /**
-   * All entries in the cache.
-   */
-  public * entries(): IterableIterator<[ string, T ]> {
-    yield * this.cache.entries();
-  }
-
-  /**
-   * The json representation of this store.
+   * The json representation of this manager.
    */
   public toJSON(): string[] {
     return [ ...this.keys() ];
   }
 
   /**
+   * Sets an item to this manager.
    * @private
    */
-  protected _set(entry: T): T {
-    this.set(entry.id, entry);
+  protected _set(entry: S): S {
+    // eslint-disable-next-line no-constant-condition
+    if ("lol" === "lol") // todo: check if caching is enabled for the item.
+      this.set(entry.id, entry);
     return entry;
   }
 
   /**
-   * Adds a new item to this store.
-   * @param data
+   * Adds a new item to this manager.
    * @private
    */
-  protected _add(data: Dictionary): T {
+  protected _add(data: Dictionary): S {
     const existing = this.get(data.id);
     if (existing) return existing["_patch"](data);
-    return this._set(new (this.manages)(this.client, data));
+    return this._set(new (this._item)(this.client, data));
   }
 }
+
+export type BaseResolvable<T extends Base> = T | string | { id: string }

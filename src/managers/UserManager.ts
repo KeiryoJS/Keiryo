@@ -6,35 +6,34 @@
 
 import { BaseManager } from "./BaseManager";
 import { neo } from "../structures/Extender";
-import { Cacheable } from "../util";
 
-import type { RESTGetAPIUserResult } from "discord-api-types/default";
 import type { User } from "../structures/other/User";
-import type { Cache, Client } from "../lib";
+import type { Client } from "../lib";
 
 export class UserManager extends BaseManager<User> {
   /**
-   * The user cache.
-   * @protected
-   */
-  public cache: Cache<User>;
-
-  /**
    * Creates a new instanceof UserManager.
-   * @param client The client instance.
+   * @param {Client} client The client instance.
    */
   public constructor(client: Client) {
     super(client, neo.get("User"));
+  }
 
-    this.cache = client.caching.get(Cacheable.User);
+  /**
+   * The total amount of users that can be cached at one time.
+   * @returns {number}
+   */
+  public get limit(): number {
+    return Infinity; // TODO: get user limit from the client.
   }
 
   /**
    * Fetches a user from the discord api.
-   * @param id The ID of the user to fetch.
+   * @param {string} userId The ID of the user to fetch.
+   * @returns {Promise<User>} The fetched user.
    */
-  public async fetch(id: string): Promise<User> {
-    const data = await this.client.api.get<RESTGetAPIUserResult>(`/users/${id}`);
-    return this._add(data);
+  public async fetch(userId: string): Promise<User> {
+    const _data = await this.client.api.get(`/users/${userId}`);
+    return this._add(_data);
   }
 }

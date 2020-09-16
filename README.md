@@ -8,10 +8,11 @@
 - **Coverage:** NeoCord covers the Discord Gateway, API, and CDN. 
 - **Caching:** You can set a limit for each structure, set different providers, and even disable them.
 
-<!-- 
-<h2 align="center">Why you should use NeoCord</h2>
 
--->
+<h2>Warning:</h2>
+
+NeoCord is currently in alpha, meaning it will probably be broken and might not work.
+If you want to contribute, please join our [support server](https://discord.gg/5WD9KhF) - It would be greatly appreciated.
 
 <h2 align="center">Installation and Usage</h2>
 

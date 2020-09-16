@@ -129,7 +129,7 @@ export class Message extends Base {
       await sleep(ms);
     }
 
-    // todo: delete the message using the messages.
+    // todo: delete the message using the messages manager.
     return this;
   }
 
