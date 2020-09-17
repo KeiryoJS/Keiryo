@@ -9,7 +9,10 @@ import { Class, Collection } from "@neocord/utils";
 import type { Base } from "../structures/Base";
 import type { Client } from "../lib";
 
-export abstract class BaseManager<S extends Base> extends Collection<string, S> {
+export abstract class BaseManager<S extends Base> extends Collection<
+  string,
+  S
+> {
   /**
    * The client instance.
    * @type {Client}
@@ -20,7 +23,7 @@ export abstract class BaseManager<S extends Base> extends Collection<string, S> 
    * The item this manager holds.
    * @private
    */
-  private readonly _item!: Class<S>;
+  protected readonly _item!: Class<S>;
 
   /**
    * Creates a new instanceof BaseManager
@@ -28,7 +31,11 @@ export abstract class BaseManager<S extends Base> extends Collection<string, S> 
    * @param {Class} item The item this manager holds.
    * @param {Iterable} [iterable] Pre-defined entries.
    */
-  protected constructor(client: Client, item: Class<S>, iterable?: Iterable<S>) {
+  protected constructor(
+    client: Client,
+    item: Class<S>,
+    iterable?: Iterable<S>
+  ) {
     super();
 
     Object.defineProperty(this, "_client", { value: client });
@@ -90,7 +97,8 @@ export abstract class BaseManager<S extends Base> extends Collection<string, S> 
    */
   public set(key: string, value: S): this {
     if (this.limit === 0) return this;
-    if (this.size >= this.limit && !this.has(key)) this.delete(this.first?.id as string);
+    if (this.size >= this.limit && !this.has(key))
+      this.delete(this.first?.id as string);
     return super.set(key, value);
   }
 
@@ -98,7 +106,7 @@ export abstract class BaseManager<S extends Base> extends Collection<string, S> 
    * The json representation of this manager.
    */
   public toJSON(): string[] {
-    return [ ...this.keys() ];
+    return [...this.keys()];
   }
 
   /**
@@ -107,7 +115,8 @@ export abstract class BaseManager<S extends Base> extends Collection<string, S> 
    */
   protected _set(entry: S): S {
     // eslint-disable-next-line no-constant-condition
-    if ("lol" === "lol") // todo: check if caching is enabled for the item.
+    if ("lol" === "lol")
+      // todo: check if caching is enabled for the item.
       this.set(entry.id, entry);
     return entry;
   }
@@ -119,8 +128,8 @@ export abstract class BaseManager<S extends Base> extends Collection<string, S> 
   protected _add(data: Dictionary): S {
     const existing = this.get(data.id);
     if (existing) return existing["_patch"](data);
-    return this._set(new (this._item)(this.client, data));
+    return this._set(new this._item(this._client, data));
   }
 }
 
-export type BaseResolvable<T extends Base> = T | string | { id: string }
+export type BaseResolvable<T extends Base> = T | string | { id: string };

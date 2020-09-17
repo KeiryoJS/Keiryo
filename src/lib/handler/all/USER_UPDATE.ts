@@ -8,6 +8,7 @@ import { Handler } from "../Handler";
 import { neo } from "../../../structures/Extender";
 
 import type { GatewayUserUpdateDispatch } from "discord-api-types/default";
+import type { User } from "../../../structures/other/User";
 
 export default class USER_UPDATE extends Handler<GatewayUserUpdateDispatch> {
   public handle(data: GatewayUserUpdateDispatch): number {
@@ -19,7 +20,7 @@ export default class USER_UPDATE extends Handler<GatewayUserUpdateDispatch> {
     }
 
     user = new (neo.get("User"))(this.client, data.d);
-    this.client.users["_set"](user);
+    this.client.users["_set"](user as User);
     return this.client.emit(this.clientEvent, user);
   }
 }

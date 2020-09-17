@@ -33,7 +33,10 @@ export class GuildManager extends BaseManager<Guild> {
    * @param {string} [reason] The reason to provide.
    * @returns {Guild | null} The guild that was removed.
    */
-  public async remove(guild: BaseResolvable<Guild>, reason?: string): Promise<Guild | null> {
+  public async remove(
+    guild: BaseResolvable<Guild>,
+    reason?: string
+  ): Promise<Guild | null> {
     const g = this.resolve(guild);
     if (g) await this.client.api.delete(`/guilds/${g.id}`, { reason });
     return g;
@@ -46,7 +49,7 @@ export class GuildManager extends BaseManager<Guild> {
    */
   public async fetch(guild: string): Promise<Guild> {
     const data = await this.client.api.get(`/guilds/${guild}`, {
-      query: { with_counts: "true" }
+      query: { with_counts: "true" },
     });
 
     return this._add(data);

@@ -7,8 +7,13 @@
 import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
 import { Channel } from "../structures/channel/Channel";
+import { Collection } from "@neocord/utils";
 
-import type { APIChannel, RESTGetAPIChannelResult, RESTGetAPIGuildChannelsResult } from "discord-api-types";
+import type {
+  APIChannel,
+  RESTGetAPIChannelResult,
+  RESTGetAPIGuildChannelsResult,
+} from "discord-api-types";
 import type { GuildChannel } from "../structures/channel/guild/GuildChannel";
 import type { Guild } from "../structures/guild/Guild";
 
@@ -21,7 +26,7 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
 
   /**
    * Creates a new instanceof GuildChannelCache
-   * @param {Guild} guild The guild instance.
+   * @param {Guild} guild The {@link Guild guild} instance.
    */
   public constructor(guild: Guild) {
     super(guild.client, neo.get("GuildChannel"));
@@ -52,7 +57,9 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
    * @param {GuildChannel} channel The channel to remove.
    * @returns {GuildChannel | null} The removed channel.
    */
-  public async remove<T extends GuildChannel = GuildChannel>(channel: BaseResolvable<T>): Promise<T | null> {
+  public async remove<T extends GuildChannel = GuildChannel>(
+    channel: BaseResolvable<T>
+  ): Promise<T | null> {
     const c = this.resolve(channel);
     if (c) {
       await this.client.api.delete(`/guilds/${this.guild.id}/channels/${c.id}`);
@@ -64,25 +71,48 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
   }
 
   /**
-   * Fetches a guild channel from the discord api.
+   * Fetches a {@link GuildChannel guild channel} from the discord api.
    * @param {string} channelId ID of the channel to fetch.
-   * @returns {GuildChannel} The fetched channel.
+   * @param {boolean} [force] Skips checking if the channel is already cached.
+   * @returns {Promise<GuildChannel>} The fetched channel.
    */
-  public async fetch<T extends GuildChannel = GuildChannel>(channelId: string): Promise<T>;
+  public fetch<T extends GuildChannel = GuildChannel>(
+    channelId: string,
+    force?: boolean
+  ): Promise<T>;
+
   /**
    * Fetches all channels in the guild.
-   * @returns {GuildChannelCache} The guild channel cache.
+   * @returns {Promise<Collection<string, GuildChannel>>} The {@link GuildChannel guild channel} cache.
    */
-  public async fetch(): Promise<GuildChannelManager>;
-  public async fetch(channel?: BaseResolvable<GuildChannel>): Promise<GuildChannelManager | GuildChannel> {
+  public fetch(): Promise<Collection<string, GuildChannel>>;
+
+  public async fetch(
+    channel?: string,
+    force?: boolean
+  ): Promise<Collection<string, GuildChannel> | GuildChannel> {
     if (channel) {
-      const data = await this.client.api.get<RESTGetAPIChannelResult>(`/guilds/${this.guild.id}/channels/${channel}`);
+      if (!force) {
+        const cached = this.get(channel);
+        if (cached) return cached;
+      }
+
+      const data = await this.client.api.get<RESTGetAPIChannelResult>(
+        `/guilds/${this.guild.id}/channels/${channel}`
+      );
       return this._add(data);
     }
 
-    const channels = await this.client.api.get<RESTGetAPIGuildChannelsResult>(`/guilds/${this.guild.id}`);
-    for (const channel of channels) this._add(channel);
-    return this;
+    const col = new Collection<string, GuildChannel>();
+    const channels = await this.client.api.get<RESTGetAPIGuildChannelsResult>(
+      `/guilds/${this.guild.id}`
+    );
+    for (const data of channels) {
+      const channel = this._add(data);
+      col.set(channel.id, channel);
+    }
+
+    return col;
   }
 
   /**
@@ -92,6 +122,8 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
   protected _add(data: APIChannel): GuildChannel {
     const existing = this.get(data.id);
     if (existing) return existing["_patch"](data);
-    return this._set(Channel.create(this.client, data, this.guild) as GuildChannel);
+    return this._set(
+      Channel.create(this.client, data, this.guild) as GuildChannel
+    );
   }
 }

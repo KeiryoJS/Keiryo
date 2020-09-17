@@ -15,7 +15,7 @@ export abstract class Base {
   /**
    * The ID of this instance.
    */
-  public readonly abstract id: string;
+  public abstract readonly id: string;
 
   /**
    * Creates a new instance of Base.
@@ -37,9 +37,8 @@ export abstract class Base {
    */
   public toJSON(): Dictionary {
     const dict: Dictionary = {};
-    for (const [ k, v ] of Object.entries(this)) {
-      if (k !== "client")
-        Reflect.set(dict, k, v?.id ?? v?.toJSON?.() ?? v);
+    for (const [k, v] of Object.entries(this)) {
+      if (k !== "client") Reflect.set(dict, k, v?.id ?? v?.toJSON?.() ?? v);
     }
 
     return dict;

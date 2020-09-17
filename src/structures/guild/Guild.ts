@@ -7,11 +7,13 @@
 import { Snowflake } from "@neocord/utils";
 import { Base } from "../Base";
 import { neo } from "../Extender";
-
-import { RoleManager } from "../../managers/RoleManager";
-import { GuildChannelManager } from "../../managers/GuildChannelManager";
-import { VoiceStateManager } from "../../managers/VoiceStateManager";
-import { MemberManager } from "../../managers/MemberManager";
+import {
+  BanManager,
+  GuildChannelManager,
+  MemberManager,
+  RoleManager,
+  VoiceStateManager,
+} from "../../managers";
 
 import type { Shard } from "@neocord/gateway";
 import type {
@@ -20,7 +22,7 @@ import type {
   GuildFeature,
   GuildPremiumTier,
   GuildSystemChannelFlags,
-  GuildVerificationLevel
+  GuildVerificationLevel,
 } from "discord-api-types/default";
 import type { WelcomeScreen } from "./welcome/WelcomeScreen";
 import type { Client } from "../../lib";
@@ -29,39 +31,38 @@ import type { Member } from "./Member";
 export class Guild extends Base {
   /**
    * The ID of this guild.
-   * @type {string}
    */
   public readonly id: string;
 
   /**
    * The shard that this guild operates on.
-   * @type {Shard}
    */
   public readonly shard: Shard;
 
   /**
    * All cached roles for this guild.
-   * @type {RoleManager}
    */
   public readonly roles: RoleManager;
 
   /**
    * All cached voice states for this guild.
-   * @type {VoiceStateManager}
    */
   public readonly voiceStates: VoiceStateManager;
 
   /**
    * All cached channels for this guild.
-   * @type {GuildChannelManager}
    */
   public readonly channels: GuildChannelManager;
 
   /**
    * All cached members for this guild.
-   * @type {MemberManager}
    */
   public readonly members: MemberManager;
+
+  /**
+   * All cached bans for this guild.
+   */
+  public readonly bans: BanManager;
 
   /**
    * Whether this guild has been deleted from the cache.
@@ -228,13 +229,14 @@ export class Guild extends Base {
 
     this.id = data.id;
 
-    const shardId = (new Snowflake(data.id).timestamp) % client.ws.shards.size;
+    const shardId = new Snowflake(data.id).timestamp % client.ws.shards.size;
     this.shard = this.client.ws.shards.get(shardId) as Shard;
 
     this.roles = new RoleManager(this);
     this.voiceStates = new VoiceStateManager(this);
     this.channels = new GuildChannelManager(this);
     this.members = new MemberManager(this);
+    this.bans = new BanManager(this);
 
     this._patch(data);
   }
@@ -244,27 +246,6 @@ export class Guild extends Base {
    */
   public get me(): Member {
     return this.members.get(this.client.user?.id as string) as Member;
-  }
-
-  /**
-   * The date when this guild was created.
-   */
-  public get createdAt(): Date {
-    return new Date(this.createdTimestamp);
-  }
-
-  /**
-   * Timestamp of when this guild was created.
-   */
-  public get createdTimestamp(): number {
-    return this.snowflake.timestamp;
-  }
-
-  /**
-   * The snowflake data.
-   */
-  public get snowflake(): Snowflake {
-    return new Snowflake(this.id);
   }
 
   /**
@@ -303,7 +284,11 @@ export class Guild extends Base {
     this.unavailable = data.unavailable ?? false;
 
     if (data.welcome_screen) {
-      if (!this.welcomeScreen) this.welcomeScreen = new (neo.get("WelcomeScreen"))(this, data.welcome_screen);
+      if (!this.welcomeScreen)
+        this.welcomeScreen = new (neo.get("WelcomeScreen"))(
+          this,
+          data.welcome_screen
+        );
       else this.welcomeScreen["_patch"](data.welcome_screen);
     }
 
@@ -320,6 +305,13 @@ export class Guild extends Base {
       this.members.clear();
       for (const member of data.members) {
         this.members["_add"](member);
+      }
+    }
+
+    if (data.channels) {
+      this.channels.clear();
+      for (const channel of data.channels) {
+        this.channels["_add"](channel);
       }
     }
 

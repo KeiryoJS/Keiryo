@@ -4,14 +4,18 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Snowflake } from "@neocord/utils";
-import { Base } from "../Base";
+import { SnowflakeBase } from "../SnowflakeBase";
 
 import type { ImageURLOptions } from "@neocord/rest";
-import type { APIUser, UserFlags, UserPremiumType } from "discord-api-types/default";
+import type {
+  APIUser,
+  UserFlags,
+  UserPremiumType,
+} from "discord-api-types/default";
 import type { Client } from "../../lib";
+import type { DMChannel } from "../channel/DMChannel";
 
-export class User extends Base {
+export class User extends SnowflakeBase {
   /**
    * The ID of this user.
    */
@@ -90,21 +94,6 @@ export class User extends Base {
   }
 
   /**
-   * The date when this user was created.
-   */
-  public get createdAt(): Date {
-    return new Date(this.createdTimestamp);
-  }
-
-  /**
-   * The timestamp when this user was created.
-   */
-  public get createdTimestamp(): number {
-    return new Snowflake(this.id).timestamp;
-  }
-
-
-  /**
    * The tag of this user.
    */
   public get tag(): string {
@@ -122,7 +111,7 @@ export class User extends Base {
    * The default avatar url for this user.
    */
   public get defaultAvatarUrl(): string {
-    return this.client.api.cdn.defaultAvatar((+this.discriminator) % 5);
+    return this.client.api.cdn.defaultAvatar(+this.discriminator % 5);
   }
 
   /**
@@ -132,6 +121,16 @@ export class User extends Base {
   public avatarURL(options: ImageURLOptions = {}): string | null {
     if (!this.avatar) return null;
     return this.client.api.cdn.userAvatar(this.id, this.avatar, options);
+  }
+
+  /**
+   * Gets an existing DM channel or creates one.
+   * @returns {DMChannel}
+   */
+  public async dm(): Promise<DMChannel> {
+    let dm = this.client.dms.get(this.id);
+    if (!dm) dm = await this.client.dms.new(this);
+    return dm;
   }
 
   /**

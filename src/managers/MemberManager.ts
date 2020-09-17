@@ -9,10 +9,15 @@ import { URLSearchParams } from "url";
 import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
 
-import type { RESTGetAPIGuildMembersResult } from "discord-api-types";
+import type {
+  APIGuildMember,
+  APIUser,
+  RESTGetAPIGuildMembersResult,
+} from "discord-api-types";
 import type { User } from "../structures/other/User";
 import type { Member } from "../structures/guild/Member";
 import type { Guild } from "../structures/guild/Guild";
+import type { BanOptions } from "./BanManager";
 
 export class MemberManager extends BaseManager<Member> {
   /**
@@ -41,8 +46,8 @@ export class MemberManager extends BaseManager<Member> {
   }
 
   /**
-   * Resolves something into a guild member {@see Member}.
-   * @param {MemberResolvable} data The data to resolve {@see MemberResolvable}.
+   * Resolves something into a guild member {@link Member member}.
+   * @param {MemberResolvable} data The data to resolve.
    * @returns {Member | null} The resolved ID or null if nothing was found.
    */
   public resolve(data: MemberResolvable): Member | null {
@@ -57,7 +62,7 @@ export class MemberManager extends BaseManager<Member> {
 
   /**
    * Resolves something into an ID.
-   * @param {MemberResolvable} data The data to resolve - {@see MemberResolvable}.
+   * @param {MemberResolvable} data The data to resolve.
    * @returns {string | null} The resolved ID or null if nothing was found.
    */
   public resolveId(data: MemberResolvable): string | null {
@@ -71,17 +76,23 @@ export class MemberManager extends BaseManager<Member> {
   }
 
   /**
-   * Kicks a member or user from the {@see Guild}.
-   * @param {MemberResolvable} target The {@see Member} or {@see User} to kick.
+   * Kicks a member or user from the {@link Guild guild}.
+   * @param {MemberResolvable} target The {@link Member member} or {@link User user} to kick.
    * @param {string} [reason] The reason for the audit log entry.
-   * @returns {Member | null} The kicked {@see Member}.
+   * @returns {Member | null} The kicked {@link Member member}.
    */
-  public async kick(target: MemberResolvable, reason?: string): Promise<Readonly<Member> | null> {
+  public async kick(
+    target: MemberResolvable,
+    reason?: string
+  ): Promise<Readonly<Member> | null> {
     const member = this.resolve(target);
     if (member) {
-      await this.client.api.delete(`/guilds/${this.guild.id}/members/${member.id}`, {
-        reason
-      });
+      await this.client.api.delete(
+        `/guilds/${this.guild.id}/members/${member.id}`,
+        {
+          reason,
+        }
+      );
 
       return Object.freeze(member);
     }
@@ -90,20 +101,17 @@ export class MemberManager extends BaseManager<Member> {
   }
 
   /**
-   * Bans a member or user from the {@see Guild}.
-   * @param {MemberResolvable} target The {@see Member} or {@see User} to ban.
-   * @param {string} [reason] The audit-log reason.
-   * @returns {Member | null} The banned {@see Member}.
+   * Bans a member or user from the {@link Guild guild}.
+   * @param {MemberResolvable} target The {@link Memberm member} or {@link User user} to ban.
+   * @param {BanOptions} [options] The ban options.
+   * @returns {Member | null} The banned {@link Member member}.
    */
-  public async ban(target: MemberResolvable, reason?: string): Promise<Readonly<Member> | null> {
-    const member = this.resolve(target);
-    if (member) {
-      // todo: add the ban through Guild#bans
-      void reason;
-      return Object.freeze(member);
-    }
-
-    return null;
+  public async ban(
+    target: MemberResolvable,
+    options?: BanOptions
+  ): Promise<MemberResolvable | null> {
+    await this.guild.bans.new(target, options);
+    return target;
   }
 
   /**
@@ -112,28 +120,34 @@ export class MemberManager extends BaseManager<Member> {
    * @param {boolean} [force] Whether to skip checking if the member is already cached.
    * @returns {Member} The fetched (or cached) member.
    */
-  public fetch(id: string, force?: boolean): Promise<Member>
+  public fetch(id: string, force?: boolean): Promise<Member>;
   /**
    * Fetch 1-1000 members from the guild.
    * @param {FetchMembers} options Options to use when fetching.
    * @returns {Collection<string, Member>} The fetched members.
    */
   public fetch(options?: FetchMembers): Promise<Collection<string, Member>>;
-  public async fetch(options: string | FetchMembers = {}, force?: boolean): Promise<Collection<string, Member> | Member> {
+  public async fetch(
+    options: string | FetchMembers = {},
+    force?: boolean
+  ): Promise<Collection<string, Member> | Member> {
     if (typeof options === "string") {
-      // Check if the member is already cached.
       if (!force && this.has(options)) return this.get(options) as Member;
 
-      // Get the member from the api.
-      const member = await this.client.api.get(`/guilds/${this.guild.id}/${options}`);
+      const member = await this.client.api.get<APIGuildMember>(
+        `/guilds/${this.guild.id}/${options}`
+      );
       return this._add(member);
     }
 
     const col = new Collection<string, Member>();
-    const members = await this.client.api.get<RESTGetAPIGuildMembersResult>(`/guilds/${this.guild.id}/members`, {
-      // @ts-ignore
-      query: options
-    });
+    const members = await this.client.api.get<RESTGetAPIGuildMembersResult>(
+      `/guilds/${this.guild.id}/members`,
+      {
+        // @ts-ignore
+        query: options,
+      }
+    );
 
     for (const _member of members) {
       const member = this._add(_member);
@@ -157,7 +171,10 @@ export class MemberManager extends BaseManager<Member> {
    * @returns {number | null} The number or removed members, only null if the 'computePruneCount' option was omitted or set to false.
    */
   public prune(options: PruneOptions, reason?: string): Promise<number | null>;
-  public async prune(options: DryPruneOptions | PruneOptions, reason?: string): Promise<number | null> {
+  public async prune(
+    options: DryPruneOptions | PruneOptions,
+    reason?: string
+  ): Promise<number | null> {
     const query = new URLSearchParams();
 
     // append the 'days' query parameter.
@@ -177,7 +194,7 @@ export class MemberManager extends BaseManager<Member> {
     if (options.dry) {
       const resp = await this.client.api.get(`/guilds/${this.guild.id}/prune`, {
         query,
-        reason
+        reason,
       });
 
       return resp.pruned;
@@ -190,10 +207,20 @@ export class MemberManager extends BaseManager<Member> {
 
     const resp = await this.client.api.post(`/guilds/${this.guild.id}/prune`, {
       query,
-      reason
+      reason,
     });
 
     return resp.pruned;
+  }
+
+  /**
+   * Adds a new member to this manager.
+   * @private
+   */
+  protected _add(data: APIGuildMember): Member {
+    const existing = this.get((data.user as APIUser).id);
+    if (existing) return existing["_patch"](data);
+    return this._set(new this._item(this.guild, data));
   }
 }
 

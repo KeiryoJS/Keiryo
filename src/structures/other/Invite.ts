@@ -6,7 +6,10 @@
 
 import { Base } from "../Base";
 
-import type { APIExtendedInvite, InviteTargetUserType } from "discord-api-types/default";
+import type {
+  APIExtendedInvite,
+  InviteTargetUserType,
+} from "discord-api-types/default";
 import type { Guild } from "../guild/Guild";
 import type { Channel } from "../channel/Channel";
 import type { User } from "./User";
@@ -99,7 +102,9 @@ export class Invite extends Base {
   }
 
   protected _patch(data: APIExtendedInvite): this {
-    this.createdTimestamp = data.created_at ? Date.parse(data.created_at) : null;
+    this.createdTimestamp = data.created_at
+      ? Date.parse(data.created_at)
+      : null;
     this.maxAge = data.max_age ?? null;
     this.maxUses = data.max_uses ?? null;
     this.temporary = data.temporary ?? false;

@@ -1,16 +1,25 @@
-import { GatewayEvent, ISMEvent, ISMOptions, ShardManager } from "@neocord/gateway";
+import {
+  GatewayEvent,
+  ISMEvent,
+  ISMOptions,
+  ShardManager,
+} from "@neocord/gateway";
 import { Emitter, Timers } from "@neocord/utils";
 import { API, APIEvent, APIOptions } from "@neocord/rest";
 import { Handlers } from "./handler/Helper";
-
-import { UserManager } from "../managers/UserManager";
-import { GuildManager } from "../managers/GuildManager";
+import {
+  ChannelManager,
+  DMChannelManager,
+  GuildManager,
+  UserManager,
+} from "../managers";
 
 import type { ClientUser } from "../structures/other/ClientUser";
+import type { Message } from "../structures/message/Message";
 
 export class Client extends Emitter {
   /**
-   * All cached guilds for the current user.
+   * All cached guilds for the current session.
    */
   public readonly guilds: GuildManager;
 
@@ -20,9 +29,19 @@ export class Client extends Emitter {
   public readonly users: UserManager;
 
   /**
+   * All cached channels for the current session.
+   */
+  public readonly channels: ChannelManager;
+
+  /**
+   * All cached DMs for the current session.
+   */
+  public readonly dms: DMChannelManager;
+
+  /**
    * The current user.
    */
-  public user?: ClientUser
+  public user?: ClientUser;
 
   /**
    * The token of this client.
@@ -33,12 +52,6 @@ export class Client extends Emitter {
    * The internal sharding manager for this client.
    */
   private readonly _ws!: ShardManager;
-
-  /**
-   * The caching manager.
-   * @private
-   */
-  // private readonly _caching!: CachingManager;
 
   /**
    * An interface for the discord api and cdn.
@@ -76,14 +89,10 @@ export class Client extends Emitter {
       configurable: false,
     });
 
-    // Object.defineProperty(this, "_caching", {
-    //   value: new CachingManager(this, options.caching),
-    //   enumerable: false,
-    //   configurable: false,
-    // });
-
     this.guilds = new GuildManager(this);
     this.users = new UserManager(this);
+    this.channels = new ChannelManager(this);
+    this.dms = new DMChannelManager(this);
 
     this._pass();
   }
@@ -101,13 +110,6 @@ export class Client extends Emitter {
   public get api(): API {
     return this._api;
   }
-
-  /**
-   * The caching manager for this client.
-   */
-  // public get caching(): CachingManager {
-  //   return this._caching;
-  // }
 
   /**
    * Connects the bot to the discord gateway.
@@ -138,6 +140,18 @@ export class Client extends Emitter {
   }
 
   /**
+   * Listen for a client event.
+   * @param {string} event The event to listen for.
+   * @param {Function} listener The event listener.
+   */
+  public on<K extends keyof ClientEvents>(
+    event: K,
+    listener: ClientEvents[K]
+  ): this {
+    return super.on(event, listener);
+  }
+
+  /**
    * Listens for all events on the websocket and emits them on the client.
    * @private
    */
@@ -149,6 +163,11 @@ export class Client extends Emitter {
       this._api.on(evt, (...args) => this.emit(evt, ...args));
   }
 }
+
+export type ClientEvents = {
+  messageCreate: (message: Message) => void;
+  debug: (message: string) => void;
+} & Record<"ready", () => void>;
 
 export interface ClientOptions {
   /**

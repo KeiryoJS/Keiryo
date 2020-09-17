@@ -30,29 +30,37 @@ export class TextChannel extends GuildTextChannel {
    * @param {string} [reason] The reason to provide.
    */
   public async modify(data: ModifyTextChannel, reason?: string): Promise<this> {
-    let ratelimit = typeof data.userRatelimit === "string"
-      ? Duration.parse(data.userRatelimit)
-      : data.userRatelimit;
+    let ratelimit =
+      typeof data.userRatelimit === "string"
+        ? Duration.parse(data.userRatelimit)
+        : data.userRatelimit;
 
     if (ratelimit) {
       ratelimit = Math.abs(ratelimit);
       if (ratelimit > MAX_RATE_LIMIT) {
-        throw new Error(`Rate-limit must not be above ${MAX_RATE_LIMIT} (or ${Duration.parse(MAX_RATE_LIMIT, true)}).`);
+        throw new Error(
+          `Rate-limit must not be above ${MAX_RATE_LIMIT} (or ${Duration.parse(
+            MAX_RATE_LIMIT,
+            true
+          )}).`
+        );
       }
     }
 
-    return super.modify({
-      name: data.name,
-      position: data.position,
-      permissionOverwrites: data.permissionOverwrites,
-      topic: data.topic,
-      type: data.type,
-      nsfw: data.nsfw,
-      rate_limit_per_user: ratelimit,
-      parent_id: data.parent instanceof CategoryChannel
-        ? data.parent.id
-        : data.parent
-    }, reason);
+    return super.modify(
+      {
+        name: data.name,
+        position: data.position,
+        permissionOverwrites: data.permissionOverwrites,
+        topic: data.topic,
+        type: data.type,
+        nsfw: data.nsfw,
+        rate_limit_per_user: ratelimit,
+        parent_id:
+          data.parent instanceof CategoryChannel ? data.parent.id : data.parent,
+      },
+      reason
+    );
   }
 
   /**

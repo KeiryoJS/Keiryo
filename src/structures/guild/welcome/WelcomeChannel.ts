@@ -35,7 +35,10 @@ export class WelcomeChannel {
    * @param welcomeScreen The welcome screen.
    * @param data The welcome channel data.
    */
-  public constructor(welcomeScreen: WelcomeScreen, data: APIGuildWelcomeScreenChannel) {
+  public constructor(
+    welcomeScreen: WelcomeScreen,
+    data: APIGuildWelcomeScreenChannel
+  ) {
     this.welcomeScreen = welcomeScreen;
 
     this.channelId = data.channel_id;

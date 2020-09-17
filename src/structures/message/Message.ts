@@ -4,21 +4,23 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Duration, sleep, Snowflake } from "@neocord/utils";
+import { Snowflake } from "@neocord/utils";
 import { Base } from "../Base";
-import { Cacheable } from "../../util";
 import { Embed } from "../other/Embed";
 
-import type { APIMessage, MessageFlags, MessageType } from "discord-api-types/default";
+import type {
+  APIMessage,
+  MessageFlags,
+  MessageType,
+} from "discord-api-types/default";
 import type { Client } from "../../lib";
 import type { User } from "../other/User";
+import type { Guild } from "../guild/Guild";
+import type { Member } from "../guild/Member";
+import type { TextBasedChannel } from "../channel/Channel";
+import type { MessageDeleteOptions, MessageOptions } from "../../managers";
 
 export class Message extends Base {
-  /**
-   * The cacheable key of this structure.
-   */
-  public static CACHE_KEY = Cacheable.Message;
-
   /**
    * The ID of this message.
    */
@@ -27,7 +29,22 @@ export class Message extends Base {
   /**
    * The author of this message.
    */
-  public readonly author!: User;
+  public readonly author: User;
+
+  /**
+   * The guild member that sent this message.
+   */
+  public readonly member: Member | null;
+
+  /**
+   * The guild that this message was sent in.
+   */
+  public readonly guild: Guild | null;
+
+  /**
+   * The channel that this message was sent.
+   */
+  public readonly channel: TextBasedChannel;
 
   /**
    * Whether or not this message was TTS.
@@ -75,12 +92,28 @@ export class Message extends Base {
   public flags!: MessageFlags;
 
   /**
-   * Creates a new instance of Message.
-   * @param client The client instance.
-   * @param data The decoded message object.
+   * Whether this message has been deleted.
    */
-  public constructor(client: Client, data: APIMessage) {
+  public deleted = false;
+
+  /**
+   * Creates a new instance of Message.
+   * @param {Client} client The client instance.
+   * @param {APIMessage} data The decoded message object.
+   * @param {Guild} guild The guild instance.
+   */
+  public constructor(client: Client, data: APIMessage, guild?: Guild) {
     super(client);
+
+    this.guild = guild ?? client.guilds.get(data.guild_id as string) ?? null;
+    this.channel = this.client.channels.get(
+      data.channel_id
+    ) as TextBasedChannel;
+
+    this.member =
+      data.member && this.guild
+        ? this.guild.members["_add"]({ ...data.member, user: data.author })
+        : null;
 
     this.id = data.id;
     this.author = this.client.users["_add"](data.author);
@@ -111,26 +144,51 @@ export class Message extends Base {
    * The date in which this message was edited.
    */
   public get editedAt(): Date | null {
-    return this.editedTimestamp
-      ? new Date(this.editedTimestamp)
-      : null;
+    return this.editedTimestamp ? new Date(this.editedTimestamp) : null;
   }
 
   /**
    * Deletes this message from the channel.
-   * @param options Options for deleting this message.
+   * @param {MessageDeleteOptions} [options] Options for deleting this message.
+   * @returns {Message}
    */
   public async delete(options: MessageDeleteOptions = {}): Promise<this> {
-    if (options.after) {
-      const ms = typeof options.after === "number"
-        ? options.after
-        : Duration.parse(options.after);
-
-      await sleep(ms);
-    }
-
-    // todo: delete the message using the messages manager.
+    await this.channel.messages.remove(this, options);
     return this;
+  }
+
+  /**
+   * Sends a new message to the channel but prepends the author mention to the message content.
+   * @param {Embed} embed The embed to send.
+   * @param {MessageOptions} [options] The message options.
+   * @returns {Promise<Message[]>} The created messages.
+   */
+  public reply(
+    embed: Embed,
+    options?: Omit<MessageOptions, "embed">
+  ): Promise<Message[]>;
+
+  /**
+   * Sends a new message to the channel but prepends the author mention to the message content.
+   * @param {string} content The content to send.
+   * @param {MessageOptions} [options] The message options.
+   * @returns {Promise<Message[]>} The created messages.
+   */
+  public reply(
+    content: string,
+    options?: Omit<MessageOptions, "content">
+  ): Promise<Message[]>;
+
+  public reply(
+    p1: string | Embed,
+    options?: MessageOptions
+  ): Promise<Message[]> {
+    const content = typeof p1 === "string" ? p1 : options?.content;
+
+    return this.channel.messages.new(
+      `${this.author}${content ? `, ${content}` : ""}`,
+      options
+    );
   }
 
   /**
@@ -145,16 +203,13 @@ export class Message extends Base {
     this.type = data.type;
     this.pinned = data.pinned;
     this.content = data.content;
-    this.editedTimestamp = data.edited_timestamp ? +data.edited_timestamp : null;
+    this.editedTimestamp = data.edited_timestamp
+      ? +data.edited_timestamp
+      : null;
     this.flags = data.flags ?? 0;
 
     for (const _embed of data.embeds) this.embeds.push(new Embed(_embed));
 
     return this;
   }
-}
-
-export interface MessageDeleteOptions {
-  after?: string | number;
-  reason?: string;
 }

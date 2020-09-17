@@ -18,7 +18,7 @@ const packetWhitelist = [
   GatewayEvent.GuildDelete,
   GatewayEvent.GuildMembersChunk,
   GatewayEvent.GuildMemberAdd,
-  GatewayEvent.GuildMemberRemove
+  GatewayEvent.GuildMemberRemove,
 ];
 
 export class Handlers {
@@ -82,9 +82,13 @@ export class Handlers {
   private async _load(): Promise<void> {
     for (const file of walk(join(__dirname, "all"))) {
       const imported = await import(file);
-      const Handler: Class<Handler> = "default" in imported ? imported.default : imported;
+      const Handler: Class<Handler> =
+        "default" in imported ? imported.default : imported;
       if (!isClass(Handler)) {
-        this.client.emit("warn", "(Packet Handling) Built-in packet handler doesn't return a class, this should be reported.");
+        this.client.emit(
+          "warn",
+          "(Packet Handling) Built-in packet handler doesn't return a class, this should be reported."
+        );
         continue;
       }
 
@@ -122,9 +126,15 @@ export class Handlers {
 
     try {
       await handler.handle(pk);
-      this.client.emit("debug", `(Packet Handling) ‹${event}› Ran successfully.`);
+      this.client.emit(
+        "debug",
+        `(Packet Handling) ‹${event}› Ran successfully.`
+      );
     } catch (e) {
-      this.client.emit("error", `(Packet Handling) ‹${event}› An error occurred, this should be reported to the developers\n${e}`);
+      this.client.emit(
+        "error",
+        `(Packet Handling) ‹${event}› An error occurred, this should be reported to the developers\n${e}`
+      );
     }
   }
 
@@ -133,6 +143,8 @@ export class Handlers {
    * @private
    */
   private _listen(): void {
-    this.client.ws.on("raw", async (pk: Payload<Dictionary>) => this._handle(pk));
+    this.client.ws.on("raw", async (pk: Payload<Dictionary>) =>
+      this._handle(pk)
+    );
   }
 }

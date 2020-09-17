@@ -118,4 +118,3 @@ export class VoiceState extends Base {
     return this;
   }
 }
-

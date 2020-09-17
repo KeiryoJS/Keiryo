@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { BaseManager } from "./BaseManager";
+import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
 
 import type { User } from "../structures/other/User";
@@ -37,3 +37,5 @@ export class UserManager extends BaseManager<User> {
     return this._add(_data);
   }
 }
+
+export type UserResolvable = BaseResolvable<User>;

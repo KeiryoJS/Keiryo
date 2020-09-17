@@ -15,7 +15,7 @@ export class VoiceStateManager extends BaseManager<VoiceState> {
    * The guild instance.
    * @type {Guild}
    */
-  public readonly guild: Guild
+  public readonly guild: Guild;
 
   /**
    * Creates a new instanceof VoiceStateManager.

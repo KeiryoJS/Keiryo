@@ -35,8 +35,8 @@ export abstract class Handler<T extends GatewayDispatchPayload = any> {
    * The event to use for client events.
    */
   public get clientEvent(): string {
-    const [ f, ...rest ] = this.name.split("_");
-    return f.toLowerCase() + rest.map(r => capitalize(r)).join("");
+    const [f, ...rest] = this.name.split("_");
+    return f.toLowerCase() + rest.map((r) => capitalize(r)).join("");
   }
 
   /**

@@ -13,11 +13,10 @@ import {
   APIEmbedProvider,
   APIEmbedThumbnail,
   APIEmbedVideo,
-  EmbedType
+  EmbedType,
 } from "discord-api-types/default";
 
 export class Embed implements APIEmbed {
-
   /**
    * The embed video
    */
@@ -119,9 +118,7 @@ export class Embed implements APIEmbed {
    * @param text The description content.
    */
   public setDescription(text: StringResolvable | StringResolvable[]): this {
-    this.description = Array.isArray(text)
-      ? text.join("\n")
-      : text.toString();
+    this.description = Array.isArray(text) ? text.join("\n") : text.toString();
 
     return this;
   }

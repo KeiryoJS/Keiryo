@@ -6,9 +6,14 @@
 
 import { Channel } from "../Channel";
 import { PermissionOverwrite } from "../../guild/PermissionOverwrite";
+import { OverwriteManager } from "../../../managers";
 
 import type { CategoryChannel } from "./CategoryChannel";
-import type { APIChannel, APIOverwrite, RESTPatchAPIChannelResult } from "discord-api-types/default";
+import type {
+  APIChannel,
+  APIOverwrite,
+  RESTPatchAPIChannelResult,
+} from "discord-api-types/default";
 import type { Client } from "../../../lib";
 import type { Guild } from "../../guild/Guild";
 
@@ -18,6 +23,12 @@ export abstract class GuildChannel extends Channel {
    * @type {Guild}
    */
   public readonly guild: Guild;
+
+  /**
+   * The permission overwrites that belong to this channel.
+   * @type {OverwriteManager}
+   */
+  public readonly overwrites: OverwriteManager;
 
   /**
    * The name of this channel.
@@ -52,7 +63,8 @@ export abstract class GuildChannel extends Channel {
   public constructor(client: Client, data: APIChannel, guild?: Guild) {
     super(client, data);
 
-    this.guild = guild ?? client.guilds.get(data.guild_id as string) as Guild;
+    this.guild = guild ?? (client.guilds.get(data.guild_id as string) as Guild);
+    this.overwrites = new OverwriteManager(this);
   }
 
   public get parent(): CategoryChannel | null {
@@ -66,18 +78,28 @@ export abstract class GuildChannel extends Channel {
    * @param data The channel modify options.
    * @param reason The reason for updating this channel.
    */
-  public async modify(data: ModifyGuildChannel, reason?: string): Promise<this> {
-    const result = await this.client.api.patch<RESTPatchAPIChannelResult>(`/channels/${this.id}`, {
-      reason,
-      body: {
-        name: data.name,
-        position: data.position,
-        permission_overwrites: data.permissionOverwrites
-          ? data.permissionOverwrites.map((o) => PermissionOverwrite.resolve(o, this.guild))
-          : data.permissionOverwrites,
-        parent_id: (data.parent as CategoryChannel).id ?? data.parent
+  public async modify(
+    data: ModifyGuildChannel,
+    reason?: string
+  ): Promise<this> {
+    const result = await this.client.api.patch<RESTPatchAPIChannelResult>(
+      `/channels/${this.id}`,
+      {
+        reason,
+        body: {
+          name: data.name,
+          position: data.position,
+          permission_overwrites: data.permissionOverwrites
+            ? data.permissionOverwrites.map((o) =>
+              PermissionOverwrite.resolve(o, this.guild)
+            )
+            : data.permissionOverwrites,
+          parent_id: data.parent
+            ? this.guild.channels.resolveId(data.parent)
+            : data.parent,
+        },
       }
-    });
+    );
 
     return this._patch(result);
   }
@@ -91,10 +113,27 @@ export abstract class GuildChannel extends Channel {
     this.position = data.position;
     this.parentId = data.parent_id ?? null;
 
+    if (data.permission_overwrites) {
+      const overwrites = data.permission_overwrites ?? [];
+      const existingOverwrites = this.overwrites.clone();
+      this.overwrites.clear();
+
+      for (const overwrite of overwrites) {
+        const existing = existingOverwrites.find((o) => o.id === overwrite.id);
+        if (existing) {
+          this.overwrites.set(existing.id, existing);
+          existingOverwrites.delete(existing.id);
+        }
+
+        this.overwrites["_add"](overwrite);
+      }
+
+      existingOverwrites.forEach((o) => (o.deleted = true));
+    }
+
     return this;
   }
 }
-
 
 export interface ModifyGuildChannel extends Dictionary {
   name?: string;

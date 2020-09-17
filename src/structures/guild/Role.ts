@@ -4,13 +4,13 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Base } from "../Base";
 import { Permissions } from "../../util";
+import { SnowflakeBase } from "../SnowflakeBase";
 
 import type { APIRole, APIRoleTags } from "discord-api-types/default";
 import type { Guild } from "./Guild";
 
-export class Role extends Base {
+export class Role extends SnowflakeBase {
   /**
    * The ID of this role.
    */

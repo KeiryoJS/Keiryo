@@ -7,7 +7,7 @@
 import { BitField, BitFieldObject } from "@neocord/utils";
 
 export enum Permission {
-  CreateInstanceInvite = 1 << 0,
+  CreateInstantInvite = 1 << 0,
   KickMembers = 1 << 1,
   BanMembers = 1 << 2,
   Administrator = 1 << 3,
@@ -37,7 +37,7 @@ export enum Permission {
   ManageNicknames = 1 << 27,
   ManageRoles = 1 << 28,
   ManageWebhooks = 1 << 29,
-  ManageEmojis = 1 << 30
+  ManageEmojis = 1 << 30,
 }
 
 export class Permissions extends BitField<PermissionResolvable> {
@@ -52,12 +52,20 @@ export class Permissions extends BitField<PermissionResolvable> {
   public static DEFAULT = 104320577;
 
   /**
+   * Permissions that can't be influenced by channel overwrites, even if explicitly set.
+   */
+  public static GUILD_SCOPE_PERMISSIONS = 1275592878;
+
+  /**
    * Checks whether the bitfield has a permission, or any of multiple permissions.
    * @param permission Permission(s) to check for
    * @param checkAdmin Whether to allow the administrator permission to override
    */
   public any(permission: PermissionResolvable, checkAdmin = true): boolean {
-    return (checkAdmin && super.has(Permission.Administrator)) || super.any(permission);
+    return (
+      (checkAdmin && super.has(Permission.Administrator)) ||
+      super.any(permission)
+    );
   }
 
   /**
@@ -66,12 +74,16 @@ export class Permissions extends BitField<PermissionResolvable> {
    * @param checkAdmin Whether to allow the administrator permission to override
    */
   public has(permission: PermissionResolvable, checkAdmin = true): boolean {
-    return (checkAdmin && super.has(Permission.Administrator)) || super.has(permission);
+    return (
+      (checkAdmin && super.has(Permission.Administrator)) ||
+      super.has(permission)
+    );
   }
 }
 
-export type PermissionResolvable = keyof typeof Permission
+export type PermissionResolvable =
+  | keyof typeof Permission
   | Permission
   | number
   | BitFieldObject
-  | ((keyof typeof Permission) | number | BitFieldObject)[];
+  | (keyof typeof Permission | number | BitFieldObject)[];

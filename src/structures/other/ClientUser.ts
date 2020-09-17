@@ -31,14 +31,17 @@ export class ClientUser extends User {
    * @param data The new username or avatar to update the current user with.
    */
   public async update(data: ClientUserUpdate = {}): Promise<this> {
-    const _data = await this.client.api.patch<RESTPatchAPICurrentUserResult>("/users/@me", {
-      body: {
-        ...data,
-        avatar: data.avatar
-          ? await ImageResolver.resolveImage(data.avatar)
-          : data.avatar
+    const _data = await this.client.api.patch<RESTPatchAPICurrentUserResult>(
+      "/users/@me",
+      {
+        body: {
+          ...data,
+          avatar: data.avatar
+            ? await ImageResolver.resolveImage(data.avatar)
+            : data.avatar,
+        },
       }
-    });
+    );
 
     return this._patch(_data);
   }
@@ -48,4 +51,3 @@ export interface ClientUserUpdate {
   username?: string;
   avatar?: ImageResolvable | null;
 }
-

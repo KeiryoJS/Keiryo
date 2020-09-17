@@ -21,6 +21,6 @@ export class CategoryChannel extends GuildChannel {
    * @returns {Collection<string, GuildChannel>}
    */
   public get children(): Collection<string, GuildChannel> {
-    return this.guild.channels.filter(c => c.parentId === this.id);
+    return this.guild.channels.filter((c) => c.parentId === this.id);
   }
 }

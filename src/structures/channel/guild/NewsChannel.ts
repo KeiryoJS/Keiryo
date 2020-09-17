@@ -21,18 +21,22 @@ export class NewsChannel extends GuildTextChannel {
    * @param {string | GuildTextChannel} channel The channel to cross-post to.
    * @returns {FollowedChannel} The follow result.
    */
-  public async follow(channel: string | GuildTextChannel): Promise<FollowedChannel> {
-    const data = await this.client.api.post<APIFollowedChannel>(`/channels/${this.id}/followers`, {
-      body: {
-        webhook_channel_id: channel instanceof GuildTextChannel
-          ? channel.id
-          : channel
+  public async follow(
+    channel: string | GuildTextChannel
+  ): Promise<FollowedChannel> {
+    const data = await this.client.api.post<APIFollowedChannel>(
+      `/channels/${this.id}/followers`,
+      {
+        body: {
+          webhook_channel_id:
+            channel instanceof GuildTextChannel ? channel.id : channel,
+        },
       }
-    });
+    );
 
     return {
       channelId: data.channel_id,
-      webhookId: data.webhook_id
+      webhookId: data.webhook_id,
     };
   }
 
@@ -42,12 +46,12 @@ export class NewsChannel extends GuildTextChannel {
    * @returns {Promise<Message>} The cross-posted message.
    */
   public async crosspost(message: string | Message): Promise<Message> {
-    const id = message instanceof Message
-      ? message.id
-      : message;
+    const id = message instanceof Message ? message.id : message;
 
-    const data = await this.client.api.post(`/channels/${this.id}/messages/${id}/crosspost`);
-    return data as Message; // todo: add result to the messages manager.
+    const data = await this.client.api.post(
+      `/channels/${this.id}/messages/${id}/crosspost`
+    );
+    return this.messages["_add"](data);
   }
 
   /**
@@ -55,18 +59,23 @@ export class NewsChannel extends GuildTextChannel {
    * @param {ModifyGuildChannel} data The data to modify the channel with.
    * @param {string} [reason] The reason to provide.
    */
-  public async modify(data: ModifyGuildTextChannel, reason?: string): Promise<this> {
-    return super.modify({
-      name: data.name,
-      position: data.position,
-      permissionOverwrites: data.permissionOverwrites,
-      topic: data.topic,
-      type: data.type,
-      nsfw: data.nsfw,
-      parent_id: data.parent instanceof CategoryChannel
-        ? data.parent.id
-        : data.parent
-    }, reason);
+  public async modify(
+    data: ModifyGuildTextChannel,
+    reason?: string
+  ): Promise<this> {
+    return super.modify(
+      {
+        name: data.name,
+        position: data.position,
+        permissionOverwrites: data.permissionOverwrites,
+        topic: data.topic,
+        type: data.type,
+        nsfw: data.nsfw,
+        parent_id:
+          data.parent instanceof CategoryChannel ? data.parent.id : data.parent,
+      },
+      reason
+    );
   }
 }
 

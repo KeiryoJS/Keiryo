@@ -14,10 +14,12 @@ export abstract class ImageResolver {
    * @param buffer
    */
   public static isJpg(buffer: Buffer): boolean {
-    return buffer.length > 3
-      && buffer[0] === 0xFF
-      && buffer[1] === 0xD8
-      && buffer[2] === 0xFF;
+    return (
+      buffer.length > 3 &&
+      buffer[0] === 0xff &&
+      buffer[1] === 0xd8 &&
+      buffer[2] === 0xff
+    );
   }
 
   /**
@@ -25,15 +27,17 @@ export abstract class ImageResolver {
    * @param buffer
    */
   public static isPng(buffer: Buffer): boolean {
-    return buffer.length > 8
-      && buffer[0] === 0x89
-      && buffer[1] === 0x50
-      && buffer[2] === 0x4E
-      && buffer[3] === 0x47
-      && buffer[4] === 0x0D
-      && buffer[5] === 0x0A
-      && buffer[6] === 0x1A
-      && buffer[7] === 0x0A;
+    return (
+      buffer.length > 8 &&
+      buffer[0] === 0x89 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x4e &&
+      buffer[3] === 0x47 &&
+      buffer[4] === 0x0d &&
+      buffer[5] === 0x0a &&
+      buffer[6] === 0x1a &&
+      buffer[7] === 0x0a
+    );
   }
 
   /**
@@ -41,15 +45,17 @@ export abstract class ImageResolver {
    * @param buffer
    */
   public static isWebp(buffer: Buffer): boolean {
-    return buffer.length > 12
-      && buffer[0] === 0x52
-      && buffer[1] === 0x49
-      && buffer[2] === 0x46
-      && buffer[3] === 0x46
-      && buffer[8] === 0x57
-      && buffer[9] === 0x45
-      && buffer[10] === 0x42
-      && buffer[11] === 0x50;
+    return (
+      buffer.length > 12 &&
+      buffer[0] === 0x52 &&
+      buffer[1] === 0x49 &&
+      buffer[2] === 0x46 &&
+      buffer[3] === 0x46 &&
+      buffer[8] === 0x57 &&
+      buffer[9] === 0x45 &&
+      buffer[10] === 0x42 &&
+      buffer[11] === 0x50
+    );
   }
 
   /**
@@ -57,13 +63,15 @@ export abstract class ImageResolver {
    * @param buffer
    */
   public static isGif(buffer: Buffer): boolean {
-    return buffer.length > 6
-      && buffer[0] === 0x47
-      && buffer[1] === 0x49
-      && buffer[2] === 0x46
-      && buffer[3] === 0x38
-      && buffer[4] === 0x39
-      && buffer[5] === 0x61;
+    return (
+      buffer.length > 6 &&
+      buffer[0] === 0x47 &&
+      buffer[1] === 0x49 &&
+      buffer[2] === 0x46 &&
+      buffer[3] === 0x38 &&
+      buffer[4] === 0x39 &&
+      buffer[5] === 0x61
+    );
   }
 
   /**
@@ -104,7 +112,8 @@ export abstract class ImageResolver {
     }
 
     if (Buffer.isBuffer(resource)) return resource;
-    else if (/^https?:\/\//.test(resource)) return (await make(resource)).buffer;
+    else if (/^https?:\/\//.test(resource))
+      return (await make(resource)).buffer;
     else if (existsSync(resource)) return fs.readFile(resource);
     return Buffer.from(resource);
   }
@@ -119,11 +128,11 @@ export abstract class ImageResolver {
   }
 }
 
-export type ImageResolvable = Buffer | Readable | string
+export type ImageResolvable = Buffer | Readable | string;
 
 export enum ImageFormats {
   WEBP = "image/webp",
   GIF = "image/gif",
   PNG = "image/png",
-  JPEG = "image/jpeg"
+  JPEG = "image/jpeg",
 }

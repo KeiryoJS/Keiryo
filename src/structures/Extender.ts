@@ -5,7 +5,6 @@
  */
 
 import { Extender } from "@neocord/utils";
-
 import { WelcomeChannel } from "./guild/welcome/WelcomeChannel";
 import { WelcomeScreen } from "./guild/welcome/WelcomeScreen";
 import { Guild } from "./guild/Guild";
@@ -23,10 +22,13 @@ import { CategoryChannel } from "./channel/guild/CategoryChannel";
 import { VoiceChannel } from "./channel/guild/VoiceChannel";
 import { NewsChannel } from "./channel/guild/NewsChannel";
 import { StoreChannel } from "./channel/guild/StoreChannel";
+import { Ban } from "./guild/Ban";
+import { Channel } from "./channel/Channel";
 
 const structures = {
   WelcomeChannel,
   WelcomeScreen,
+  Ban,
   Guild,
   Invite,
   Member,
@@ -37,13 +39,15 @@ const structures = {
   User,
 
   CategoryChannel,
-  GuildChannel: GuildChannel as any,
+  GuildChannel,
   NewsChannel,
   StoreChannel,
   VoiceChannel,
   TextChannel,
   DMChannel,
+  Channel,
 };
 
+// @ts-expect-error
 export const neo = Extender.Immutable(structures);
 export type Structures = typeof structures;

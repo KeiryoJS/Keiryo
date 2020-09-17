@@ -19,6 +19,7 @@ export default class GUILD_CREATE extends Handler<GatewayGuildCreateDispatch> {
 
     const unavailable = guild.unavailable;
     guild["_patch"](data.d);
-    if (unavailable && !guild.unavailable) this.client.emit(ClientEvent.GuildAvailable, guild);
+    if (unavailable && !guild.unavailable)
+      this.client.emit(ClientEvent.GuildAvailable, guild);
   }
 }
