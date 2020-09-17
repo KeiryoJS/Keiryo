@@ -39,12 +39,12 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@neocord/gateway@1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@neocord/gateway/-/gateway-1.0.6.tgz#2ff2e1906599ee66dc7dd6c27a05341929f4ca1c"
-  integrity sha512-4WHjkPU8w5J84iV5jPB8wWePWe5rYN2bcd2J8QleuZ+Kbwck/X98C9R578DO7MnjdzJc4pg99nKSmE0JVWgi+w==
+"@neocord/gateway@1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@neocord/gateway/-/gateway-1.0.7.tgz#eee1e0dab88ca0e3a569111999f6fb774079fe7f"
+  integrity sha512-lJJ+puploT3lXf3nk2jVm0L1rTFsIc16pu+cGuzAEOVL7u/6jzzanZnLkMzRPmCwHYa9E+Chjlkmr4zFEuTZiQ==
   dependencies:
-    "@neocord/utils" "^1.0.10"
+    "@neocord/utils" "^1.0.11"
     rikuesuto "^1.0.3"
     ws "^7.3.1"
 
@@ -62,6 +62,11 @@
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.10.tgz#95c6ccac19e38764f9b953454ccbe6387a10e43c"
   integrity sha512-ySDcxsMuWjAJy0j6HQE9OYmsHFpdjkYQWB2c/ruo3gwsLeScjL6c6aWN8FdfT2z/GQ/Yo1U6TmiXmuRVe519bw==
+
+"@neocord/utils@^1.0.11":
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.11.tgz#5c296d78e9cf0404e490f76fdd0071c5f4f8c0ec"
+  integrity sha512-T/s+WkI2/6agiFTNHA4YAO9Lbr2FuDcCMU0K4kg2SPSvm4r37zSGzSe2ZGIQynd/cV7EQmcLubnr9iaCJ8dscA==
 
 "@nodelib/fs.scandir@2.1.3":
   version "2.1.3"
