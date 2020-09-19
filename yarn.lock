@@ -39,11 +39,7 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-<<<<<<< HEAD
 "@neocord/gateway@^1.0.9":
-=======
-"@neocord/gateway@1.0.9":
->>>>>>> 12cf5fb2428b13253acfd6c4f95c203ba6fc73f4
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@neocord/gateway/-/gateway-1.0.9.tgz#94f9de1a309633619017e2927b5b9b2341201b06"
   integrity sha512-pNpYls8mM6sSpm3JR4FA5NLS0jikTatn8QplUFg6gWt7E0DQ2SaaSXNbO3TLuRYMTpdPfRTTSBk0L0LowbrtfA==
@@ -63,11 +59,6 @@
     rikuesuto "^1.0.4"
 
 "@neocord/utils@^1.0.12", "@neocord/utils@^1.0.7":
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.12.tgz#735c15b62bfc952e10804e8df92f2cd8cbfff69a"
-  integrity sha512-ms4PxWoOzuT602kX1RCh8udcPSjE+iF7ZGRvdYeTqIozUPlzcgxHeGGQW2raHlYLCdisPXLZinza+TubCmIi6w==
-
-"@neocord/utils@^1.0.12":
   version "1.0.12"
   resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.12.tgz#735c15b62bfc952e10804e8df92f2cd8cbfff69a"
   integrity sha512-ms4PxWoOzuT602kX1RCh8udcPSjE+iF7ZGRvdYeTqIozUPlzcgxHeGGQW2raHlYLCdisPXLZinza+TubCmIi6w==
@@ -375,10 +366,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-discord-api-types@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.4.0.tgz#7b2d5e49fa4429e72b17bb5e4825e7c872a39e97"
-  integrity sha512-V8yUa58BnjPRmLVVtKUo6AoSU60VhBmjwym2kVTOA6F6M62iBdZTyU1M1QfTGWnypNkVFFMHL3L9JTrPpTIE6A==
+discord-api-types@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.5.0.tgz#de49a6cb92b0a7b739cc7473a47dd3236aa89555"
+  integrity sha512-KaEpt4FWkbCIfXhexvWMloKbemwv2BX9m6ZGSkjzfoKYVWLv4lBgHuDzIB4No5QenGd/NElKN+V/1hcrz2XKeQ==
 
 doctrine@^3.0.0:
   version "3.0.0"
