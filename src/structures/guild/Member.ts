@@ -6,58 +6,76 @@
 
 import { Base } from "../Base";
 import { BanOptions, MemberRoleManager } from "../../managers";
-import { Permissions } from "../../util";
+import { DiscordStructure, Permissions } from "../../util";
 
 import type { APIGuildMember } from "discord-api-types/default";
 import type { Guild } from "./Guild";
 import type { User } from "../other/User";
 import type { VoiceState } from "./VoiceState";
 import type { GuildChannel } from "../channel/guild/GuildChannel";
+import type { Presence } from "./Presence";
 
 export class Member extends Base {
+  public readonly structureType = DiscordStructure.Member;
+
   /**
    * The ID of this member.
+   * @type {string}
    */
   public readonly id: string;
 
   /**
    * The guild this member belongs to.
+   * @type {Guild}
    */
   public readonly guild: Guild;
 
   /**
    * The roles that belong to this member.
+   * @type {MemberRoleManager}
    */
   public readonly roles: MemberRoleManager;
 
   /**
    * This users guild nickname.
+   * @type {string | null}
    */
   public nickname!: string | null;
 
   /**
    * When the user joined the guild.
+   * @type {number}
    */
   public joinedTimestamp!: number;
 
   /**
    * When the user started boosting the guild.
+   * @type {number | null}
    */
   public boostedTimestamp!: number | null;
 
   /**
-   * Whether the user is muted in voice channels
+   * Whether the user is muted in voice channels.
+   * @type {boolean}
    */
   public deaf!: boolean;
 
   /**
-   * Whether the user is deafened in voice channels
+   * Whether the user is deafened in voice channels.
+   * @type {boolean}
    */
   public mute!: boolean;
 
   /**
-   * @param guild
-   * @param data
+   * Whether this member has been deleted.
+   * @type {boolean}
+   */
+  public deleted = false;
+
+  /**
+   * Creates a new instanceof Member
+   * @param {Guild} guild
+   * @param {APIGuildMember} data
    */
   public constructor(guild: Guild, data: APIGuildMember) {
     super(guild.client);
@@ -68,7 +86,16 @@ export class Member extends Base {
   }
 
   /**
+   * The presence of this member.
+   * @type {Presence | null}
+   */
+  public get presence(): Presence | null {
+    return this.guild.presences.get(this.id) ?? null;
+  }
+
+  /**
    * The user that this guild member represents.
+   * @type {User}
    */
   public get user(): User {
     return this.client.users.get(this.id) as User;
@@ -76,8 +103,9 @@ export class Member extends Base {
 
   /**
    * The calculated permissions from the member's roles.
+   * @type {Permissions}
    */
-  public get permissions() {
+  public get permissions(): Permissions {
     if (this.id === this.guild.ownerId)
       return new Permissions(Permissions.ALL).freeze();
 
@@ -90,6 +118,7 @@ export class Member extends Base {
 
   /**
    * The displayed name for this guild member.
+   * @type {string}
    */
   public get displayName(): string {
     return this.nickname ?? this.user.username;
@@ -97,6 +126,7 @@ export class Member extends Base {
 
   /**
    * The {@link VoiceState voice state} of this member.
+   * @type {VoiceState | null}
    */
   public get voice(): VoiceState | null {
     return this.guild.voiceStates.get(this.id) ?? null;
@@ -104,6 +134,7 @@ export class Member extends Base {
 
   /**
    * The mention string for this member.
+   * @type {string}
    */
   public get mention(): string {
     return `<@${this.nickname ? "!" : ""}${this.id}>`;
@@ -111,6 +142,7 @@ export class Member extends Base {
 
   /**
    * The string representation of this member.
+   * @type {string}
    */
   public toString(): string {
     return this.mention;
@@ -120,6 +152,7 @@ export class Member extends Base {
    * Checks permissions for this member in a given channel.
    * @param {GuildChannel} channel The guild channel.
    * @param {boolean} [guildScope]
+   * @type {Readonly<Permissions>}
    */
   public permissionsIn(
     channel: GuildChannel,
@@ -175,6 +208,7 @@ export class Member extends Base {
 
   /**
    * Updates this guild member from the discord gateway/api.
+   * @param {APIGuildMember} data
    * @protected
    */
   protected _patch(data: APIGuildMember): this {

@@ -13,27 +13,31 @@ import type { GuildTextChannel } from "./guild/GuildTextChannel";
 export class Typing {
   /**
    * The client instance.
+   * @type {Client}
    */
   public readonly client: Client;
 
   /**
    * The channel instance.
+   * @type {DMChannel | GuildTextChannel}
    */
   public readonly channel: DMChannel | GuildTextChannel;
 
   /**
    * The interval typing counter.
+   * @type {number}
    */
   private _count = 0;
 
   /**
    * The interval to send typing requests.
+   * @type {NodeJS.Timeout | null}
    */
   private _interval: NodeJS.Timeout | null = null;
 
   /**
    * Creates a new instanceof Typing.
-   * @param {CanTypeIn} channel The channel instance.
+   * @param {DMChannel | GuildTextChannel} channel The channel instance.
    */
   public constructor(channel: DMChannel | GuildTextChannel) {
     this.client = channel.client;

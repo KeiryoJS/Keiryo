@@ -19,6 +19,7 @@ import type { VoiceChannel } from "./guild/VoiceChannel";
 export abstract class Channel extends SnowflakeBase {
   /**
    * The types of channel mapped to extender keys.
+   * @type {Map<ChannelType, string>}
    * @private
    */
   private static readonly types = new Map<ChannelType, keyof Structures>([
@@ -31,19 +32,23 @@ export abstract class Channel extends SnowflakeBase {
     [ChannelType.GUILD_VOICE, "VoiceChannel"],
     [ChannelType.GUILD_NEWS, "NewsChannel"],
   ]);
+
   /**
    * The ID of this channel.
+   * @type {string}
    */
   public readonly id: string;
+
   /**
    * The typeof channel this is.
+   * @type {ChannelType}
    */
   public abstract readonly type: ChannelType;
 
   /**
    * Creates a new instanceof Channel.
-   * @param client The client instance.
-   * @param data The data from the api.
+   * @param {Client} client The client instance.
+   * @param {APIChannel} data The data from the api.
    */
   public constructor(client: Client, data: APIChannel) {
     super(client);
@@ -54,6 +59,7 @@ export abstract class Channel extends SnowflakeBase {
 
   /**
    * The REST api endpoint for this channel.
+   * @type {string}
    */
   public get endpoint(): string {
     return `/channels/${this.id}`;
@@ -61,9 +67,9 @@ export abstract class Channel extends SnowflakeBase {
 
   /**
    * Creates a new channel.
-   * @param  {Client} client The client instance.
-   * @param data
-   * @param args
+   * @param {Client} client The client instance.
+   * @param {APIChannel} data The channel data from discord.
+   * @param {...*} args The arguments to pass.
    */
   public static create<T extends Channel>(
     client: Client,

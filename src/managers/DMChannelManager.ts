@@ -7,6 +7,7 @@
 import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
 import { Channel } from "../structures/channel/Channel";
+import { DiscordStructure } from "../util";
 
 import type { APIChannel } from "discord-api-types";
 import type { DMChannel } from "../structures/channel/DMChannel";
@@ -24,9 +25,10 @@ export class DMChannelManager extends BaseManager<DMChannel> {
 
   /**
    * The total amount of dm channels that can be cached at one point in time.
+   * @type {number}
    */
-  public get limit(): number {
-    return Infinity;
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.DMChannel) ?? Infinity;
   }
 
   /**
@@ -61,6 +63,7 @@ export class DMChannelManager extends BaseManager<DMChannel> {
 
   /**
    * Adds a new DM channel to this manager.
+   * @param {APIChannel} data
    * @protected
    */
   protected _add(data: APIChannel): DMChannel {

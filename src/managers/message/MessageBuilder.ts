@@ -4,7 +4,7 @@
 
 import { array } from "@neocord/utils";
 
-import type { APIEmbed } from "discord-api-types";
+import type { APIEmbed, MessageFlags } from "discord-api-types";
 import type { File, RequestData } from "@neocord/rest";
 import type { Embed } from "../../structures/other/Embed";
 
@@ -23,9 +23,9 @@ export class MessageBuilder {
 
   /**
    * Creates a new instanceof MessageBuilder.
-   * @param {MessageOptions} data The data to pre-define.
+   * @param {MessageOptions | MessageEditOptions} data The data to pre-define.
    */
-  public constructor(data: MessageOptions = {}) {
+  public constructor(data: MessageOptions | MessageEditOptions = {}) {
     this.body = Object.assign(
       {
         allowed_mentions: {
@@ -37,7 +37,7 @@ export class MessageBuilder {
       data
     );
 
-    this.files = data.files ?? [];
+    this.files = "files" in data ? data.files ?? [] : [];
   }
 
   /**
@@ -61,6 +61,7 @@ export class MessageBuilder {
   /**
    * Sets the nonce of this message
    * @param {string | number} [nonce] The nonce to set
+   * @returns {MessageBuilder}
    */
   public nonce(nonce?: number | string): MessageBuilder {
     this.body.nonce = nonce;
@@ -70,6 +71,7 @@ export class MessageBuilder {
   /**
    * Adds a message attachment to this message
    * @param {File | File[]} file The attachment
+   * @returns {MessageBuilder}
    */
   public attach(file: File | File[]): MessageBuilder {
     this.files.push(...array(file));
@@ -79,6 +81,7 @@ export class MessageBuilder {
   /**
    * Change whether this message will have text-to-speech.
    * @param {boolean} [tts] The tts of this message
+   * @returns {MessageBuilder}
    */
   public tts(tts = !this.body.tts): MessageBuilder {
     this.body.tts = tts;
@@ -87,6 +90,7 @@ export class MessageBuilder {
 
   /**
    * Makes @everyone and @here actually ping people.
+   * @returns {MessageBuilder}
    */
   public parseEveryone(): MessageBuilder {
     this.body.allowed_mentions.parse.push("everyone");
@@ -96,6 +100,7 @@ export class MessageBuilder {
   /**
    * Allow specific users to be mentioned.
    * @param {...string} users user The {@link User user}s you want to mention.
+   * @returns {MessageBuilder}
    */
   public parseUsers(...users: string[]): MessageBuilder {
     if (users.length) this.body.allowed_mentions.users.push(...users);
@@ -106,6 +111,7 @@ export class MessageBuilder {
   /**
    * Allow specific roles to be pinged.
    * @param {...string} roles The {@link Role role}s you want to mention.
+   * @returns {MessageBuilder}
    */
   public parseRoles(...roles: string[]): MessageBuilder {
     if (roles.length) this.body.allowed_mentions.roles.push(...roles);
@@ -115,7 +121,8 @@ export class MessageBuilder {
 
   /**
    * Splits the message into chunks
-   * @param options
+   * @param {SplitOptions} [options]
+   * @returns {RequestData[]}
    */
   public split(options: SplitOptions = {}): RequestData[] {
     if (!this.body.content) return [this];
@@ -132,7 +139,7 @@ export class MessageBuilder {
 
   /**
    * Internal shared method to split the content by.
-   * @param options
+   * @param {SplitOptions} [options]
    */
   protected _split({
     maxLength = 2000,
@@ -180,6 +187,12 @@ export interface MessageData {
   nonce?: number | string;
   tts?: boolean;
   allowed_mentions?: Required<AllowedMentions>;
+}
+
+export interface MessageEditOptions {
+  content?: string | null;
+  embed?: APIEmbed | null;
+  flags?: MessageFlags;
 }
 
 export interface AllowedMentions {

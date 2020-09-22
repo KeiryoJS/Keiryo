@@ -11,7 +11,8 @@ import { existsSync, promises as fs } from "fs";
 export abstract class ImageResolver {
   /**
    * Whether a buffer is of the jpeg format.
-   * @param buffer
+   * @param {Buffer} buffer
+   * @returns {boolean}
    */
   public static isJpg(buffer: Buffer): boolean {
     return (
@@ -24,7 +25,8 @@ export abstract class ImageResolver {
 
   /**
    * Whether a buffer is of the png format.
-   * @param buffer
+   * @param {Buffer} buffer
+   * @returns {boolean}
    */
   public static isPng(buffer: Buffer): boolean {
     return (
@@ -42,7 +44,8 @@ export abstract class ImageResolver {
 
   /**
    * Whether a buffer is of the webp format.
-   * @param buffer
+   * @param {Buffer} buffer
+   * @returns {boolean}
    */
   public static isWebp(buffer: Buffer): boolean {
     return (
@@ -60,7 +63,8 @@ export abstract class ImageResolver {
 
   /**
    * Whether a buffer is of the gif format
-   * @param buffer
+   * @param {Buffer} buffer
+   * @returns {boolean}
    */
   public static isGif(buffer: Buffer): boolean {
     return (
@@ -76,7 +80,8 @@ export abstract class ImageResolver {
 
   /**
    * Get the image format of a buffer.
-   * @param buffer
+   * @param {Buffer} buffer
+   * @returns {ImageFormats | null}
    */
   public static getImageFormat(buffer: Buffer): ImageFormats | null {
     if (this.isGif(buffer)) return ImageFormats.GIF;
@@ -87,7 +92,9 @@ export abstract class ImageResolver {
   }
 
   /**
-   * @param data
+   * Resolves a buffer into a base64 string.
+   * @param {Buffer | string} data
+   * @returns {string}
    */
   public static resolveBase64(data: Buffer | string): string {
     if (Buffer.isBuffer(data)) {
@@ -99,7 +106,9 @@ export abstract class ImageResolver {
   }
 
   /**
-   * @param resource
+   * Resolves a file.
+   * @param {ImageResolvable} resource
+   * @returns {Promise<Buffer>}
    */
   public static async resolveFile(resource: ImageResolvable): Promise<Buffer> {
     if (resource instanceof Readable) {
@@ -120,7 +129,8 @@ export abstract class ImageResolver {
 
   /**
    * Resolve an image into a base64
-   * @param data
+   * @param {ImageResolvable} data
+   * @returns {Promise<string>}
    */
   public static async resolveImage(data: ImageResolvable): Promise<string> {
     const file = await this.resolveFile(data);

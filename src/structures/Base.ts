@@ -5,35 +5,58 @@
  */
 
 import type { Client } from "../lib";
+import type { DiscordStructure } from "../util";
 
 export abstract class Base {
   /**
-   * The client instance.
-   */
-  public readonly client: Client;
-
-  /**
    * The ID of this instance.
+   * @type {string}
    */
   public abstract readonly id: string;
 
   /**
+   * The typeof discord structure this is.
+   * @type {DiscordStructure}
+   */
+  public abstract readonly structureType: DiscordStructure;
+
+  /**
+   * The client instance.
+   * @type {Client}
+   */
+  private readonly _client!: Client;
+
+  /**
    * Creates a new instance of Base.
-   * @param client The client instance.
+   * @param {Client} client The client instance.
    */
   protected constructor(client: Client) {
-    this.client = client;
+    Object.defineProperty(this, "_client", {
+      value: client,
+      writable: false,
+      configurable: false,
+    });
+  }
+
+  /**
+   * The client instance.
+   * @type {Client}
+   */
+  public get client(): Client {
+    return this._client;
   }
 
   /**
    * Clones this instance.
+   * @returns {Base}
    */
   public clone(): this {
     return Object.assign(Object.create(this), this);
   }
 
   /**
-   * Get the JSON representation of this instance.4
+   * Get the JSON representation of this instance.
+   * @returns {Dictionary}
    */
   public toJSON(): Dictionary {
     const dict: Dictionary = {};
@@ -45,6 +68,7 @@ export abstract class Base {
   }
 
   /**
+   * @param {...*} [data]
    * @protected
    */
   protected _patch(...data: unknown[]): this {

@@ -9,6 +9,7 @@ import { neo } from "../structures/Extender";
 
 import type { VoiceState } from "../structures/guild/VoiceState";
 import type { Guild } from "../structures/guild/Guild";
+import { DiscordStructure } from "../util";
 
 export class VoiceStateManager extends BaseManager<VoiceState> {
   /**
@@ -31,8 +32,7 @@ export class VoiceStateManager extends BaseManager<VoiceState> {
    * The amount of voice states that can be cached at one time.
    * @type {number}
    */
-  public get limit(): number {
-    // todo: get voice state limit from the client.
-    return Infinity;
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.VoiceState) ?? Infinity;
   }
 }

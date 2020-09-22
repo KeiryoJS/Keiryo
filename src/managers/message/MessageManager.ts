@@ -9,7 +9,7 @@ import { BaseManager, BaseResolvable } from "../BaseManager";
 import { MessageBuilder, MessageOptions } from "./MessageBuilder";
 import { neo } from "../../structures";
 import { Embed } from "../../structures/other/Embed";
-import { makeSafeQuery } from "../../util";
+import { DiscordStructure, makeSafeQuery } from "../../util";
 
 import type { Message } from "../../structures/message/Message";
 import type { RequestData } from "@neocord/rest";
@@ -35,9 +35,10 @@ export class MessageManager extends BaseManager<Message> {
 
   /**
    * The total amount of messages that can be cached at one point in time.
+   * @type {number}
    */
-  public get limit(): number {
-    return Infinity;
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.Message) ?? Infinity;
   }
 
   /**
@@ -83,60 +84,67 @@ export class MessageManager extends BaseManager<Message> {
 
   /**
    * Creates a new message.
-   * @param {Embed} embed The embed to send.
-   * @param {MessageOptions} [options] The message options.
-   * @returns {Promise<Message[]>} The created messages.
+   * @param {MessageOptions} options The message options.
    */
-  public new(
-    embed: Embed,
-    options?: Omit<MessageOptions, "embed">
-  ): Promise<Message[]>;
+  public new(options: MessageOptions): Promise<Message[]>;
 
   /**
-   * Creates a new message.
-   * @param {string} content The content to send.
-   * @param {MessageOptions} [options] The message options.
-   * @returns {Promise<Message[]>} The created messages.
+   * Creates a new message in this channel.
+   * @param {MessageAdd} content The message content or builder.
+   * @param {MessageOptions} [options] The message options, only when not using the message builder.
+   * @returns {Message[]}
    */
-  public new(
-    content: string,
-    options?: Omit<MessageOptions, "content">
+  public async new(
+    content: MessageAdd,
+    options?: MessageOptions
   ): Promise<Message[]>;
 
   /**
    * Creates a new message in this channel.
-   * @param {*} content The first parameter.
-   * @param {*} options The second parameter
+   * @param {MessageAdd} content The message content or builder.
+   * @param {MessageOptions} [options] The message options, only when not using the message builder.
+   * @returns {Message[]}
    */
-  public new(
-    content: string | Embed | Builder | MessageBuilder,
-    options?: MessageOptions
-  ): Promise<Message[]>;
-
   public async new(
-    p1: string | Embed | Builder | MessageBuilder,
-    p2?: MessageOptions
+    content: MessageAdd,
+    options?: MessageOptions
   ): Promise<Message[]> {
-    const finish = async (split: RequestData[]) => {
-      const ep = `/channels/${this.channel.id}/messages`;
-      const messages = await Promise.all(
-        split.map((d) => this.client.api.post<APIMessage[]>(ep, d))
-      );
-      return messages.map((m) => this._add(m));
-    };
+    const split = await this.resolveMessageData(content, options);
 
-    if (p1 instanceof MessageBuilder) return finish(p1.split());
-    if (typeof p1 === "function") {
-      const builder = await p1(new MessageBuilder());
+    const ep = `/channels/${this.channel.id}/messages`;
+    const messages = await Promise.all(
+      split.map((d) => this.client.api.post<APIMessage[]>(ep, d))
+    );
+
+    return messages.map((m) => this._add(m));
+  }
+
+  /**
+   * Resolves user message parameters into api messages.
+   * @param {MessageAdd} content The message content or builder
+   * @param {MessageOptions} options The message options.
+   */
+  public async resolveMessageData(
+    content: MessageAdd,
+    options?: MessageOptions
+  ): Promise<RequestData[]> {
+    if (content instanceof MessageBuilder) return content.split();
+    if (typeof content === "function") {
+      const builder = await content(new MessageBuilder());
       if (!builder)
         throw new Error("Builder function must return the Message Builder.");
-      return finish(builder.split());
+      return builder.split();
     }
 
-    const builder = new MessageBuilder(p2);
-    p1 instanceof Embed ? builder.embed(p1) : builder.content(p1);
+    let builder = new MessageBuilder(options);
 
-    return finish(builder.split());
+    if (content instanceof Embed) builder.embed(content);
+    else if (typeof content === "object") {
+      const data = options ? Object.assign(content, options) : content;
+      builder = new MessageBuilder(data);
+    } else builder.content(content);
+
+    return builder.split();
   }
 
   /**
@@ -238,6 +246,13 @@ export type Builder = (
 
 export type MessageResolvable = BaseResolvable<Message>;
 
+export type MessageAdd =
+  | string
+  | Embed
+  | Builder
+  | MessageBuilder
+  | MessageOptions;
+
 export interface BulkDeleteOptions {
   filterOld?: boolean;
   reason?: string;
@@ -247,7 +262,6 @@ export interface MessageFetchOptions {
   around?: string;
   before?: string;
   after?: string;
-
   limit?: number;
 }
 

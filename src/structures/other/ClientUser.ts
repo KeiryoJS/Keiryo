@@ -12,7 +12,7 @@ import type { RESTPatchAPICurrentUserResult } from "discord-api-types/default";
 export class ClientUser extends User {
   /**
    * Set the username of the current user.
-   * @param username The new username.
+   * @param {string} username The new username.
    */
   public setUsername(username: string): Promise<this> {
     return this.update({ username });
@@ -20,7 +20,7 @@ export class ClientUser extends User {
 
   /**
    * Update the current users avatar.
-   * @param avatar The avatar to update the current one with.
+   * @param {ImageResolvable | null} avatar The avatar to update the current one with.
    */
   public setAvatar(avatar: ImageResolvable | null): Promise<this> {
     return this.update({ avatar });
@@ -28,7 +28,7 @@ export class ClientUser extends User {
 
   /**
    * Updates the current user.
-   * @param data The new username or avatar to update the current user with.
+   * @param {ClientUserUpdate} data The new username or avatar to update the current user with.
    */
   public async update(data: ClientUserUpdate = {}): Promise<this> {
     const _data = await this.client.api.patch<RESTPatchAPICurrentUserResult>(

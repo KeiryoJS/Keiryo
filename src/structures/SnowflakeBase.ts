@@ -5,11 +5,12 @@
  */
 
 import { Base } from "./Base";
-import { Snowflake } from "@neocord/utils";
+import { DeconstructedSnowflake, Snowflake } from "@neocord/utils";
 
 export abstract class SnowflakeBase extends Base {
   /**
    * The date when this object was created.
+   * @type {Date}
    */
   public get createdAt(): Date {
     return new Date(this.createdTimestamp);
@@ -17,15 +18,17 @@ export abstract class SnowflakeBase extends Base {
 
   /**
    * The time when this object was created.
+   * @type {number}
    */
   public get createdTimestamp(): number {
-    return new Snowflake(this.id).timestamp;
+    return Snowflake.deconstruct(this.id).timestamp;
   }
 
   /**
    * The snowflake data.
+   * @type {Snowflake}
    */
-  public get snowflake(): Snowflake {
-    return new Snowflake(this.id);
+  public get snowflake(): DeconstructedSnowflake {
+    return Snowflake.deconstruct(this.id);
   }
 }

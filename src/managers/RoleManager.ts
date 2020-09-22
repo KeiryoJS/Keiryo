@@ -6,7 +6,7 @@
 
 import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
-import { PermissionResolvable, Permissions } from "../util";
+import { DiscordStructure, PermissionResolvable, Permissions } from "../util";
 
 import type { APIRole, RESTGetAPIGuildRolesResult } from "discord-api-types";
 import type { Role } from "../structures/guild/Role";
@@ -32,10 +32,10 @@ export class RoleManager extends BaseManager<Role> {
 
   /**
    * The total amount roles that can be cached at one time.
-   * @returns {number}
+   * @type {number}
    */
-  public get limit(): number {
-    return Infinity; // TODO: get role limit from the client.
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.Role) ?? Infinity;
   }
 
   /**
@@ -130,6 +130,7 @@ export class RoleManager extends BaseManager<Role> {
 
   /**
    * Adds a new role to this manager.
+   * @param {APIRole} data
    * @private
    */
   protected _add(data: APIRole): Role {

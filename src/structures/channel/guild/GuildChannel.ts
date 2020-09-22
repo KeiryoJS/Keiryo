@@ -28,7 +28,7 @@ export abstract class GuildChannel extends Channel {
    * The permission overwrites that belong to this channel.
    * @type {OverwriteManager}
    */
-  public readonly overwrites: OverwriteManager;
+  public overwrites!: OverwriteManager;
 
   /**
    * The name of this channel.
@@ -64,9 +64,12 @@ export abstract class GuildChannel extends Channel {
     super(client, data);
 
     this.guild = guild ?? (client.guilds.get(data.guild_id as string) as Guild);
-    this.overwrites = new OverwriteManager(this);
   }
 
+  /**
+   * Get the parent category of this channel.
+   * @type {CategoryChannel | null}
+   */
   public get parent(): CategoryChannel | null {
     return this.parentId
       ? this.guild.channels.get<CategoryChannel>(this.parentId) ?? null
@@ -75,8 +78,8 @@ export abstract class GuildChannel extends Channel {
 
   /**
    * Modifies this channel.
-   * @param data The channel modify options.
-   * @param reason The reason for updating this channel.
+   * @param {ModifyGuildChannel} data The channel modify options.
+   * @param {string} [reason] The reason for updating this channel.
    */
   public async modify(
     data: ModifyGuildChannel,
@@ -106,6 +109,7 @@ export abstract class GuildChannel extends Channel {
 
   /**
    * Updates this guild channel with data from the API.
+   * @param {APIChannel} data
    * @protected
    */
   protected _patch(data: APIChannel): this {
@@ -113,6 +117,7 @@ export abstract class GuildChannel extends Channel {
     this.position = data.position;
     this.parentId = data.parent_id ?? null;
 
+    this.overwrites = new OverwriteManager(this);
     if (data.permission_overwrites) {
       const overwrites = data.permission_overwrites ?? [];
       const existingOverwrites = this.overwrites.clone();

@@ -6,8 +6,15 @@
 
 import { GuildChannel } from "./GuildChannel";
 import { ChannelType } from "discord-api-types";
+import { DiscordStructure } from "../../../util";
 
 export class VoiceChannel extends GuildChannel {
+  public readonly structureType = DiscordStructure.GuildChannel;
+
+  /**
+   * The type of this channel.
+   * @type {ChannelType.GUILD_VOICE}
+   */
   public readonly type = ChannelType.GUILD_VOICE;
 
   /**
@@ -24,6 +31,7 @@ export class VoiceChannel extends GuildChannel {
 
   /**
    * Whether the current user can delete this voice channel.
+   * @type {boolean}
    */
   public get deletable(): boolean {
     return !this.deleted;

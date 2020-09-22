@@ -6,7 +6,12 @@
 
 import { APIOverwrite, OverwriteType } from "discord-api-types";
 import { Base } from "../Base";
-import { Permission, PermissionResolvable, Permissions } from "../../util";
+import {
+  DiscordStructure,
+  Permission,
+  PermissionResolvable,
+  Permissions,
+} from "../../util";
 import { Role } from "./Role";
 
 import type { Client } from "../../lib";
@@ -14,6 +19,8 @@ import type { GuildChannel } from "../channel/guild/GuildChannel";
 import type { Guild } from "./Guild";
 
 export class PermissionOverwrite extends Base {
+  public readonly structureType = DiscordStructure.Overwrite;
+
   /**
    * The role or user ID.
    * @type {string}
@@ -34,16 +41,19 @@ export class PermissionOverwrite extends Base {
 
   /**
    * The permissions this overwrite denies.
+   * @type {Readonly<Permissions>}
    */
-  public deny!: Permissions;
+  public deny!: Readonly<Permissions>;
 
   /**
    * The permissions this overwrite allows.
+   * @type {Readonly<Permissions>}
    */
-  public allow!: Permissions;
+  public allow!: Readonly<Permissions>;
 
   /**
    * Whether this permission overwrite has been deleted.
+   * @type {boolean}
    */
   public deleted = false;
 

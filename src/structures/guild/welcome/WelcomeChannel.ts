@@ -12,35 +12,38 @@ import type { GuildTextChannel } from "../../channel/guild/GuildTextChannel";
 export class WelcomeChannel {
   /**
    * The welcome screen.
+   * @type {WelcomeScreen}
    */
   public readonly welcomeScreen: WelcomeScreen;
 
   /**
    * The ID of the channel this welcome channel belongs to.
+   * @type {string}
    */
   public channelId: string;
 
   /**
    * The ID of the emoji used.
+   * @type {string | null}
    */
   public emojiId: string | null;
 
   /**
    * The name of the emoji used.
+   * @type {string | null}
    */
   public emojiName: string | null;
 
   /**
    * Creates a new instanceof WelcomeChannel.
-   * @param welcomeScreen The welcome screen.
-   * @param data The welcome channel data.
+   * @param {WelcomeScreen} welcomeScreen The welcome screen.
+   * @param {APIGuildWelcomeScreenChannel} data The welcome channel data.
    */
   public constructor(
     welcomeScreen: WelcomeScreen,
     data: APIGuildWelcomeScreenChannel
   ) {
     this.welcomeScreen = welcomeScreen;
-
     this.channelId = data.channel_id;
     this.emojiId = data.emoji_id;
     this.emojiName = data.emoji_name;
@@ -48,6 +51,7 @@ export class WelcomeChannel {
 
   /**
    * The guild this welcome channel belongs to.
+   * @type {Guild}
    */
   public get guild(): Guild {
     return this.welcomeScreen.guild;
@@ -55,6 +59,7 @@ export class WelcomeChannel {
 
   /**
    * The channel instance.
+   * @type {GuildTextChannel}
    */
   public get channel(): GuildTextChannel {
     return this.guild.channels.get(this.channelId) as GuildTextChannel;

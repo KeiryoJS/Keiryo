@@ -13,6 +13,7 @@ import type { BaseManager } from "./BaseManager";
 export class ProxyManager<S extends Base> extends ProxyCollection<string, S> {
   /**
    * The client instance.
+   * @type {Client}
    */
   public readonly client: Client;
 

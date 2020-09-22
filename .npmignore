@@ -1,10 +1,13 @@
+.idea/
 .github/
+node_modules/
 src/
-tests/
 
+
+.eslintignore
 .eslintrc.json
+.prettierrc.json
 .gitignore
-renovate.json
-tsconfig.json
 yarn.lock
-yarn-error.log
+tsconfig.json
+renovate.json

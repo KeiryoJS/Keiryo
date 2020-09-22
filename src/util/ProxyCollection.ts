@@ -12,8 +12,8 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
   #keys: K[];
 
   /**
-   * @param store
-   * @param keys
+   * @param {Map<*, *>} store
+   * @param {Array<*>} [keys]
    */
   public constructor(store: Map<K, V>, keys?: K[]) {
     super();
@@ -30,6 +30,7 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Returns the number of keys in this collection.
+   * @type {number}
    */
   public get size(): number {
     return this.#keys.length;
@@ -37,6 +38,7 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Returns the string tag of this instance.
+   * @type {string}
    */
   public get [Symbol.toStringTag](): string {
     return "Map";
@@ -44,7 +46,8 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Get am item from this shared collection.
-   * @param key
+   * @param {any} key
+   * @returns {* | undefined}
    */
   public get(key: K): V | undefined {
     return this.#keys.includes(key) ? this.#store.get(key) : undefined;
@@ -52,7 +55,8 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Whether this shared collections contains a key.
-   * @param key
+   * @param {any} key
+   * @returns {boolean}
    */
   public has(key: K): boolean {
     return this.#keys.includes(key) && this.#store.has(key);
@@ -60,7 +64,8 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Adds a key to the
-   * @param key
+   * @param {any} key
+   * @returns {ProxyCollection}
    */
   public set(key: K): this {
     if (!this.#keys.includes(key) && this.#store.has(key)) this.#keys.push(key);
@@ -69,7 +74,8 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Removes a key from this store.
-   * @param key
+   * @param {any} key
+   * @returns {boolean}
    */
   public delete(key: K): boolean {
     const i = this.#keys.indexOf(key);
@@ -79,6 +85,7 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Clears all keys from this store.
+   * @returns {ProxyCollection}
    */
   public clear(): this {
     this.#keys = [];
@@ -87,8 +94,8 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Executes a provided function for each k/v pair in the store.
-   * @param callbackFn
-   * @param thisArg
+   * @param {Function} callbackFn
+   * @param {any} [thisArg]
    */
   public forEach(
     callbackFn: (value: V, key: K, map: Map<K, V>) => void,
@@ -102,13 +109,15 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Returns a new iterator that contains the k/v pairs for each element in this store.
+   * @returns {IterableIterator}
    */
   public *[Symbol.iterator](): IterableIterator<[K, V]> {
     yield* this.entries();
   }
 
   /**
-   * Returns a new iterator that contains the k/v paris for each element in this store.
+   * Returns a new iterator that contains the k/v pairs for each element in this store.
+   * @returns {IterableIterator}
    */
   public *entries(): IterableIterator<[K, V]> {
     for (const pair of this.#store.entries())
@@ -117,6 +126,7 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Returns a new iterator that contains the keys for each element in this store.
+   * @returns {IterableIterator<*>}
    */
   public *keys(): IterableIterator<K> {
     for (const key of this.#store.keys())
@@ -125,6 +135,7 @@ export class ProxyCollection<K, V> extends Collection<K, V> {
 
   /**
    * Returns a new iterator that contains all the values for each element in this store.
+   * @returns {IterableIterator<*>}
    */
   public *values(): IterableIterator<V> {
     for (const [key, value] of this.#store.entries())

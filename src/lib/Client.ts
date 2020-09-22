@@ -1,12 +1,7 @@
-import {
-  GatewayEvent,
-  ISMEvent,
-  ISMOptions,
-  ShardManager,
-} from "@neocord/gateway";
+import { ISMEvent, ISMOptions, ShardManager } from "@neocord/gateway";
 import { Emitter, Timers } from "@neocord/utils";
 import { API, APIEvent, APIOptions } from "@neocord/rest";
-import { Handlers } from "./handler/Helper";
+import { DataManager, DataOptions } from "./data/DataManager";
 import {
   ChannelManager,
   DMChannelManager,
@@ -20,53 +15,62 @@ import type { Message } from "../structures/message/Message";
 export class Client extends Emitter {
   /**
    * All cached guilds for the current session.
+   * @type {GuildManager}
    */
   public readonly guilds: GuildManager;
 
   /**
    * All cached users for the current session.
+   * @type {UserManager}
    */
   public readonly users: UserManager;
 
   /**
    * All cached channels for the current session.
+   * @type {ChannelManager}
    */
   public readonly channels: ChannelManager;
 
   /**
    * All cached DMs for the current session.
+   * @type {DMChannelManager}
    */
   public readonly dms: DMChannelManager;
 
   /**
    * The current user.
+   * @type {ClientUser?}
    */
   public user?: ClientUser;
 
   /**
    * The token of this client.
+   * @type {string}
    */
   public token!: string;
 
   /**
    * The internal sharding manager for this client.
+   * @type {ShardManager}
    */
   private readonly _ws!: ShardManager;
 
   /**
    * An interface for the discord api and cdn.
+   * @type {API}
    */
   private readonly _api!: API;
 
   /**
-   * Handles the received packets on all shards.
+   * The data manager for this client.
+   * @type {DataManager}
    * @private
    */
-  private readonly _handlers!: Handlers;
+  private readonly _data!: DataManager;
 
   /**
    * Creates a new Client.
-   * @param options
+   * @param {ClientOptions} options The options.
    */
   public constructor(options: ClientOptions = {}) {
     super();
@@ -83,8 +87,8 @@ export class Client extends Emitter {
       configurable: false,
     });
 
-    Object.defineProperty(this, "_handlers", {
-      value: new Handlers(this),
+    Object.defineProperty(this, "_data", {
+      value: new DataManager(this, options.data),
       enumerable: false,
       configurable: false,
     });
@@ -99,6 +103,7 @@ export class Client extends Emitter {
 
   /**
    * The internal sharding manager instance.
+   * @type {ShardManager}
    */
   public get ws(): ShardManager {
     return this._ws;
@@ -106,13 +111,24 @@ export class Client extends Emitter {
 
   /**
    * An interface for the discord api and cdn.
+   * @type {API}
    */
   public get api(): API {
     return this._api;
   }
 
   /**
+   * The data manager for this client.
+   * @type {DataManager}
+   */
+  public get data(): DataManager {
+    return this._data;
+  }
+
+  /**
    * Connects the bot to the discord gateway.
+   * @param {string} [token] The bot token.
+   * @returns {Client}
    */
   public async connect(token: string = this.token): Promise<this> {
     if (!token) throw new Error("Please provide a token.");
@@ -122,7 +138,7 @@ export class Client extends Emitter {
     this._api.token = token;
 
     try {
-      await this._handlers.init();
+      await this._data.init();
       await this._ws.connect();
       return this;
     } catch (e) {
@@ -166,8 +182,10 @@ export class Client extends Emitter {
 
 export type ClientEvents = {
   messageCreate: (message: Message) => void;
+  messageUpdate: (old: Readonly<Message>, updated: Message) => void;
   debug: (message: string) => void;
-} & Record<"ready", () => void>;
+  error: (error: any, message: string | undefined) => void;
+} & Record<"ready" | string, (...args: any[]) => void>;
 
 export interface ClientOptions {
   /**
@@ -181,12 +199,7 @@ export interface ClientOptions {
   rest?: APIOptions;
 
   /**
-   * Options for caching.
+   * Options for data.
    */
-  // caching?: CachingOptions;
-
-  /**
-   * Tracks how many times a certain event is received.
-   */
-  track?: GatewayEvent[] | "all" | boolean;
+  data?: DataOptions;
 }

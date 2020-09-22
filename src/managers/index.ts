@@ -18,6 +18,7 @@ export * from "./GuildManager";
 export * from "./MemberManager";
 export * from "./OverwriteManager";
 export * from "./ProxyManager";
+export * from "./PresenceManager";
 export * from "./RoleManager";
 export * from "./UserManager";
 export * from "./VoiceStateManager";

@@ -8,8 +8,11 @@ import { APIFollowedChannel, ChannelType } from "discord-api-types";
 import { GuildTextChannel, ModifyGuildTextChannel } from "./GuildTextChannel";
 import { CategoryChannel } from "./CategoryChannel";
 import { Message } from "../../message/Message";
+import { DiscordStructure } from "../../../util";
 
 export class NewsChannel extends GuildTextChannel {
+  public readonly structureType = DiscordStructure.GuildChannel;
+
   /**
    * The type of this channel.
    * @type {ChannelType.GUILD_NEWS}

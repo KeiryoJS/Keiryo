@@ -5,28 +5,35 @@
  */
 
 import { SnowflakeBase } from "../SnowflakeBase";
+import { DiscordStructure } from "../../util";
 
 import type { Guild } from "./Guild";
 import type { APIBan } from "discord-api-types";
 
 export class Ban extends SnowflakeBase {
+  public readonly structureType = DiscordStructure.Ban;
+
   /**
    * ID of the banned user.
+   * @type {string}
    */
   public readonly id: string;
 
   /**
    * The reason for the ban.
+   * @type {string | null}
    */
   public readonly reason: string | null;
 
   /**
    * The guild the ban belongs to.
+   * @type {Guild}
    */
   public readonly guild: Guild;
 
   /**
    * Whether this ban has been deleted.
+   * @type {boolean}
    */
   public deleted = false;
 

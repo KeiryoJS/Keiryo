@@ -4,10 +4,11 @@
  * See the LICENSE file in the project root for more details.
  */
 
+import { Collection } from "@neocord/utils";
 import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
 import { Channel } from "../structures/channel/Channel";
-import { Collection } from "@neocord/utils";
+import { DiscordStructure } from "../util";
 
 import type {
   APIChannel,
@@ -38,9 +39,10 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
    * The amount of guild channels that can be cached at one point in time.
    * @type {number}
    */
-  public get limit(): number {
-    // todo: fetch limit from the client.
-    return Infinity;
+  public limit(): number {
+    return (
+      this.client.data.limits.get(DiscordStructure.GuildChannel) ?? Infinity
+    );
   }
 
   /**
@@ -87,6 +89,12 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
    */
   public fetch(): Promise<Collection<string, GuildChannel>>;
 
+  /**
+   * Fetches all channels or a specific one.
+   * @param {string} [channel] ID of the channel to fetch.
+   * @param {boolean} [force] Skips checking if the channel is already cached.
+   * @returns {Collection<string, GuildChannel> | GuildChannel}
+   */
   public async fetch(
     channel?: string,
     force?: boolean
@@ -117,6 +125,7 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
 
   /**
    * Adds a new item to this manager.
+   * @data {APIChannel} data
    * @private
    */
   protected _add(data: APIChannel): GuildChannel {

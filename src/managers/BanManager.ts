@@ -13,10 +13,12 @@ import type { APIBan } from "discord-api-types";
 import type { Ban } from "../structures/guild/Ban";
 import type { Guild } from "../structures/guild/Guild";
 import type { UserResolvable } from "./UserManager";
+import { DiscordStructure } from "../util";
 
 export class BanManager extends BaseManager<Ban> {
   /**
    * The guild this ban manager belongs to.
+   * @type {Guild}
    */
   public readonly guild: Guild;
 
@@ -32,9 +34,10 @@ export class BanManager extends BaseManager<Ban> {
 
   /**
    * The total amount of bans that can be cached at one point in time.
+   * @type {number}
    */
-  public get limit(): number {
-    return Infinity;
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.Ban) ?? Infinity;
   }
 
   /**

@@ -8,12 +8,16 @@ import { APIChannel, ChannelType } from "discord-api-types";
 import { Duration } from "@neocord/utils";
 import { GuildTextChannel, ModifyGuildTextChannel } from "./GuildTextChannel";
 import { CategoryChannel } from "./CategoryChannel";
+import { DiscordStructure } from "../../../util";
 
 const MAX_RATE_LIMIT = 21600;
 
 export class TextChannel extends GuildTextChannel {
+  public readonly structureType = DiscordStructure.GuildChannel;
+
   /**
    * The type of text channel.
+   * @type {ChannelType.GUILD_TEXT}
    */
   public readonly type = ChannelType.GUILD_TEXT;
 
@@ -65,6 +69,7 @@ export class TextChannel extends GuildTextChannel {
 
   /**
    * Updates this text channel with data from Discord.
+   * @param {APIChannel} data
    * @protected
    */
   protected _patch(data: APIChannel): this {

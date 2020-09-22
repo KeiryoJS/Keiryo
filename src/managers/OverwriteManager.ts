@@ -6,9 +6,9 @@
 
 import { BaseManager } from "./BaseManager";
 import { neo } from "../structures";
-import { PermissionResolvable, Permissions } from "../util";
-
+import { DiscordStructure, PermissionResolvable, Permissions } from "../util";
 import { Member } from "../structures/guild/Member";
+
 import type { Role } from "../structures/guild/Role";
 import type { PermissionOverwrite } from "../structures/guild/PermissionOverwrite";
 import type { GuildChannel } from "../structures/channel/guild/GuildChannel";
@@ -19,6 +19,7 @@ import type { APIOverwrite } from "discord-api-types";
 export class OverwriteManager extends BaseManager<PermissionOverwrite> {
   /**
    * The channel this overwrite manager belongs to.
+   * @type {GuildChannel}
    */
   public readonly channel: GuildChannel;
 
@@ -34,6 +35,7 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
 
   /**
    * The guild the channel belongs to.
+   * @type {Guild}
    */
   public get guild(): Guild {
     return this.channel.guild;
@@ -41,9 +43,10 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
 
   /**
    * The total amount of permission overwrites that can be cached at one point in time.
+   * @type {number}
    */
-  public get limit(): number {
-    return Infinity;
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.Overwrite) ?? Infinity;
   }
 
   /**
@@ -76,6 +79,11 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
     options: Omit<OverwriteOptions, "type">
   ): Promise<PermissionOverwrite>;
 
+  /**
+   * Adds a new permission overwrite to this channel.
+   * @param {Member} target The overwrite target, either a guild role or member.
+   * @param {OverwriteOptions} options Options for the overwrite.
+   */
   public async add(
     target: Member | Role | string,
     options: OverwriteOptions
@@ -118,6 +126,11 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
    */
   public for(role: Role): RoleOverwrites;
 
+  /**
+   * Get the overwrites for a role or member.
+   * @param {Role | Member} target
+   * @returns {RoleOverwrites | MemberOverwrites}
+   */
   public for(target: Member | Role): MemberOverwrites | RoleOverwrites {
     const everyone = this.get(this.channel.guild.id);
 
@@ -136,6 +149,7 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
 
   /**
    * Adds a new permission overwrite to this manager.
+   * @param {APIOverwrite} data
    * @private
    */
   protected _add(data: APIOverwrite): PermissionOverwrite {

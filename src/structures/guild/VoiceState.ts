@@ -5,6 +5,7 @@
  */
 
 import { Base } from "../Base";
+import { DiscordStructure } from "../../util";
 
 import type { GatewayVoiceState } from "discord-api-types";
 import type { Client } from "../../lib";
@@ -13,66 +14,79 @@ import type { VoiceChannel } from "../channel/guild/VoiceChannel";
 import type { Member } from "./Member";
 
 export class VoiceState extends Base {
+  public readonly structureType = DiscordStructure.VoiceState;
+
   /**
    * The ID of the user the voice state is for.
+   * @type {string}
    */
   public readonly id: string;
 
   /**
    * The guild this voice state is apart of.
+   * @type {Guild}
    */
   public readonly guild: Guild;
 
   /**
    * ID of the channel the user is in.
+   * @type {string | null}
    */
   public channelId!: string | null;
 
   /**
    * The voice state's session id.
+   * @type {string}
    */
   public sessionId!: string;
 
   /**
    * Whether this user is deafened by the server.
+   * @type {boolean}
    */
   public deafened!: boolean;
 
   /**
    * Whether this user is muted by the server.
+   * @type {boolean}
    */
   public muted!: boolean;
 
   /**
    * Whether this user is locally deafened.
+   * @type {boolean}
    */
   public selfDeafened!: boolean;
 
   /**
    * Whether this user is locally muted.
+   * @type {boolean}
    */
   public selfMuted!: boolean;
 
   /**
    * Whether this user is streaming using "Go Live"
+   * @type {boolean}
    */
   public selfStream!: boolean;
 
   /**
    * Whether this user's camera is enabled.
+   * @type {boolean}
    */
   public selfVideo!: boolean;
 
   /**
    * Whether this user is muted by the current user.
+   * @type {boolean}
    */
   public suppressed!: boolean;
 
   /**
    * Creates a new instanceof VoiceState.
-   * @param client The client instance.
-   * @param data The voice state data.
-   * @param guild The guild.
+   * @param {Client} client The client instance.
+   * @param {GatewayVoiceState} data The voice state data.
+   * @param {Guild} guild The guild.
    */
   public constructor(client: Client, data: GatewayVoiceState, guild: Guild) {
     super(client);

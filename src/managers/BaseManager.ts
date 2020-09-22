@@ -6,7 +6,7 @@
 
 import { Class, Collection } from "@neocord/utils";
 
-import type { Base } from "../structures/Base";
+import type { Base } from "../structures";
 import type { Client } from "../lib";
 
 export abstract class BaseManager<S extends Base> extends Collection<
@@ -16,11 +16,13 @@ export abstract class BaseManager<S extends Base> extends Collection<
   /**
    * The client instance.
    * @type {Client}
+   * @private
    */
   private readonly _client!: Client;
 
   /**
    * The item this manager holds.
+   * @type {Class}
    * @private
    */
   protected readonly _item!: Class<S>;
@@ -40,6 +42,7 @@ export abstract class BaseManager<S extends Base> extends Collection<
 
     Object.defineProperty(this, "_client", { value: client });
     Object.defineProperty(this, "_item", { value: item });
+
     if (iterable) {
       for (const i of iterable) {
         this._add(i);
@@ -64,8 +67,9 @@ export abstract class BaseManager<S extends Base> extends Collection<
 
   /**
    * How many items this manager can hold.
+   * @type {number}
    */
-  public abstract get limit(): number;
+  public abstract limit(): number;
 
   /**
    * Resolves something into a structure.
@@ -96,14 +100,15 @@ export abstract class BaseManager<S extends Base> extends Collection<
    * @returns {this}
    */
   public set(key: string, value: S): this {
-    if (this.limit === 0) return this;
-    if (this.size >= this.limit && !this.has(key))
+    if (this.limit() === 0) return this;
+    if (this.size >= this.limit() && !this.has(key))
       this.delete(this.first?.id as string);
     return super.set(key, value);
   }
 
   /**
    * The json representation of this manager.
+   * @returns {Array<string>}
    */
   public toJSON(): string[] {
     return [...this.keys()];
@@ -111,18 +116,19 @@ export abstract class BaseManager<S extends Base> extends Collection<
 
   /**
    * Sets an item to this manager.
+   * @type {*} data
    * @private
    */
   protected _set(entry: S): S {
-    // eslint-disable-next-line no-constant-condition
-    if ("lol" === "lol")
-      // todo: check if caching is enabled for the item.
+    if (this._client.data.enabled.has(entry.structureType))
       this.set(entry.id, entry);
+
     return entry;
   }
 
   /**
    * Adds a new item to this manager.
+   * @type {Dictionary} data
    * @private
    */
   protected _add(data: Dictionary): S {

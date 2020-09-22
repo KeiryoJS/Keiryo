@@ -4,95 +4,129 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Snowflake } from "@neocord/utils";
-import { Base } from "../Base";
-import { Embed } from "../other/Embed";
-
-import type {
+import {
   APIMessage,
   MessageFlags,
   MessageType,
 } from "discord-api-types/default";
+import { Collection } from "@neocord/utils";
+import { Embed } from "../other/Embed";
+import { neo } from "../Extender";
+import { DiscordStructure } from "../../util";
+import { MessageMentions } from "./MessageMentions";
+import { NewsChannel } from "../channel/guild/NewsChannel";
+import { SnowflakeBase } from "../SnowflakeBase";
+
 import type { Client } from "../../lib";
 import type { User } from "../other/User";
 import type { Guild } from "../guild/Guild";
 import type { Member } from "../guild/Member";
 import type { TextBasedChannel } from "../channel/Channel";
-import type { MessageDeleteOptions, MessageOptions } from "../../managers";
+import type { MessageDeleteOptions, MessageEditOptions } from "../../managers";
+import type { MessageAttachment } from "./MessageAttachment";
 
-export class Message extends Base {
+export class Message extends SnowflakeBase {
+  public readonly structureType = DiscordStructure.Message;
+
   /**
    * The ID of this message.
+   * @type {string}
    */
   public readonly id: string;
 
   /**
    * The author of this message.
+   * @type {User}
    */
   public readonly author: User;
 
   /**
    * The guild member that sent this message.
+   * @type {Member | null}
    */
   public readonly member: Member | null;
 
   /**
    * The guild that this message was sent in.
+   * @type {Guild | null}
    */
   public readonly guild: Guild | null;
 
   /**
    * The channel that this message was sent.
+   * @type {TextBasedChannel}
    */
   public readonly channel: TextBasedChannel;
 
   /**
+   * Any attached files
+   * @type {Collection<string, MessageAttachment>}
+   */
+  public readonly attachments: Collection<string, MessageAttachment>;
+
+  /**
+   * The mentions in this message.
+   * @type {MessageMentions}
+   */
+  public mentions!: MessageMentions;
+
+  /**
    * Whether or not this message was TTS.
+   * @type {boolean}
    */
   public tts!: boolean;
 
   /**
    * Used for validating whether a message was sent.
+   * @type {string | number | null}
    */
   public nonce!: string | number | null;
 
   /**
    * The current content of this message.
+   * @type {string}
    */
   public content!: string;
 
   /**
    * The previous content of this message, always null unless editedTimestamp isn't null.
+   * @type {string | null}
    */
   public previousContent!: string | null;
 
   /**
    * The timestamp of when this message was edited, or null if it hasn't been edited.
+   * @type {number | null}
    */
   public editedTimestamp!: number | null;
 
   /**
    * Whether this message is pinned.
+   * @type {boolean}
    */
   public pinned!: boolean;
 
   /**
    * Embeds that were sent along with this message.
+   * @type {Array<Embed>}
    */
   public embeds!: Embed[];
 
   /**
    * The type of message.
+   * @type {MessageType}
    */
   public type!: MessageType;
 
   /**
    * The flags.
+   * @type {MessageFlags}
    */
   public flags!: MessageFlags;
 
   /**
    * Whether this message has been deleted.
+   * @type {boolean}
    */
   public deleted = false;
 
@@ -105,43 +139,36 @@ export class Message extends Base {
   public constructor(client: Client, data: APIMessage, guild?: Guild) {
     super(client);
 
+    this.id = data.id;
+    this.embeds = [];
+
     this.guild = guild ?? client.guilds.get(data.guild_id as string) ?? null;
     this.channel = this.client.channels.get(
       data.channel_id
     ) as TextBasedChannel;
-
+    this.author = this.client.users["_add"](data.author);
     this.member =
       data.member && this.guild
         ? this.guild.members["_add"]({ ...data.member, user: data.author })
         : null;
+    this.attachments = new Collection();
 
-    this.id = data.id;
-    this.author = this.client.users["_add"](data.author);
+    this._patch(data);
   }
 
   /**
-   * The snowflake data of this ID.
+   * The url to jump to this message.
+   * @type {string}
    */
-  public get snowflake(): Snowflake {
-    return new Snowflake(this.id);
-  }
-
-  /**
-   * The timestamp in which this message was created.
-   */
-  public get createdTimestamp(): number {
-    return this.snowflake.timestamp;
-  }
-
-  /**
-   * The date in which this message was created.
-   */
-  public get createdAt(): Date {
-    return new Date(this.createdTimestamp);
+  public get url(): string {
+    return `https://discord.com/channels/${
+      this.guild ? this.guild.id : "@me"
+    }/${this.channel.id}/${this.id}`;
   }
 
   /**
    * The date in which this message was edited.
+   * @type {Date}
    */
   public get editedAt(): Date | null {
     return this.editedTimestamp ? new Date(this.editedTimestamp) : null;
@@ -158,37 +185,45 @@ export class Message extends Base {
   }
 
   /**
-   * Sends a new message to the channel but prepends the author mention to the message content.
-   * @param {Embed} embed The embed to send.
-   * @param {MessageOptions} [options] The message options.
-   * @returns {Promise<Message[]>} The created messages.
+   * Crosspost a message in a news channel to following channels.
+   * @returns {Message}
    */
-  public reply(
-    embed: Embed,
-    options?: Omit<MessageOptions, "embed">
-  ): Promise<Message[]>;
+  public async crosspost(): Promise<Message> {
+    if (this.channel instanceof NewsChannel) await this.channel.crosspost(this);
+    return this;
+  }
 
   /**
-   * Sends a new message to the channel but prepends the author mention to the message content.
-   * @param {string} content The content to send.
-   * @param {MessageOptions} [options] The message options.
-   * @returns {Promise<Message[]>} The created messages.
+   * Edits this message.
+   * @param {MessageEditOptions} options The options to use for editing this message.
    */
-  public reply(
-    content: string,
-    options?: Omit<MessageOptions, "content">
-  ): Promise<Message[]>;
+  public edit(options: MessageEditOptions): Promise<Message>;
 
-  public reply(
-    p1: string | Embed,
-    options?: MessageOptions
-  ): Promise<Message[]> {
-    const content = typeof p1 === "string" ? p1 : options?.content;
-
-    return this.channel.messages.new(
-      `${this.author}${content ? `, ${content}` : ""}`,
+  /**
+   * Edits this message.
+   * @param {MessageEditData} content The message edit content.
+   * @param {MessageEditOptions} [options] The message edit options.
+   */
+  public async edit(
+    content: MessageEditData,
+    options?: MessageEditOptions
+  ): Promise<Message> {
+    const [edit] = await this.channel.messages.resolveMessageData(
+      content,
       options
     );
+    const data = await this.client.api.get<APIMessage>(
+      `/channels/${this.channel.id}/messages/${this.id}`,
+      edit
+    );
+    return this.clone()._patch(data);
+  }
+
+  public suppressEmbeds(suppress = true): Promise<Message> {
+    let flags = Number(this.flags);
+    if (suppress) flags |= MessageFlags.SUPPRESS_EMBEDS;
+    else flags &= ~MessageFlags.SUPPRESS_EMBEDS;
+    return this.edit({ flags });
   }
 
   /**
@@ -207,9 +242,31 @@ export class Message extends Base {
       ? +data.edited_timestamp
       : null;
     this.flags = data.flags ?? 0;
+    this.mentions = new MessageMentions(
+      this,
+      data.mentions,
+      data.mention_everyone,
+      data.mention_roles,
+      data.mention_channels
+    );
 
-    for (const _embed of data.embeds) this.embeds.push(new Embed(_embed));
+    for (const embed of data.embeds) {
+      this.embeds.push(new Embed(embed));
+    }
+
+    if (data.attachments) {
+      for (const attachment of data.attachments) {
+        const _new = new (neo.get("MessageAttachment"))(
+          attachment.url,
+          attachment.filename,
+          attachment
+        );
+        this.attachments.set(attachment.id, _new);
+      }
+    }
 
     return this;
   }
 }
+
+export type MessageEditData = string | Embed | MessageEditOptions;

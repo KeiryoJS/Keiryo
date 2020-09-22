@@ -6,16 +6,23 @@
 
 import { Channel } from "./Channel";
 import { APIChannel, APIUser, ChannelType } from "discord-api-types";
-import { Builder, MessageManager } from "../../managers";
+import {
+  Builder,
+  MessageAdd,
+  MessageBuilder,
+  MessageManager,
+  MessageOptions,
+} from "../../managers";
 import { Typing } from "./Typing";
+import { DiscordStructure } from "../../util";
 
 import type { User } from "../other/User";
-import type { MessageBuilder, MessageOptions } from "../../managers";
 import type { Client } from "../../lib";
 import type { Message } from "../message/Message";
-import type { Embed } from "../other/Embed";
 
 export class DMChannel extends Channel {
+  public readonly structureType = DiscordStructure.DMChannel;
+
   /**
    * The type of this channel.
    * @type {ChannelType.DM}
@@ -24,26 +31,31 @@ export class DMChannel extends Channel {
 
   /**
    * The messages manager.
+   * @type {MessageManager}
    */
   public readonly messages: MessageManager;
 
   /**
    * The typing manager for this DM channel.
+   * @type {Typing}
    */
   public readonly typing: Typing;
 
   /**
    * The ID of the last message sent in this DM channel.
+   * @type {string | null}
    */
   public lastMessageId!: string | null;
 
   /**
    * The recipients of this DM.
+   * @type {Array<User>}
    */
   public recipients!: User[];
 
   /**
    * Whether this DM channel has been deleted.
+   * @type {boolean}
    */
   public deleted = false;
 
@@ -69,7 +81,7 @@ export class DMChannel extends Channel {
 
   /**
    * If the current user can send messages in this channel.
-   * @returns {boolean}
+   * @type {boolean}
    */
   public get postable(): boolean {
     return true;
@@ -77,7 +89,7 @@ export class DMChannel extends Channel {
 
   /**
    * If the current user can embed links in this channel.
-   * @returns {boolean}
+   * @type {boolean}
    */
   public get embeddable(): boolean {
     return true;
@@ -85,7 +97,7 @@ export class DMChannel extends Channel {
 
   /**
    * If the current user can view this channel.
-   * @returns {boolean}
+   * @type {boolean}
    */
   public get viewable(): boolean {
     return true;
@@ -102,39 +114,39 @@ export class DMChannel extends Channel {
   }
 
   /**
-   * Creates a new message in this channel.
+   * Creates a new message.
    * @param {Builder} builder The message builder.
    * @returns {Promise<Message[]>} The created messages.
    */
   public send(builder: Builder | MessageBuilder): Promise<Message[]>;
 
   /**
-   * Creates a new message in this channel.
-   * @param {Embed} embed The embed to send.
-   * @param {MessageOptions} [options] The message options.
-   * @returns {Promise<Message[]>} The created messages.
+   * Creates a new message.
+   * @param {MessageOptions} options The message options.
    */
-  public send(
-    embed: Embed,
-    options?: Omit<MessageOptions, "embed">
-  ): Promise<Message[]>;
+  public send(options: MessageOptions): Promise<Message[]>;
 
   /**
    * Creates a new message in this channel.
-   * @param {string} content The content to send.
-   * @param {MessageOptions} [options] The message options.
-   * @returns {Promise<Message[]>} The created messages.
+   * @param {MessageAdd} content The message content or builder.
+   * @param {MessageOptions} [options] The message options, only when not using the message builder.
+   * @returns {Message[]}
    */
-  public send(
-    content: string,
-    options?: Omit<MessageOptions, "content">
-  ): Promise<Message[]>;
-
   public async send(
-    p1: string | Embed | Builder | MessageBuilder,
-    p2?: MessageOptions
+    content: MessageAdd,
+    options?: MessageOptions
+  ): Promise<Message[]>;
+  /**
+   * Creates a new message in this channel.
+   * @param {MessageAdd} content The message content or builder.
+   * @param {MessageOptions} [options] The message options, only when not using the message builder.
+   * @returns {Message[]}
+   */
+  public async send(
+    content: MessageAdd,
+    options?: MessageOptions
   ): Promise<Message[]> {
-    return this.messages.new(p1, p2);
+    return this.messages.new(content, options);
   }
 
   /**

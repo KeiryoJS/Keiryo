@@ -14,77 +14,93 @@ import type {
 } from "discord-api-types/default";
 import type { Client } from "../../lib";
 import type { DMChannel } from "../channel/DMChannel";
+import { DiscordStructure } from "../../util";
 
 export class User extends SnowflakeBase {
+  public readonly structureType = DiscordStructure.User;
+
   /**
    * The ID of this user.
+   * @type {string}
    */
   public readonly id: string;
 
   /**
    * The user's avatar hash.
+   * @type {string | null}
    */
   public avatar!: string | null;
 
   /**
    * Whether the user belongs to an OAuth2 application.
+   * @type {boolean}
    */
   public bot!: boolean;
 
   /**
    * The user's 4-digit discord-tag.
+   * @type {string}
    */
   public discriminator!: string;
 
   /**
    * The user's email.
+   * @type {string | null}
    */
   public email!: string | null;
 
   /**
    * The flags on this user's account.
+   * @type {UserFlags}
    */
   public flags!: UserFlags;
 
   /**
    * The public flags on this user's account.
+   * @type {UserFlags}
    */
   public publicFlags!: UserFlags;
 
   /**
    * The type of Nitro subscription on this user's account.
+   * @type {UserPremiumType}
    */
   public premiumType!: UserPremiumType;
 
   /**
    * The user's chosen language option.
+   * @type {string}
    */
   public locale!: string;
 
   /**
    * The user's username, not unique across the platform.
+   * @type {string}
    */
   public username!: string;
 
   /**
    * Whether the user has two factor enabled on their account.
+   * @type {boolean}
    */
   public mfaEnabled!: boolean;
 
   /**
    * Whether the email on this account has been verified.
+   * @type {boolean}
    */
   public verified!: boolean;
 
   /**
    * Whether the user is an Official Discord System user (part of the urgent message system).
+   * @type {boolean}
    */
   public system!: boolean;
 
   /**
    * Creates a new instance of User.
-   * @param client The client.
-   * @param data The decoded user data.
+   * @param {Client} client The client.
+   * @param {APIUser} data The decoded user data.
    */
   public constructor(client: Client, data: APIUser) {
     super(client);
@@ -95,6 +111,7 @@ export class User extends SnowflakeBase {
 
   /**
    * The tag of this user.
+   * @type {string}
    */
   public get tag(): string {
     return `${this.username}#${this.discriminator}`;
@@ -102,6 +119,7 @@ export class User extends SnowflakeBase {
 
   /**
    * The mention string for this user.
+   * @type {string}
    */
   public get mention(): string {
     return `<@!${this.id}>`;
@@ -109,6 +127,7 @@ export class User extends SnowflakeBase {
 
   /**
    * The default avatar url for this user.
+   * @type {string}
    */
   public get defaultAvatarUrl(): string {
     return this.client.api.cdn.defaultAvatar(+this.discriminator % 5);
@@ -116,7 +135,8 @@ export class User extends SnowflakeBase {
 
   /**
    * The URL for this user's avatar.
-   * @param options The options for the url.
+   * @param {ImageURLOptions} [options] The options for the url.
+   * @returns {string | null}
    */
   public avatarURL(options: ImageURLOptions = {}): string | null {
     if (!this.avatar) return null;
@@ -135,7 +155,8 @@ export class User extends SnowflakeBase {
 
   /**
    * The display avatar url for this user.
-   * @param options The options for the avatar.
+   * @param {ImageURLOptions} [options] The options for the avatar.
+   * @returns {string}
    */
   public displayAvatarURL(options: ImageURLOptions = {}): string {
     return this.avatarURL(options) ?? this.defaultAvatarUrl;
@@ -143,6 +164,7 @@ export class User extends SnowflakeBase {
 
   /**
    * Get the string representation of this user.
+   * @returns {string}
    */
   public toString(): string {
     return this.mention;
@@ -150,6 +172,7 @@ export class User extends SnowflakeBase {
 
   /**
    * Updates this user with data from the api.
+   * @param {APIUser} data
    * @protected
    */
   protected _patch(data: APIUser): this {

@@ -9,6 +9,7 @@ import { neo } from "../structures/Extender";
 
 import type { User } from "../structures/other/User";
 import type { Client } from "../lib";
+import { DiscordStructure } from "../util";
 
 export class UserManager extends BaseManager<User> {
   /**
@@ -21,10 +22,10 @@ export class UserManager extends BaseManager<User> {
 
   /**
    * The total amount of users that can be cached at one time.
-   * @returns {number}
+   * @type {number}
    */
-  public get limit(): number {
-    return Infinity; // TODO: get user limit from the client.
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.User) ?? Infinity;
   }
 
   /**

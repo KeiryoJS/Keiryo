@@ -18,6 +18,7 @@ import type { User } from "../structures/other/User";
 import type { Member } from "../structures/guild/Member";
 import type { Guild } from "../structures/guild/Guild";
 import type { BanOptions } from "./BanManager";
+import { DiscordStructure } from "../util";
 
 export class MemberManager extends BaseManager<Member> {
   /**
@@ -40,9 +41,8 @@ export class MemberManager extends BaseManager<Member> {
    * The total amount of members that can be cached at one point in time.
    * @type {number}
    */
-  public get limit(): number {
-    // todo: fetch member limit from the client.
-    return Infinity;
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.Member) ?? Infinity;
   }
 
   /**
@@ -215,6 +215,7 @@ export class MemberManager extends BaseManager<Member> {
 
   /**
    * Adds a new member to this manager.
+   * @param {APIGuildMember} data
    * @private
    */
   protected _add(data: APIGuildMember): Member {

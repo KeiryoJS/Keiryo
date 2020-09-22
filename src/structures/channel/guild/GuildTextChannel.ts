@@ -6,7 +6,11 @@
 
 import { GuildChannel, ModifyGuildChannel } from "./GuildChannel";
 import { Typing } from "../Typing";
-import type { MessageBuilder, MessageOptions } from "../../../managers";
+import type {
+  MessageAdd,
+  MessageBuilder,
+  MessageOptions,
+} from "../../../managers";
 import {
   Builder,
   BulkDeleteOptions,
@@ -19,7 +23,6 @@ import type { Client } from "../../../lib";
 import type { Guild } from "../../guild/Guild";
 import type { CategoryChannel } from "./CategoryChannel";
 import type { Message } from "../../message/Message";
-import type { Embed } from "../../other/Embed";
 
 export abstract class GuildTextChannel extends GuildChannel {
   /**
@@ -30,6 +33,7 @@ export abstract class GuildTextChannel extends GuildChannel {
 
   /**
    * The messages manager.
+   * @type {MessageManager}
    */
   public readonly messages: MessageManager;
 
@@ -81,7 +85,7 @@ export abstract class GuildTextChannel extends GuildChannel {
 
   /**
    * If the current user can send messages in this channel.
-   * @returns {boolean}
+   * @type {boolean}
    */
   public get postable(): boolean {
     // TODO: get the permissions for the current user.
@@ -90,7 +94,7 @@ export abstract class GuildTextChannel extends GuildChannel {
 
   /**
    * If the current user can embed links in this channel.
-   * @returns {boolean}
+   * @type {boolean}
    */
   public get embeddable(): boolean {
     // TODO: get the permissions for the current user.
@@ -99,7 +103,7 @@ export abstract class GuildTextChannel extends GuildChannel {
 
   /**
    * If the current user can view this channel.
-   * @returns {boolean}
+   * @type {boolean}
    */
   public get viewable(): boolean {
     // TODO: get the permissions for the current user.
@@ -107,39 +111,40 @@ export abstract class GuildTextChannel extends GuildChannel {
   }
 
   /**
-   * Creates a new message in this channel.
+   * Creates a new message.
    * @param {Builder} builder The message builder.
    * @returns {Promise<Message[]>} The created messages.
    */
   public send(builder: Builder | MessageBuilder): Promise<Message[]>;
 
   /**
-   * Creates a new message in this channel.
-   * @param {Embed} embed The embed to send.
-   * @param {MessageOptions} [options] The message options.
-   * @returns {Promise<Message[]>} The created messages.
+   * Creates a new message.
+   * @param {MessageOptions} options The message options.
    */
-  public send(
-    embed: Embed,
-    options?: Omit<MessageOptions, "embed">
+  public send(options: MessageOptions): Promise<Message[]>;
+
+  /**
+   * Creates a new message in this channel.
+   * @param {MessageAdd} content The message content or builder.
+   * @param {MessageOptions} [options] The message options, only when not using the message builder.
+   * @returns {Message[]}
+   */
+  public async send(
+    content: MessageAdd,
+    options?: MessageOptions
   ): Promise<Message[]>;
 
   /**
    * Creates a new message in this channel.
-   * @param {string} content The content to send.
-   * @param {MessageOptions} [options] The message options.
-   * @returns {Promise<Message[]>} The created messages.
+   * @param {MessageAdd} content The message content or builder.
+   * @param {MessageOptions} [options] The message options, only when not using the message builder.
+   * @returns {Message[]}
    */
-  public send(
-    content: string,
-    options?: Omit<MessageOptions, "content">
-  ): Promise<Message[]>;
-
   public async send(
-    p1: string | Embed | Builder | MessageBuilder,
-    p2?: MessageOptions
+    content: MessageAdd,
+    options?: MessageOptions
   ): Promise<Message[]> {
-    return this.messages.new(p1, p2);
+    return this.messages.new(content, options);
   }
 
   /**
@@ -157,6 +162,7 @@ export abstract class GuildTextChannel extends GuildChannel {
 
   /**
    * Updates this channel with data from Discord.
+   * @param {APIChannel} data
    * @protected
    */
   protected _patch(data: APIChannel): this {

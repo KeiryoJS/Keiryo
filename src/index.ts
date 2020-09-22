@@ -8,5 +8,9 @@ declare global {
     entries<O extends Record<PropertyKey, unknown>, K extends keyof O>(
       obj: O
     ): ArrayLike<[K, O[K]]>;
+
+    keys<O extends Record<PropertyKey, unknown>, K extends keyof O>(
+      obj: O
+    ): K[];
   }
 }

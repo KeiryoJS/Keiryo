@@ -43,23 +43,26 @@ export enum Permission {
 export class Permissions extends BitField<PermissionResolvable> {
   /**
    * All Permission Flags.
+   * @type {Permission}
    */
   public static FLAGS = Permission;
 
   /**
    * The default permissions for a role.
+   * @type {number}
    */
   public static DEFAULT = 104320577;
 
   /**
    * Permissions that can't be influenced by channel overwrites, even if explicitly set.
+   * @type {number}
    */
   public static GUILD_SCOPE_PERMISSIONS = 1275592878;
 
   /**
    * Checks whether the bitfield has a permission, or any of multiple permissions.
-   * @param permission Permission(s) to check for
-   * @param checkAdmin Whether to allow the administrator permission to override
+   * @param {PermissionResolvable} permission Permission(s) to check for
+   * @param {boolean} [checkAdmin] Whether to allow the administrator permission to override
    */
   public any(permission: PermissionResolvable, checkAdmin = true): boolean {
     return (
@@ -70,8 +73,8 @@ export class Permissions extends BitField<PermissionResolvable> {
 
   /**
    * Checks whether the bitfield has a permission, or multiple permissions.
-   * @param permission Permission(s) to check for
-   * @param checkAdmin Whether to allow the administrator permission to override
+   * @param {PermissionResolvable} permission Permission(s) to check for
+   * @param {boolean} [checkAdmin] Whether to allow the administrator permission to override
    */
   public has(permission: PermissionResolvable, checkAdmin = true): boolean {
     return (

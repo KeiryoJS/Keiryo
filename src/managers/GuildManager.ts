@@ -4,11 +4,12 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { BaseResolvable, BaseManager } from "./BaseManager";
+import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
 
 import type { Guild } from "../structures/guild/Guild";
 import type { Client } from "../lib";
+import { DiscordStructure } from "../util";
 
 export class GuildManager extends BaseManager<Guild> {
   /**
@@ -21,25 +22,36 @@ export class GuildManager extends BaseManager<Guild> {
 
   /**
    * The total amount of guilds that can be cached at one time.
-   * @returns {number}
+   * @type {number}
    */
-  public get limit(): number {
-    return Infinity; // TODO: get guild limit from the client.
+  public limit(): number {
+    return this.client.data.limits.get(DiscordStructure.Guild) ?? Infinity;
   }
 
   /**
-   * Removes a guild from the current users guild list.
+   * Deletes this guild. Current user must be the owner.
    * @param {BaseResolvable} guild The guild to remove.
-   * @param {string} [reason] The reason to provide.
    * @returns {Guild | null} The guild that was removed.
    */
-  public async remove(
-    guild: BaseResolvable<Guild>,
-    reason?: string
-  ): Promise<Guild | null> {
+  public async remove(guild: GuildResolvable): Promise<Guild | null> {
     const g = this.resolve(guild);
-    if (g) await this.client.api.delete(`/guilds/${g.id}`, { reason });
+    if (g) await this.client.api.delete(`/guilds/${g.id}`);
     return g;
+  }
+
+  /**
+   * Leaves a guild.
+   * @param {GuildResolvable} guild The guild to leave.
+   * @returns {?Guild} The guild that the current user left.
+   */
+  public async leave(guild: GuildResolvable): Promise<Guild | null> {
+    const g = this.resolve(guild);
+    if (g) {
+      await this.client.api.delete(`/users/@me/guilds/${g.id}`);
+      return g;
+    }
+
+    return null;
   }
 
   /**
@@ -55,3 +67,5 @@ export class GuildManager extends BaseManager<Guild> {
     return this._add(data);
   }
 }
+
+export type GuildResolvable = BaseResolvable<Guild>;
