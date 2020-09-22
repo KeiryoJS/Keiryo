@@ -8,7 +8,7 @@ import { Base } from "../Base";
 import { DiscordStructure } from "../../util";
 
 import type { GatewayVoiceState } from "discord-api-types";
-import type { Client } from "../../lib";
+import type { Client } from "../../internal";
 import type { Guild } from "./Guild";
 import type { VoiceChannel } from "../channel/guild/VoiceChannel";
 import type { Member } from "./Member";

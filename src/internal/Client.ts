@@ -202,4 +202,6 @@ export interface ClientOptions {
    * Options for data.
    */
   data?: DataOptions;
+
+  disableDebugging?: Set<"packetHandling" | "">
 }

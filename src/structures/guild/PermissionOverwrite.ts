@@ -14,7 +14,7 @@ import {
 } from "../../util";
 import { Role } from "./Role";
 
-import type { Client } from "../../lib";
+import type { Client } from "../../internal";
 import type { GuildChannel } from "../channel/guild/GuildChannel";
 import type { Guild } from "./Guild";
 

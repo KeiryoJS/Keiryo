@@ -4,13 +4,15 @@
  * See the LICENSE file in the project root for more details.
  */
 
+import { ChannelType } from "discord-api-types";
 import { GatewayEvent, GatewayOpCode, Payload, Shard } from "@neocord/gateway";
-import { Class, Collection, isClass, mergeObjects, walk } from "@neocord/utils";
-import { join } from "path";
+import { Class, Collection, Duration, isClass, mergeObjects, Timers, walk } from "@neocord/utils";
+import { basename, join } from "path";
 import { DiscordStructure } from "../../util";
 
 import type { Client } from "../Client";
 import type { Handler } from "./Handler";
+import type { TextBasedChannel } from "../../structures/channel/Channel";
 
 const packetWhitelist = [
   GatewayEvent.Ready,
@@ -22,12 +24,19 @@ const packetWhitelist = [
   GatewayEvent.GuildMemberRemove,
 ];
 
+const eventWhitelist = [
+  GatewayEvent.Ready,
+  GatewayEvent.Resumed,
+];
+
 const DEFAULTS: DataOptions = {
   track: [],
   disabledEvents: [],
   caching: {
     enabled: true,
     limits: Infinity,
+    messageSweepInterval: 0,
+    messageLifetime: 0,
   },
 };
 
@@ -73,6 +82,12 @@ export class DataManager {
   public disabledEvents: Set<GatewayEvent>;
 
   /**
+   * The options provided to the data manager.
+   * @type {DataOptions}
+   */
+  public options: Required<DataOptions>;
+
+  /**
    * The packet queue.
    * @type {Array<Payload<Dictionary[]>>}
    * @private
@@ -91,7 +106,7 @@ export class DataManager {
    * @param {DataOptions} [options={}]
    */
   public constructor(client: Client, options: DataOptions = {}) {
-    options = mergeObjects(options, DEFAULTS);
+    this.options = options = mergeObjects(options, DEFAULTS);
 
     this.client = client;
     this.track = [];
@@ -127,11 +142,71 @@ export class DataManager {
   }
 
   /**
+   * Sweeps the messages in all cached channels.
+   * @param {number | string} messageLifetime
+   */
+  public async sweepMessages(
+    messageLifetime: string | number
+  ): Promise<number> {
+    const now = Date.now();
+    const lifetime =
+      typeof messageLifetime === "string"
+        ? Duration.parse(messageLifetime)
+        : messageLifetime * 1000;
+
+    if (lifetime <= 0) {
+      this.client.emit(
+        "debug",
+        "(Message Sweeper) Didn't sweep messages - lifetime is unlimited"
+      );
+      return -1;
+    }
+
+    let messages = 0;
+    for (const [, channel] of this.client.channels) {
+      if (
+        [ChannelType.GUILD_TEXT, ChannelType.GUILD_NEWS].includes(channel.type)
+      )
+        continue;
+
+      messages += (channel as TextBasedChannel).messages.sweep((m) => {
+        return now - (m.editedTimestamp ?? m.createdTimestamp) > lifetime;
+      });
+    }
+
+    this.client.emit(
+      "debug",
+      `(Message Sweeper) Swept ${messages} messages across all cached channels.`
+    );
+    return messages;
+  }
+
+  /**
    * Initializes the packet handling system.
    */
   public async init(): Promise<void> {
+    const sweepInterval = this.options.caching?.messageSweepInterval;
+    if (sweepInterval && sweepInterval !== 0) {
+      const ms =
+        typeof sweepInterval === "string"
+          ? Duration.parse(sweepInterval)
+          : sweepInterval;
+
+      this.client.emit(
+        "debug",
+        `(Message Sweeper) Now sweeping every ${Duration.parse(ms, true)}.`
+      );
+
+      Timers.setInterval(() => {
+        this.sweepMessages(this.options.caching?.messageLifetime ?? 0);
+      }, ms);
+    }
+
     await this._load();
-    this._listen();
+
+    this.client.ws.on("raw", (pk: Payload<Dictionary>, shard: Shard) =>
+      this._handle(pk, shard)
+    );
   }
 
   /**
@@ -146,7 +221,7 @@ export class DataManager {
       if (!isClass(Handler)) {
         this.client.emit(
           "warn",
-          "(Packet Handling) Built-in packet handler doesn't return a class, this should be reported."
+          `Built-in packet handler for ${basename(file)} doesn't return a class, this should be reported.`
         );
         continue;
       }
@@ -172,17 +247,17 @@ export class DataManager {
       this.stats.set(event, (prev ?? 0) + 1);
     }
 
-    // (1) Check if the event is disabled.
-    if (!packetWhitelist.includes(event) && this.disabledEvents.has(event)) {
-      return;
-    }
-
-    // (2) Check whether the sharding manager is ready.
+    // () Check whether the sharding manager is ready.
     if (!this.client.ws.ready) {
       if (!packetWhitelist.includes(event)) {
         this._queue.push(pk);
         return;
       }
+    }
+
+    // (2) Check if the event is disabled.
+    if (!eventWhitelist.includes(event) && this.disabledEvents.has(event)) {
+      return;
     }
 
     // (3) Check whether or not there's any packets in the queue.
@@ -208,36 +283,38 @@ export class DataManager {
       );
     }
   }
+}
+
+export interface CachingOptions {
+  /**
+   * Whether caching is enabled.
+   */
+  enabled?: boolean | Set<DiscordStructure> | DiscordStructure[];
 
   /**
-   * Listens for events.
-   * @private
+   * Caching limits for discord structures.
    */
-  private _listen(): void {
-    this.client.ws.on("raw", async (pk: Payload<Dictionary>, shard: Shard) =>
-      this._handle(pk, shard)
-    );
-  }
+  limits?:
+    | number
+    | Map<DiscordStructure, number>
+    | Tuple<DiscordStructure, number>[];
+
+  /**
+   * The total lifetime of a message, can either be in seconds or it can be a duration string.
+   */
+  messageLifetime?: number | string;
+
+  /**
+   * The interval in which to sweep messages, can either be seconds or it can be a duration string.
+   */
+  messageSweepInterval?: number | string;
 }
 
 export interface DataOptions {
   /**
    * Options for caching.
    */
-  caching?: {
-    /**
-     * Whether caching is enabled.
-     */
-    enabled?: boolean | Set<DiscordStructure> | DiscordStructure[];
-
-    /**
-     * Limits for cacheables.
-     */
-    limits?:
-      | number
-      | Map<DiscordStructure, number>
-      | Tuple<DiscordStructure, number>[];
-  };
+  caching?: CachingOptions;
 
   /**
    * Events that wont be handled.

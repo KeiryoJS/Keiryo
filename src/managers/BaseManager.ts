@@ -7,7 +7,7 @@
 import { Class, Collection } from "@neocord/utils";
 
 import type { Base } from "../structures";
-import type { Client } from "../lib";
+import type { Client } from "../internal";
 
 export abstract class BaseManager<S extends Base> extends Collection<
   string,

@@ -29,7 +29,7 @@ import type {
   RESTGetAPIGuildVanityUrlResult,
 } from "discord-api-types/default";
 import type { WelcomeScreen } from "./welcome/WelcomeScreen";
-import type { Client } from "../../lib";
+import type { Client } from "../../internal";
 import type { Member } from "./Member";
 import type { ImageURLOptions } from "@neocord/rest";
 

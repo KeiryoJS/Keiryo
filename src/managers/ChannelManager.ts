@@ -9,7 +9,7 @@ import { neo } from "../structures";
 import { DiscordStructure } from "../util";
 
 import type { Channel } from "../structures/channel/Channel";
-import type { Client } from "../lib";
+import type { Client } from "../internal";
 import type { APIChannel } from "discord-api-types";
 import type { Guild } from "../structures/guild/Guild";
 

@@ -4,7 +4,7 @@ import type {
   APIMessage,
   GatewayMessageUpdateDispatch,
 } from "discord-api-types";
-import type { GuildTextChannel } from "../../../../structures/channel/guild/GuildTextChannel";
+import type { TextChannel } from "../../../../structures/channel/guild/TextChannel";
 
 export default class MESSAGE_UPDATE extends Handler<
   GatewayMessageUpdateDispatch
@@ -15,7 +15,7 @@ export default class MESSAGE_UPDATE extends Handler<
       : null;
 
     const channel = guild
-      ? guild.channels.get<GuildTextChannel>(data.d.channel_id)
+      ? guild.channels.get<TextChannel>(data.d.channel_id)
       : this.client.dms.get(data.d.channel_id);
 
     if (!channel) return;

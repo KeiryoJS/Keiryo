@@ -14,7 +14,7 @@ import type {
   APIOverwrite,
   RESTPatchAPIChannelResult,
 } from "discord-api-types/default";
-import type { Client } from "../../../lib";
+import type { Client } from "../../../internal";
 import type { Guild } from "../../guild/Guild";
 
 export abstract class GuildChannel extends Channel {
@@ -74,6 +74,16 @@ export abstract class GuildChannel extends Channel {
     return this.parentId
       ? this.guild.channels.get<CategoryChannel>(this.parentId) ?? null
       : null;
+  }
+
+  /**
+   * Deletes this guild channel.
+   * @param {string} [reason] The reason for deleting this channel.
+   * @returns {Promise<Readonly<this>>}
+   */
+  public async delete(reason?: string): Promise<Readonly<this>> {
+    await this.guild.channels.remove(this, reason);
+    return this.freeze();
   }
 
   /**

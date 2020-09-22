@@ -6,9 +6,8 @@
 
 import { Timers } from "@neocord/utils";
 
-import type { Client } from "../../lib";
-import type { DMChannel } from "./DMChannel";
-import type { GuildTextChannel } from "./guild/GuildTextChannel";
+import type { Client } from "../../internal";
+import type { TextBasedChannel } from "./Channel";
 
 export class Typing {
   /**
@@ -19,9 +18,9 @@ export class Typing {
 
   /**
    * The channel instance.
-   * @type {DMChannel | GuildTextChannel}
+   * @type {TextBasedChannel}
    */
-  public readonly channel: DMChannel | GuildTextChannel;
+  public readonly channel: TextBasedChannel;
 
   /**
    * The interval typing counter.
@@ -37,9 +36,9 @@ export class Typing {
 
   /**
    * Creates a new instanceof Typing.
-   * @param {DMChannel | GuildTextChannel} channel The channel instance.
+   * @param {TextBasedChannel} channel The channel instance.
    */
-  public constructor(channel: DMChannel | GuildTextChannel) {
+  public constructor(channel: TextBasedChannel) {
     this.client = channel.client;
     this.channel = channel;
   }

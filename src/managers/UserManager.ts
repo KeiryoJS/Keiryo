@@ -6,10 +6,10 @@
 
 import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
+import { DiscordStructure } from "../util";
 
 import type { User } from "../structures/other/User";
-import type { Client } from "../lib";
-import { DiscordStructure } from "../util";
+import type { Client } from "../internal";
 
 export class UserManager extends BaseManager<User> {
   /**
@@ -36,6 +36,18 @@ export class UserManager extends BaseManager<User> {
   public async fetch(userId: string): Promise<User> {
     const _data = await this.client.api.get(`/users/${userId}`);
     return this._add(_data);
+  }
+
+  /**
+   * Sets an item to this manager.
+   * @type {User} data
+   * @private
+   */
+  protected _set(u: User): User {
+    if (this.client.data.enabled.has(u.structureType) || u.id === this.client.user?.id)
+      this.set(u.id, u);
+
+    return u;
   }
 }
 

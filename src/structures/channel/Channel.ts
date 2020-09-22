@@ -8,7 +8,7 @@ import { SnowflakeBase } from "../SnowflakeBase";
 import { APIChannel, ChannelType } from "discord-api-types/default";
 import { neo, Structures } from "../Extender";
 
-import type { Client } from "../../lib";
+import type { Client } from "../../internal";
 import type { DMChannel } from "./DMChannel";
 import type { TextChannel } from "./guild/TextChannel";
 import type { NewsChannel } from "./guild/NewsChannel";
@@ -90,9 +90,10 @@ export abstract class Channel extends SnowflakeBase {
 }
 
 export type TextBasedChannel = DMChannel | TextChannel | NewsChannel;
-export type GuildBasedTextChannel = TextChannel | NewsChannel;
 export type GuildBasedChannel =
-  | GuildBasedTextChannel
-  | CategoryChannel
+  | TextChannel
+  | NewsChannel
   | StoreChannel
+  | CategoryChannel
   | VoiceChannel;
+export type DiscordChannel = GuildBasedChannel | DMChannel;

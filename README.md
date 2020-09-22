@@ -1,13 +1,12 @@
-@<img src="https://repository-images.githubusercontent.com/291619880/8b583d80-eb6d-11ea-8300-3206ef4d5136" />
+<img src="https://repository-images.githubusercontent.com/291619880/8b583d80-eb6d-11ea-8300-3206ef4d5136" />
 
 ---
 
 > NeoCord: A powerful and feature-rich discord library.
 > See [in-depth](#in-depth) for more details on things listed below.
 
-- **Coverage:** NeoCord covers the Discord Gateway, API, and CDN. 
+- **Coverage:** NeoCord covers the Discord Gateway, API/CDN, and in the near future, Voice. 
 - **Caching:** You can set a limit for each structure, set different providers, and even disable them.
-
 
 <h2>Warning:</h2>
 
@@ -62,20 +61,37 @@ client.connect("your token here");
 
 **Caching**
 
-NeoCord allows the user to limit each structure (Message, Guild, etc...), this does come with some drawbacks.
-It also allows for the option of something we call Cache Providers, which allows for external caching.
-You can also disable specific structures if you don't want them to be cached.
+> This is a very very ambitious concept, which may not come to life but would be really cool
+
+NeoCord allows the user to have multiple [data engines](#data-engines) which would control the caching for specific structures.
+There will be options for limiting the amount of items that can be cached, an option for sweeping structures from the cache, and disabling certain structures.
 
 ```ts
-import { Client, Cacheable } from "neocord"; 
+import { Client, DiscordStructure } from "neocord";
+import { RedisDataEngine, Sweepers } from "@neocord/engines";
 
-new Client({
-  caching: {
-    disable: [Cacheable.Role],
-    limits: new Map().set(Cacheable.Message, 100)
+const client = new Client({
+  data: {
+    engines: [
+      new RedisDataEngine({
+        handles: new Set()
+          .add(DiscordStructure.Message)
+          .add(DiscordStructure.Presence),
+        sweepers: {
+          [DiscordStructure.Message]: Sweepers.Message({
+            lifetime: "30m",
+            interval: "5m"
+          })
+        }
+      })
+    ]
   }
 });
 ```
+
+###### Data Engines
+
+A data engine is what handles each aspect of neocord structures like limiting, caching and sweeping. 
 
 *work-in-progress, these are mostly concepts - with that in mind, the caching stuff might not happen, we'll have to find out.*
 

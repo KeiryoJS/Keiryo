@@ -14,20 +14,19 @@ import { DiscordStructure, makeSafeQuery } from "../../util";
 import type { Message } from "../../structures/message/Message";
 import type { RequestData } from "@neocord/rest";
 import type { APIMessage } from "discord-api-types";
-import type { GuildTextChannel } from "../../structures/channel/guild/GuildTextChannel";
-import type { DMChannel } from "../../structures/channel/DMChannel";
+import type { TextBasedChannel } from "../../structures/channel/Channel";
 
 export class MessageManager extends BaseManager<Message> {
   /**
    * The text channel.
    */
-  public readonly channel: GuildTextChannel | DMChannel;
+  public readonly channel: TextBasedChannel;
 
   /**
    * Creates a new instanceof MessageManager.
    * @param {TextBasedChannel} channel The text channel instance.
    */
-  public constructor(channel: GuildTextChannel | DMChannel) {
+  public constructor(channel: TextBasedChannel) {
     super(channel.client, neo.get("Message"));
 
     this.channel = channel;

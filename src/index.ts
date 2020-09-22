@@ -1,4 +1,4 @@
-export * from "./lib";
+export * from "./internal";
 export * from "./managers";
 export * from "./structures";
 export * from "./util";

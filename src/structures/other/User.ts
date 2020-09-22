@@ -12,7 +12,7 @@ import type {
   UserFlags,
   UserPremiumType,
 } from "discord-api-types/default";
-import type { Client } from "../../lib";
+import type { Client } from "../../internal";
 import type { DMChannel } from "../channel/DMChannel";
 import { DiscordStructure } from "../../util";
 

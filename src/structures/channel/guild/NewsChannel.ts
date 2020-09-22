@@ -5,14 +5,10 @@
  */
 
 import { APIFollowedChannel, ChannelType } from "discord-api-types";
-import { GuildTextChannel, ModifyGuildTextChannel } from "./GuildTextChannel";
-import { CategoryChannel } from "./CategoryChannel";
 import { Message } from "../../message/Message";
-import { DiscordStructure } from "../../../util";
+import { TextChannel } from "./TextChannel";
 
-export class NewsChannel extends GuildTextChannel {
-  public readonly structureType = DiscordStructure.GuildChannel;
-
+export class NewsChannel extends TextChannel {
   /**
    * The type of this channel.
    * @type {ChannelType.GUILD_NEWS}
@@ -21,18 +17,16 @@ export class NewsChannel extends GuildTextChannel {
 
   /**
    * Subscribes a channel to cross-post messages from this channel.
-   * @param {string | GuildTextChannel} channel The channel to cross-post to.
+   * @param {string | TextChannel} channel The channel to cross-post to.
    * @returns {FollowedChannel} The follow result.
    */
-  public async follow(
-    channel: string | GuildTextChannel
-  ): Promise<FollowedChannel> {
+  public async follow(channel: string | TextChannel): Promise<FollowedChannel> {
     const data = await this.client.api.post<APIFollowedChannel>(
       `/channels/${this.id}/followers`,
       {
         body: {
           webhook_channel_id:
-            channel instanceof GuildTextChannel ? channel.id : channel,
+            channel instanceof TextChannel ? channel.id : channel,
         },
       }
     );
@@ -55,30 +49,6 @@ export class NewsChannel extends GuildTextChannel {
       `/channels/${this.id}/messages/${id}/crosspost`
     );
     return this.messages["_add"](data);
-  }
-
-  /**
-   * Modifies this news channel.
-   * @param {ModifyGuildChannel} data The data to modify the channel with.
-   * @param {string} [reason] The reason to provide.
-   */
-  public async modify(
-    data: ModifyGuildTextChannel,
-    reason?: string
-  ): Promise<this> {
-    return super.modify(
-      {
-        name: data.name,
-        position: data.position,
-        permissionOverwrites: data.permissionOverwrites,
-        topic: data.topic,
-        type: data.type,
-        nsfw: data.nsfw,
-        parent_id:
-          data.parent instanceof CategoryChannel ? data.parent.id : data.parent,
-      },
-      reason
-    );
   }
 }
 

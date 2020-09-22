@@ -11,7 +11,7 @@ import { DiscordStructure } from "../util";
 
 import type { APIChannel } from "discord-api-types";
 import type { DMChannel } from "../structures/channel/DMChannel";
-import type { Client } from "../lib";
+import type { Client } from "../internal";
 import type { UserResolvable } from "./UserManager";
 
 export class DMChannelManager extends BaseManager<DMChannel> {

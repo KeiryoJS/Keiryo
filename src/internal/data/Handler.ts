@@ -7,8 +7,8 @@
 import { capitalize } from "@neocord/utils";
 
 import type { GatewayEvent, Shard } from "@neocord/gateway";
-import type { Client } from "../Client";
 import type { GatewayDispatchPayload } from "discord-api-types/default";
+import type { Client } from "../Client";
 
 export abstract class Handler<T extends GatewayDispatchPayload = any> {
   /**

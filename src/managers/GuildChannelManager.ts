@@ -57,14 +57,22 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
   /**
    * Removes a channel from the guild.
    * @param {GuildChannel} channel The channel to remove.
+   * @param {string} [reason] The reason that the channel was deleted.
    * @returns {GuildChannel | null} The removed channel.
    */
   public async remove<T extends GuildChannel = GuildChannel>(
-    channel: BaseResolvable<T>
+    channel: BaseResolvable<T>,
+    reason?: string
   ): Promise<T | null> {
     const c = this.resolve(channel);
     if (c) {
-      await this.client.api.delete(`/guilds/${this.guild.id}/channels/${c.id}`);
+      await this.client.api.delete(
+        `/guilds/${this.guild.id}/channels/${c.id}`,
+        {
+          reason,
+        }
+      );
+
       c.deleted = true;
       return c as T;
     }

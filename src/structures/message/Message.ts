@@ -17,7 +17,7 @@ import { MessageMentions } from "./MessageMentions";
 import { NewsChannel } from "../channel/guild/NewsChannel";
 import { SnowflakeBase } from "../SnowflakeBase";
 
-import type { Client } from "../../lib";
+import type { Client } from "../../internal";
 import type { User } from "../other/User";
 import type { Guild } from "../guild/Guild";
 import type { Member } from "../guild/Member";
@@ -181,6 +181,15 @@ export class Message extends SnowflakeBase {
    */
   public async delete(options: MessageDeleteOptions = {}): Promise<this> {
     await this.channel.messages.remove(this, options);
+    return this;
+  }
+
+  /**
+   * Pins this message to the channel.
+   * @param reason
+   */
+  public async pin(reason?: string): Promise<Message> {
+    await this.channel.pins.add(this, reason);
     return this;
   }
 

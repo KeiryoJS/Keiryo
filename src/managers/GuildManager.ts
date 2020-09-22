@@ -8,7 +8,7 @@ import { BaseManager, BaseResolvable } from "./BaseManager";
 import { neo } from "../structures/Extender";
 
 import type { Guild } from "../structures/guild/Guild";
-import type { Client } from "../lib";
+import type { Client } from "../internal";
 import { DiscordStructure } from "../util";
 
 export class GuildManager extends BaseManager<Guild> {

@@ -7,7 +7,7 @@
 import type { WelcomeScreen } from "./WelcomeScreen";
 import type { Guild } from "../Guild";
 import type { APIGuildWelcomeScreenChannel } from "discord-api-types/default";
-import type { GuildTextChannel } from "../../channel/guild/GuildTextChannel";
+import type { TextBasedChannel } from "../../channel/Channel";
 
 export class WelcomeChannel {
   /**
@@ -59,9 +59,9 @@ export class WelcomeChannel {
 
   /**
    * The channel instance.
-   * @type {GuildTextChannel}
+   * @type {TextChannel}
    */
-  public get channel(): GuildTextChannel {
-    return this.guild.channels.get(this.channelId) as GuildTextChannel;
+  public get channel(): TextBasedChannel {
+    return this.guild.channels.get(this.channelId) as TextBasedChannel;
   }
 }

@@ -4,11 +4,10 @@
  * See the LICENSE file in the project root for more details.
  */
 
-export * from "./message/MessageBuilder";
 export * from "./message/MessageManager";
-
+export * from "./message/MessageBuilder";
 export * from "./proxy/MemberRoleManager";
-
+export * from "./proxy/PinnedMessageManager";
 export * from "./BanManager";
 export * from "./BaseManager";
 export * from "./ChannelManager";
@@ -17,8 +16,8 @@ export * from "./GuildChannelManager";
 export * from "./GuildManager";
 export * from "./MemberManager";
 export * from "./OverwriteManager";
-export * from "./ProxyManager";
 export * from "./PresenceManager";
+export * from "./ProxyManager";
 export * from "./RoleManager";
 export * from "./UserManager";
 export * from "./VoiceStateManager";

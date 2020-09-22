@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import type { Client } from "../lib";
+import type { Client } from "../internal";
 import type { DiscordStructure } from "../util";
 
 export abstract class Base {
@@ -52,6 +52,14 @@ export abstract class Base {
    */
   public clone(): this {
     return Object.assign(Object.create(this), this);
+  }
+
+  /**
+   * Freezes this structure.
+   * @returns {Readonly<this>}
+   */
+  public freeze(): Readonly<this> {
+    return Object.freeze(this);
   }
 
   /**

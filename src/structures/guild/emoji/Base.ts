@@ -6,7 +6,7 @@
 
 import { Emoji } from "../../other/Emoji";
 
-import type { Client } from "../../../lib";
+import type { Client } from "../../../internal";
 import type { Guild } from "../Guild";
 import type { APIEmoji } from "discord-api-types";
 import { has } from "@neocord/utils";

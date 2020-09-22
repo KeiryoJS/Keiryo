@@ -7,7 +7,7 @@
 import { ProxyCollection } from "../util";
 
 import type { Base } from "../structures";
-import type { Client } from "../lib";
+import type { Client } from "../internal";
 import type { BaseManager } from "./BaseManager";
 
 export class ProxyManager<S extends Base> extends ProxyCollection<string, S> {

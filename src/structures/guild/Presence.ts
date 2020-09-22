@@ -13,7 +13,7 @@ import type {
   GatewayPresenceUpdate,
   PresenceUpdateStatus,
 } from "discord-api-types";
-import type { Client } from "../../lib";
+import type { Client } from "../../internal";
 import type { Guild } from "./Guild";
 import type { Member } from "./Member";
 

@@ -4,20 +4,24 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Channel } from "./Channel";
 import { APIChannel, APIUser, ChannelType } from "discord-api-types";
+import { DiscordStructure } from "../../util";
+import { Channel } from "./Channel";
+
+import type { User } from "../other/User";
+import { Typing } from "./Typing";
 import {
   Builder,
+  BulkDeleteOptions,
   MessageAdd,
   MessageBuilder,
   MessageManager,
   MessageOptions,
+  MessageResolvable,
+  PinnedMessageManager,
 } from "../../managers";
-import { Typing } from "./Typing";
-import { DiscordStructure } from "../../util";
-
-import type { User } from "../other/User";
-import type { Client } from "../../lib";
+import type { snowflake } from "@neocord/utils";
+import type { Client } from "../../internal";
 import type { Message } from "../message/Message";
 
 export class DMChannel extends Channel {
@@ -28,24 +32,6 @@ export class DMChannel extends Channel {
    * @type {ChannelType.DM}
    */
   public readonly type = ChannelType.DM;
-
-  /**
-   * The messages manager.
-   * @type {MessageManager}
-   */
-  public readonly messages: MessageManager;
-
-  /**
-   * The typing manager for this DM channel.
-   * @type {Typing}
-   */
-  public readonly typing: Typing;
-
-  /**
-   * The ID of the last message sent in this DM channel.
-   * @type {string | null}
-   */
-  public lastMessageId!: string | null;
 
   /**
    * The recipients of this DM.
@@ -60,15 +46,45 @@ export class DMChannel extends Channel {
   public deleted = false;
 
   /**
-   * Creates a new instanceof DMChannel
-   * @param {Client} client The channel instance.
-   * @param {APIChannel} data The channel data.
+   * The typing helper for this channel.
+   * @type {Typing}
+   */
+  public readonly typing: Typing;
+
+  /**
+   * The message manager for this channel.
+   * @type {MessageManager}
+   */
+  public readonly messages: MessageManager;
+
+  /**
+   * The pinned message manager for this channel.
+   * @type {PinnedMessageManager}
+   */
+  public readonly pins: PinnedMessageManager;
+
+  /**
+   * The last message that was sent in this channel.
+   * @type {string}
+   */
+  public lastMessageId!: snowflake | null;
+
+  /**
+   * The last message to be pinned in this channel.
+   * @type {number | null}
+   */
+  public lastPinTimestamp!: number | null;
+
+  /**
+   * @param {Client} client The client instance.
+   * @param {APIChannel} data The data from discord.
    */
   public constructor(client: Client, data: APIChannel) {
     super(client, data);
 
     this.typing = new Typing(this);
     this.messages = new MessageManager(this);
+    this.pins = new PinnedMessageManager(this);
   }
 
   /**
@@ -104,16 +120,6 @@ export class DMChannel extends Channel {
   }
 
   /**
-   * Closes this DM.
-   * @returns {DMChannel}
-   */
-  public async close(): Promise<DMChannel> {
-    await this.client.dms.close(this.id);
-    this.deleted = true;
-    return this;
-  }
-
-  /**
    * Creates a new message.
    * @param {Builder} builder The message builder.
    * @returns {Promise<Message[]>} The created messages.
@@ -136,6 +142,7 @@ export class DMChannel extends Channel {
     content: MessageAdd,
     options?: MessageOptions
   ): Promise<Message[]>;
+
   /**
    * Creates a new message in this channel.
    * @param {MessageAdd} content The message content or builder.
@@ -150,6 +157,29 @@ export class DMChannel extends Channel {
   }
 
   /**
+   * Delete from 2-100 messages in a single request.
+   * @param {MessageResolvable[]} messages The messages to delete.
+   * @param {BulkDeleteOptions} [options] The bulk-delete options.
+   * @returns {Promise<string[]>} IDs of the deleted messages.
+   */
+  public async bulkDelete(
+    messages: MessageResolvable[] | number,
+    options: BulkDeleteOptions = {}
+  ): Promise<string[]> {
+    return this.messages.bulkDelete(messages, options);
+  }
+
+  /**
+   * Closes this DM.
+   * @returns {DMChannel}
+   */
+  public async close(): Promise<DMChannel> {
+    await this.client.dms.close(this.id);
+    this.deleted = true;
+    return this;
+  }
+
+  /**
    * Updates this dm channel with data from discord.
    * @protected
    */
@@ -158,6 +188,9 @@ export class DMChannel extends Channel {
       this.client.users["_add"](user)
     );
     this.lastMessageId = data.last_message_id as string | null;
+    this.lastPinTimestamp = data.last_pin_timestamp
+      ? Date.parse(data.last_pin_timestamp)
+      : null;
 
     return super._patch(data);
   }
