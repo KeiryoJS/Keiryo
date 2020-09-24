@@ -82,7 +82,7 @@ client.connect("your token here");
 
 - **Support Server**: [discord.gg/5WD9KhF](https://discord.gg/5WD9KhF)
 - **Github**: <https://github.com/neo-cord/neocord>
-- **NPM**: <https://npmjs.com/neocord/
+- **NPM**: <https://npmjs.com/neocord/>
 
 ---
 
