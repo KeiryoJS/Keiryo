@@ -1659,6 +1659,17 @@ export class Message extends SnowflakeBase {
    */
   edit(options: MessageEditOptions): Promise<Message>;
 
+  /** Edits this message.
+   * @param {MessageEditData} content The message edit content.
+   * @param {MessageEditOptions} [options] The message edit options.
+   */
+  edit(content: MessageEditData, options?: MessageEditOptions): Promise<Message>;
+
+  /**
+   * Suppresses the embeds of this message.
+   * @param {boolean} [suppress=true] Whether to suppress the embeds.
+   * @returms {Promise<Message>}
+   */
   suppressEmbeds(suppress?: boolean): Promise<Message>;
 
   /**

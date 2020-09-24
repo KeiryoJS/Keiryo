@@ -208,6 +208,15 @@ export class Message extends SnowflakeBase {
    */
   public edit(options: MessageEditOptions): Promise<Message>;
 
+  /** Edits this message.
+   * @param {MessageEditData} content The message edit content.
+   * @param {MessageEditOptions} [options] The message edit options.
+   */
+  public async edit(
+    content: MessageEditData,
+    options?: MessageEditOptions
+  ): Promise<Message>;
+
   /**
    * Edits this message.
    * @param {MessageEditData} content The message edit content.
