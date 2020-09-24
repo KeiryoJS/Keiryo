@@ -61,7 +61,7 @@ client
     
     const [cmd] = message.content.slice(prefix.length).split(/ /g);
     if (cmd.toLowerCase() === "ping") {
-      message.reply("**Pong!**");
+      message.channel.send("**Pong!**");
     }
 
     return;
