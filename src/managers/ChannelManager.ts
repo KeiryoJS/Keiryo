@@ -19,15 +19,10 @@ export class ChannelManager extends BaseManager<Channel> {
    * @param {Client} client The client instance.
    */
   public constructor(client: Client) {
-    super(client, neo.get("Channel"));
-  }
-
-  /**
-   * The total amount of channels that can be cached at one point in time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.Channel) ?? Infinity;
+    super(client, {
+      class: neo.get("Channel"),
+      structure: DiscordStructure.Channel,
+    });
   }
 
   /**

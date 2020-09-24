@@ -6,7 +6,7 @@
 
 import { Collection } from "@neocord/utils";
 import { BaseManager, BaseResolvable } from "./BaseManager";
-import { neo } from "../structures/Extender";
+import { neo } from "../structures";
 import { Channel } from "../structures/channel/Channel";
 import { DiscordStructure } from "../util";
 
@@ -30,19 +30,12 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
    * @param {Guild} guild The {@link Guild guild} instance.
    */
   public constructor(guild: Guild) {
-    super(guild.client, neo.get("GuildChannel"));
+    super(guild.client, {
+      class: neo.get("GuildChannel"),
+      structure: DiscordStructure.GuildChannel,
+    });
 
     this.guild = guild;
-  }
-
-  /**
-   * The amount of guild channels that can be cached at one point in time.
-   * @type {number}
-   */
-  public limit(): number {
-    return (
-      this.client.data.limits.get(DiscordStructure.GuildChannel) ?? Infinity
-    );
   }
 
   /**

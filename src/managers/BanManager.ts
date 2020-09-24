@@ -6,14 +6,14 @@
 
 import { Collection } from "@neocord/utils";
 import { BaseManager } from "./BaseManager";
-import { neo } from "../structures/Extender";
 import { URLSearchParams } from "url";
+import { DiscordStructure } from "../util";
+import { neo } from "../structures";
 
 import type { APIBan } from "discord-api-types";
 import type { Ban } from "../structures/guild/Ban";
 import type { Guild } from "../structures/guild/Guild";
 import type { UserResolvable } from "./UserManager";
-import { DiscordStructure } from "../util";
 
 export class BanManager extends BaseManager<Ban> {
   /**
@@ -27,17 +27,12 @@ export class BanManager extends BaseManager<Ban> {
    * @param {Guild} guild The {@link Guild guild} instance.
    */
   public constructor(guild: Guild) {
-    super(guild.client, neo.get("Ban"));
+    super(guild.client, {
+      structure: DiscordStructure.Ban,
+      class: neo.get("Ban"),
+    });
 
     this.guild = guild;
-  }
-
-  /**
-   * The total amount of bans that can be cached at one point in time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.Ban) ?? Infinity;
   }
 
   /**
@@ -107,12 +102,17 @@ export class BanManager extends BaseManager<Ban> {
    * @param {FetchBans} options The fetch options.
    * @returns {Promise<BanManager>} The ban manager.
    */
-  public fetch(options: { cache?: true }): Promise<this>;
+  public fetch(options: { cache?: true }): Promise<BanManager>;
 
+  /**
+   * Fetches a ban from the discord api.
+   * @param {FetchBans} options The options to use when fetching the ban.
+   * @param {boolean} [force] Whether to skip checking if the item is already cached.
+   */
   public async fetch(
     options: FetchBans = {},
     force?: boolean
-  ): Promise<Collection<string, Ban> | this | Ban> {
+  ): Promise<Collection<string, Ban> | BanManager | Ban> {
     const cache = options.cache ?? true;
     if (options.id) {
       if (!force) {
@@ -124,18 +124,20 @@ export class BanManager extends BaseManager<Ban> {
       const data = await this.client.api.get<APIBan>(
         `/guilds/${this.guild.id}/bans/${options.id}`
       );
-      const ban = new this._item(this.guild, data);
+      const ban = new this.class(this.guild, data);
       return cache ? this._add(ban) : ban;
     }
 
     // Fetch all bans.
-    const bans = await this.client.api.get<APIBan[]>(
-      `/guilds/${this.guild.id}/bans`
-    );
-    const col = cache ? this : new Collection<string, Ban>();
-    for (const data of bans) {
-      const ban = new this._item(data);
-      col.set(ban.id, ban);
+    const bans = await this.client.api.get(`/guilds/${this.guild.id}/bans`);
+    const col: BanManager | Collection<string, Ban> = cache
+      ? this
+      : new Collection<string, Ban>();
+
+    for (const data of bans as APIBan[]) {
+      const ban = new this.class(data);
+      if (col instanceof BaseManager) col._set(ban);
+      else col.set(ban.id, ban);
     }
 
     return col;

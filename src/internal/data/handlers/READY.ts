@@ -13,6 +13,6 @@ export default class READY extends Handler<GatewayReadyDispatch> {
   public handle(data: GatewayReadyDispatch): void {
     this.client.user = new ClientUser(this.client, data.d.user);
     for (const guild of data.d.guilds) this.client.guilds["_add"](guild);
-    this.client.users.set(this.client.user.id, this.client.user);
+    this.client.users.cache.set(this.client.user.id, this.client.user);
   }
 }

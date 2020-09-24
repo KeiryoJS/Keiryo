@@ -5,11 +5,11 @@
  */
 
 import { BaseManager, BaseResolvable } from "./BaseManager";
-import { neo } from "../structures/Extender";
+import { neo } from "../structures";
+import { DiscordStructure } from "../util";
 
 import type { Guild } from "../structures/guild/Guild";
 import type { Client } from "../internal";
-import { DiscordStructure } from "../util";
 
 export class GuildManager extends BaseManager<Guild> {
   /**
@@ -17,15 +17,10 @@ export class GuildManager extends BaseManager<Guild> {
    * @param {Client} client The client instance.
    */
   public constructor(client: Client) {
-    super(client, neo.get("Guild"));
-  }
-
-  /**
-   * The total amount of guilds that can be cached at one time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.Guild) ?? Infinity;
+    super(client, {
+      class: neo.get("Guild"),
+      structure: DiscordStructure.Guild,
+    });
   }
 
   /**

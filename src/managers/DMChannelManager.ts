@@ -5,7 +5,7 @@
  */
 
 import { BaseManager, BaseResolvable } from "./BaseManager";
-import { neo } from "../structures/Extender";
+import { neo } from "../structures";
 import { Channel } from "../structures/channel/Channel";
 import { DiscordStructure } from "../util";
 
@@ -20,15 +20,10 @@ export class DMChannelManager extends BaseManager<DMChannel> {
    * @param {Client} client The client instance.
    */
   public constructor(client: Client) {
-    super(client, neo.get("DMChannel"));
-  }
-
-  /**
-   * The total amount of dm channels that can be cached at one point in time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.DMChannel) ?? Infinity;
+    super(client, {
+      class: neo.get("DMChannel"),
+      structure: DiscordStructure.DMChannel,
+    });
   }
 
   /**
@@ -70,7 +65,7 @@ export class DMChannelManager extends BaseManager<DMChannel> {
     const existing = this.get(data.id);
     if (existing && existing.type === data.type)
       return existing["_patch"](data);
-    return this._set(new this._item(this.client, data));
+    return this._set(new this.class(this.client, data));
   }
 }
 

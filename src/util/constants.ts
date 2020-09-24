@@ -12,6 +12,11 @@ export enum ClientEvent {
   RoleUpdate = "roleUpdate",
 }
 
+export enum DebugTopic {
+  PacketHandling = "packet handling",
+  Janitor = "janitor",
+}
+
 export enum DiscordStructure {
   Guild,
   Role,

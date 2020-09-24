@@ -225,7 +225,7 @@ export class Message extends SnowflakeBase {
       `/channels/${this.channel.id}/messages/${this.id}`,
       edit
     );
-    return this.clone()._patch(data);
+    return this._clone()._patch(data);
   }
 
   public suppressEmbeds(suppress = true): Promise<Message> {

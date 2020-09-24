@@ -18,6 +18,7 @@ import type { Guild } from "./Guild";
 import type { GuildChannel } from "../channel/guild/GuildChannel";
 import type { MemberResolvable } from "../../managers";
 import type { Member } from "./Member";
+import type { Client } from "../../internal";
 
 /**
  * Represents a Discord Role.
@@ -94,11 +95,12 @@ export class Role extends SnowflakeBase {
 
   /**
    * Creates a new instanceof Role.
-   * @param {Guild} guild The guild that this role belongs to.
+   * @param {Client} client The client instance.
    * @param {APIRole} data Data sent from the Discord API.
+   * @param {Guild} guild The guild that this role belongs to.
    */
-  public constructor(guild: Guild, data: APIRole) {
-    super(guild.client);
+  public constructor(client: Client, data: APIRole, guild: Guild) {
+    super(client);
 
     this.id = data.id;
     this.guild = guild;

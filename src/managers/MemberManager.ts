@@ -7,7 +7,8 @@
 import { array, Collection } from "@neocord/utils";
 import { URLSearchParams } from "url";
 import { BaseManager, BaseResolvable } from "./BaseManager";
-import { neo } from "../structures/Extender";
+import { neo } from "../structures";
+import { DiscordStructure } from "../util";
 
 import type {
   APIGuildMember,
@@ -18,7 +19,6 @@ import type { User } from "../structures/other/User";
 import type { Member } from "../structures/guild/Member";
 import type { Guild } from "../structures/guild/Guild";
 import type { BanOptions } from "./BanManager";
-import { DiscordStructure } from "../util";
 
 export class MemberManager extends BaseManager<Member> {
   /**
@@ -32,28 +32,23 @@ export class MemberManager extends BaseManager<Member> {
    * @param {Guild} guild The guild instance.
    */
   public constructor(guild: Guild) {
-    super(guild.client, neo.get("Member"));
+    super(guild.client, {
+      structure: DiscordStructure.Member,
+      class: neo.get("Member"),
+    });
 
     this.guild = guild;
   }
 
   /**
-   * The total amount of members that can be cached at one point in time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.Member) ?? Infinity;
-  }
-
-  /**
    * Resolves something into a guild member {@link Member member}.
-   * @param {MemberResolvable} data The data to resolve.
+   * @param {MemberResolvable} item The data to resolve.
    * @returns {Member | null} The resolved ID or null if nothing was found.
    */
-  public resolve(data: MemberResolvable): Member | null {
-    let member = super.resolve(data);
+  public resolve(item: BaseResolvable<Member>): Member | null {
+    let member = super.resolve(item);
     if (!member) {
-      const user = this.client.users.resolve(data);
+      const user = this.client.users.resolve(item);
       if (user) member = super.resolve(user.id);
     }
 
@@ -102,7 +97,7 @@ export class MemberManager extends BaseManager<Member> {
 
   /**
    * Bans a member or user from the {@link Guild guild}.
-   * @param {MemberResolvable} target The {@link Memberm member} or {@link User user} to ban.
+   * @param {MemberResolvable} target The {@link Member member} or {@link User user} to ban.
    * @param {BanOptions} [options] The ban options.
    * @returns {Member | null} The banned {@link Member member}.
    */
@@ -221,7 +216,7 @@ export class MemberManager extends BaseManager<Member> {
   protected _add(data: APIGuildMember): Member {
     const existing = this.get((data.user as APIUser).id);
     if (existing) return existing["_patch"](data);
-    return this._set(new this._item(this.guild, data));
+    return this._set(new this.class(this.guild, data));
   }
 }
 

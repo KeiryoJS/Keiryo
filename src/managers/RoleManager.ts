@@ -4,14 +4,14 @@
  * See the LICENSE file in the project root for more details.
  */
 
+import { Collection } from "@neocord/utils";
 import { BaseManager, BaseResolvable } from "./BaseManager";
-import { neo } from "../structures/Extender";
+import { neo } from "../structures";
 import { DiscordStructure, PermissionResolvable, Permissions } from "../util";
 
 import type { APIRole, RESTGetAPIGuildRolesResult } from "discord-api-types";
 import type { Role } from "../structures/guild/Role";
 import type { Guild } from "../structures/guild/Guild";
-import { Collection } from "@neocord/utils";
 
 export class RoleManager extends BaseManager<Role> {
   /**
@@ -25,17 +25,12 @@ export class RoleManager extends BaseManager<Role> {
    * @param {Guild} guild The guild this role manager belongs to.
    */
   public constructor(guild: Guild) {
-    super(guild.client, neo.get("Role"));
+    super(guild.client, {
+      class: neo.get("Role"),
+      structure: DiscordStructure.Role,
+    });
 
     this.guild = guild;
-  }
-
-  /**
-   * The total amount roles that can be cached at one time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.Role) ?? Infinity;
   }
 
   /**
@@ -54,7 +49,7 @@ export class RoleManager extends BaseManager<Role> {
    * @param {RoleAddOptions} data The role data.
    * @param {string} [reason] The reason for adding this role..
    */
-  public async new(data: RoleAddOptions, reason?: string): Promise<Role> {
+  public async add(data: RoleAddOptions, reason?: string): Promise<Role> {
     const body = {
       ...data,
       permissions: Permissions.resolve(data.permissions),
@@ -92,14 +87,21 @@ export class RoleManager extends BaseManager<Role> {
    * Fetches a role from the discord api.
    * @param {string} role The ID of the role to fetch.
    * @param {boolean} [force] Skip checking if the role is already cached.
-   * @returns {Role} The fetched role.
+   * @returns {Promise<Role>} The fetched role.
    */
-  public async fetch(role: string, force?: boolean): Promise<Role>;
+  public fetch(role: string, force?: boolean): Promise<Role>;
+
   /**
    * Fetches all roles for the guild.
-   * @returns {RoleManager}
+   * @returns {Promise<Collection<string, Role>>}
    */
-  public async fetch(): Promise<Collection<string, Role>>;
+  public fetch(): Promise<Collection<string, Role>>;
+
+  /**
+   * Fetches a role or roles from the api.
+   * @param {string} [role] The role to fetch
+   * @param {boolean} [force] Whether to skip checking if the role is already cached.
+   */
   public async fetch(
     role?: string,
     force?: boolean
@@ -117,26 +119,14 @@ export class RoleManager extends BaseManager<Role> {
     }
 
     const col = new Collection<string, Role>(),
-      roles = await this.client.api.get<RESTGetAPIGuildRolesResult>(
-        `/guilds/${this.guild.id}/roles`
-      );
-    for (const data of roles) {
+      roles = await this.client.api.get(`/guilds/${this.guild.id}/roles`);
+
+    for (const data of roles as RESTGetAPIGuildRolesResult) {
       const role = this._add(data);
       col.set(role.id, role);
     }
 
     return col;
-  }
-
-  /**
-   * Adds a new role to this manager.
-   * @param {APIRole} data
-   * @private
-   */
-  protected _add(data: APIRole): Role {
-    const existing = this.get(data.id);
-    if (existing) return existing["_patch"](data);
-    return this._set(new this._item(this.guild, data));
   }
 }
 

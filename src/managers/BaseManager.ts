@@ -4,15 +4,28 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Class, Collection } from "@neocord/utils";
+import { Class, Collection, define } from "@neocord/utils";
+import * as Util from "util";
 
+import type { Client, MemoryEngine } from "../internal";
 import type { Base } from "../structures";
-import type { Client } from "../internal";
+import type { DiscordStructure } from "../util";
 
-export abstract class BaseManager<S extends Base> extends Collection<
-  string,
-  S
-> {
+export class BaseManager<S extends Base> {
+  /**
+   * The class to use.
+   * @type {Class}
+   * @protected
+   */
+  protected class: Class<S>;
+
+  /**
+   * The structure this manager manages.
+   * @type {DiscordStructure}
+   * @protected
+   */
+  protected structure: DiscordStructure;
+
   /**
    * The client instance.
    * @type {Client}
@@ -21,40 +34,26 @@ export abstract class BaseManager<S extends Base> extends Collection<
   private readonly _client!: Client;
 
   /**
-   * The item this manager holds.
-   * @type {Class}
-   * @private
-   */
-  protected readonly _item!: Class<S>;
-
-  /**
-   * Creates a new instanceof BaseManager
    * @param {Client} client The client instance.
-   * @param {Class} item The item this manager holds.
-   * @param {Iterable} [iterable] Pre-defined entries.
+   * @param {ManagerData} data The data for this manager.
    */
-  protected constructor(
-    client: Client,
-    item: Class<S>,
-    iterable?: Iterable<S>
-  ) {
-    super();
+  public constructor(client: Client, data: ManagerData<S>) {
+    this.class = data.class;
+    this.structure = data.structure;
 
-    Object.defineProperty(this, "_client", { value: client });
-    Object.defineProperty(this, "_item", { value: item });
-
-    if (iterable) {
-      for (const i of iterable) {
-        this._add(i);
-      }
-    }
+    define({
+      value: client,
+      writable: false,
+      configurable: false,
+      // @ts-expect-error
+    })(this, "_client");
   }
 
   /**
-   * Defines the extensibility of this class.
+   * The number of cached items in this
    */
-  public static get [Symbol.species](): typeof Collection {
-    return Collection;
+  public get size(): number {
+    return this.cache.size;
   }
 
   /**
@@ -66,18 +65,43 @@ export abstract class BaseManager<S extends Base> extends Collection<
   }
 
   /**
-   * How many items this manager can hold.
-   * @type {number}
+   * The engine that this manager uses to cache.
+   * @type {MemoryEngine}
    */
-  public abstract limit(): number;
+  public get engine(): MemoryEngine {
+    return this.client.data.engine;
+  }
 
   /**
-   * Resolves something into a structure.
-   * @param {string | Base} data The data to resolve.
-   * @returns {Base | null} The resolved item or null if nothing was found.
+   * The custom inspect text.
+   * @returns {string}
    */
-  public resolve(data: BaseResolvable<S>): S | null {
-    const id = this.resolveId(data);
+  public get [Util.inspect.custom](): string {
+    return "xd";
+  }
+
+  /**
+   * The cache of this base manager.
+   * @type {Collection<string, Base>}
+   */
+  public get cache(): Collection<string, S> {
+    return this.client.data.engine.all(this.structure);
+  }
+
+  /**
+   * @returns {typeof Collection}
+   */
+  public static [Symbol.species](): typeof Collection {
+    return Collection;
+  }
+
+  /**
+   * Resolves something into a usable object.
+   * @param {BaseResolvable} item The item to resolve.
+   * @returns {Promise<Base | null>}
+   */
+  public resolve(item: BaseResolvable<S>): S | null {
+    const id = this.resolveId(item);
     if (!id) return null;
     return this.get(id) ?? null;
   }
@@ -89,21 +113,86 @@ export abstract class BaseManager<S extends Base> extends Collection<
    */
   public resolveId(data: BaseResolvable<S>): string | null {
     if (typeof data === "string") return data;
-    if (data instanceof this._item || data.id) return data.id;
+    if (data instanceof this.class || data.id) return data.id;
     return null;
   }
 
   /**
-   * Sets a value to this store.
-   * @param {string} key The entry key.
-   * @param {Base} value The entry value.
-   * @returns {this}
+   * Clears the cache.
+   * @type {string}
    */
-  public set(key: string, value: S): this {
-    if (this.limit() === 0) return this;
-    if (this.size >= this.limit() && !this.has(key))
-      this.delete(this.first?.id as string);
-    return super.set(key, value);
+  public clear(): BaseManager<S> {
+    this.cache.clear();
+    return this;
+  }
+
+  /**
+   * Gets an item from the cache.
+   * @param {string} id
+   * @returns {Base | null}
+   */
+  public get(id: string): S | undefined {
+    return this.cache.get(id);
+  }
+
+  /**
+   * Whether an item is in the cache.
+   * @param {string} id The ID of the item to check for.
+   * @returns {boolean}
+   */
+  public has(id: string): boolean {
+    return this.cache.has(id);
+  }
+
+  /**
+   * The value iterator for this manager.
+   * @returns {IterableIterator<string, Base>}
+   */
+  public [Symbol.iterator](): IterableIterator<[string, S]> {
+    return this.entries();
+  }
+
+  /**
+   * Runs a function on each entry of this manager
+   * @param {Function} fn The function ran each iteration.
+   * @param {any} thisArg Optional binding for the predicate.
+   * @returns {Collection<string, Base>}
+   */
+  public forEach(
+    fn: (value: S, key: string, col: Map<string, S>) => void,
+    thisArg?: unknown
+  ): void {
+    if (thisArg) fn = fn.bind(thisArg);
+    this.cache.forEach(fn, thisArg);
+    return;
+  }
+
+  /**
+   * Returns a filtered manager based on the provided predicate.
+   * @param fn The predicate used to determine whether or not an entry can be passed to the new collection.
+   * @param {any} thisArg Optional binding for the predicate.
+   * @returns {Collection<string, Base>}
+   */
+  public filter(
+    fn: (value: S, key: string, col: this) => boolean,
+    thisArg?: unknown
+  ): Collection<string, S> {
+    if (thisArg) fn = fn.bind(thisArg);
+
+    const col = new Collection<string, S>();
+    for (const [k, v] of this) {
+      if (fn(v, k, this)) col.set(k, v);
+    }
+
+    return col;
+  }
+
+  /**
+   * Returns a clone of this collection.
+   * @returns {Collection<string, Base>}
+   */
+  public clone(): Collection<string, S> {
+    return new Collection<string, S>(this.entries());
   }
 
   /**
@@ -115,27 +204,149 @@ export abstract class BaseManager<S extends Base> extends Collection<
   }
 
   /**
-   * Sets an item to this manager.
-   * @type {*} data
-   * @private
+   * The keys iterator.
+   * @returns {AsyncIterator<[string, Base]>}
    */
-  protected _set(entry: S): S {
-    if (this._client.data.enabled.has(entry.structureType))
-      this.set(entry.id, entry);
-
-    return entry;
+  public *keys(): IterableIterator<string> {
+    yield* this.cache.keys();
   }
 
   /**
-   * Adds a new item to this manager.
-   * @type {Dictionary} data
-   * @private
+   * The keys iterator.
+   * @returns {AsyncIterator<[string, Base]>}
    */
-  protected _add(data: Dictionary): S {
-    const existing = this.get(data.id);
-    if (existing) return existing["_patch"](data);
-    return this._set(new this._item(this._client, data));
+  public *entries(): IterableIterator<[string, S]> {
+    yield* this.cache.entries();
+  }
+
+  /**
+   * The keys iterator.
+   * @returns {AsyncIterator<[string, Base]>}
+   */
+  public *values(): IterableIterator<S> {
+    yield* this.cache.values();
+  }
+
+  /**
+   * Adds an item to this manager.
+   * @param {Base} item The item to add.
+   * @protected
+   */
+  protected _set(item: S): S {
+    this.engine.set(this.structure, item.id, item);
+    return item;
+  }
+
+  /**
+   * Adds an item to this manager.
+   * @param {Dictionary} data
+   * @param {...*} args Args to pass to the class.
+   * @protected
+   */
+  protected _add(data: Dictionary, ...args: unknown[]): S {
+    const existing = this.cache.get(data.id);
+    if (existing) existing["_patch"](data);
+    return this._set(new this.class(this.client, data, ...args));
   }
 }
 
+for (const prop of ["each", "some", "map", "reduce", "find", "first", "last"]) {
+  Object.defineProperty(
+    BaseManager.prototype,
+    prop,
+    Reflect.getOwnPropertyDescriptor(
+      Collection.prototype,
+      prop
+    ) as PropertyDescriptor
+  );
+}
+
 export type BaseResolvable<T extends Base> = T | string | { id: string };
+
+export interface BaseManager<S extends Base> {
+  /**
+   * The first item in this manager.
+   * @type {Base | null}
+   */
+  first: S | null;
+
+  /**
+   * The last item in this manager.
+   * @type {Base | null}
+   */
+  last: S | null;
+
+  /**
+   * Tests whether or not an entry in this manager meets the provided predicate.
+   * @param {Function} predicate A predicate that tests all entries.
+   * @param {any} thisArg An optional binding for the predicate function.
+   */
+  some(
+    predicate: (value: S, key: string, col: this) => unknown,
+    thisArg?: unknown
+  ): boolean;
+
+  /**
+   * Collection#forEach but it returns the manager instead of nothing.
+   * @param {Function} fn The function to be ran on all entries.
+   * @param {any} thisArg An optional binding for the fn parameter.
+   */
+  each(
+    fn: (value: S, key: string, col: this) => unknown,
+    thisArg?: unknown
+  ): this;
+
+  /**
+   * Finds a value using a predicate from this manager.
+   * @param {Function} fn Function used to find the value.
+   * @param {any} thisArg Optional binding to use.
+   */
+  find(
+    fn: (value: S, key: string, col: this) => boolean,
+    thisArg?: unknown
+  ): S | null;
+
+  /**
+   * Reduces this manager down into a single value.
+   * @template {any} A
+   * @param {Function} fn The function used to reduce this manager.
+   * @param {A} acc The accumulator.
+   * @param {any} thisArg Optional binding for the reducer function.
+   * @returns
+   */
+  reduce<A>(
+    fn: (acc: A, value: S, key: string, col: this) => A,
+    acc: A,
+    thisArg?: unknown
+  ): A;
+
+  /**
+   * Maps this manager into an array. Array#map equivalent.
+   * T - The type of element of each element in the returned array.
+   * @template {any} T
+   * @param {Function} fn Function used to map values to an array.
+   * @param {any} thisArg Optional binding for the map function.
+   * @returns {T[]}
+   */
+  map<T>(fn: (value: S, key: string, col: this) => T, thisArg?: unknown): T[];
+
+  /**
+   * Returns a clone of this collection.
+   * @returns {Collection<string, Base>}
+   */
+  clone(): Collection<string, S>;
+}
+
+export interface ManagerData<S extends Base> {
+  /**
+   * The class to use when instantiating things.
+   * @type {Class}
+   */
+  class: Class<S>;
+
+  /**
+   * The structure that this manager handles.
+   * @type {DiscordStructure}
+   */
+  structure: DiscordStructure;
+}

@@ -8,4 +8,3 @@ export * from "./Permissions";
 export * from "./ImageResolver";
 export * from "./constants";
 export * from "./Util";
-export * from "./ProxyCollection";

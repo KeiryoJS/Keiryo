@@ -5,7 +5,7 @@
  */
 
 import { BaseManager, BaseResolvable } from "./BaseManager";
-import { neo } from "../structures/Extender";
+import { neo } from "../structures";
 import { DiscordStructure } from "../util";
 
 import type { User } from "../structures/other/User";
@@ -17,15 +17,10 @@ export class UserManager extends BaseManager<User> {
    * @param {Client} client The client instance.
    */
   public constructor(client: Client) {
-    super(client, neo.get("User"));
-  }
-
-  /**
-   * The total amount of users that can be cached at one time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.User) ?? Infinity;
+    super(client, {
+      class: neo.get("User"),
+      structure: DiscordStructure.User,
+    });
   }
 
   /**
@@ -36,18 +31,6 @@ export class UserManager extends BaseManager<User> {
   public async fetch(userId: string): Promise<User> {
     const _data = await this.client.api.get(`/users/${userId}`);
     return this._add(_data);
-  }
-
-  /**
-   * Sets an item to this manager.
-   * @type {User} data
-   * @private
-   */
-  protected _set(u: User): User {
-    if (this.client.data.enabled.has(u.structureType) || u.id === this.client.user?.id)
-      this.set(u.id, u);
-
-    return u;
   }
 }
 

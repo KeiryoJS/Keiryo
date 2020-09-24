@@ -17,7 +17,7 @@ export default class GUILD_ROLE_CREATE extends Handler<
     if (guild) {
       let role = guild.roles.get(pk.d.role.id);
       if (role) {
-        const old = role.clone();
+        const old = role._clone();
         role["_patch"](pk.d.role);
         guild.roles["_set"](role);
         return this.client.emit(ClientEvent.RoleUpdate, old, role);

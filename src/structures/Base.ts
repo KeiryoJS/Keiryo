@@ -50,7 +50,7 @@ export abstract class Base {
    * Clones this instance.
    * @returns {Base}
    */
-  public clone(): this {
+  public _clone(): this {
     return Object.assign(Object.create(this), this);
   }
 
@@ -58,7 +58,7 @@ export abstract class Base {
    * Freezes this structure.
    * @returns {Readonly<this>}
    */
-  public freeze(): Readonly<this> {
+  public _freeze(): Readonly<this> {
     return Object.freeze(this);
   }
 

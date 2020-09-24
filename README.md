@@ -3,19 +3,31 @@
 ---
 
 > NeoCord: A powerful and feature-rich discord library.
-> See [in-depth](#in-depth) for more details on things listed below.
 
-- **Coverage:** NeoCord covers the Discord Gateway, API/CDN, and in the near future, Voice. 
-- **Caching:** You can set a limit for each structure, set different providers, and even disable them.
+- **Coverage:** neocord covers the Discord Gateway, API/CDN, and in the near future, Voice. 
+- **Caching:** neocord has the most flexible and powerful caching out of all discord libraries (unless you're an eris fanboy).
+
+
+*Join our discord server for updates!*
+
+**[discord.gg/5WD9KhF](https://discord.gg/5WD9KhF)**
 
 <h2>Warning:</h2>
 
 NeoCord is currently in alpha, meaning it will probably be broken and might not work.
 If you want to contribute, please join our [support server](https://discord.gg/5WD9KhF) - It would be greatly appreciated.
 
+###### Missing Things
+
+- Invites
+- Guild Audit Logs
+- Guild Emojis
+
+These things will come soon.
+
 <h2 align="center">Installation and Usage</h2>
 
-As of **09/04/2020** (month/day/year), NeoCord can only be used with node.js v14. This may change in the future.
+As of **09/04/2020** (month/day/year), NeoCord can only be used with node.js v12 and up.
 
 ```shell script
 yarn add neocord
@@ -25,6 +37,8 @@ yarn add neocord
 
 **Basic Usage:**
 
+> Support: **[discord.gg/5WD9KhF](https://discord.gg/5WD9KhF)**
+>
 ```ts
 import { Client } from "neocord";
 
@@ -59,41 +73,7 @@ client.connect("your token here");
 
 <h2 align="center">In-Depth</h2>
 
-**Caching**
-
-> This is a very very ambitious concept, which may not come to life but would be really cool
-
-NeoCord allows the user to have multiple [data engines](#data-engines) which would control the caching for specific structures.
-There will be options for limiting the amount of items that can be cached, an option for sweeping structures from the cache, and disabling certain structures.
-
-```ts
-import { Client, DiscordStructure } from "neocord";
-import { RedisDataEngine, Sweepers } from "@neocord/engines";
-
-const client = new Client({
-  data: {
-    engines: [
-      new RedisDataEngine({
-        handles: new Set()
-          .add(DiscordStructure.Message)
-          .add(DiscordStructure.Presence),
-        sweepers: {
-          [DiscordStructure.Message]: Sweepers.Message({
-            lifetime: "30m",
-            interval: "5m"
-          })
-        }
-      })
-    ]
-  }
-});
-```
-
-###### Data Engines
-
-A data engine is what handles each aspect of neocord structures like limiting, caching and sweeping. 
-
-*work-in-progress, these are mostly concepts - with that in mind, the caching stuff might not happen, we'll have to find out.*
+*Nothing until full-release.*
 
 ---
 

@@ -18,7 +18,7 @@ export default class GUILD_ROLE_DELETE extends Handler<
       const role = guild.roles.get(pk.d.role_id);
       if (role) {
         role.deleted = true;
-        guild.roles.delete(role.id);
+        guild.roles.cache.delete(role.id);
         this.client.emit(ClientEvent.RoleDelete, role);
       }
     }

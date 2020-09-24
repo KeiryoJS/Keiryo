@@ -15,6 +15,7 @@ import type { NewsChannel } from "./guild/NewsChannel";
 import type { CategoryChannel } from "./guild/CategoryChannel";
 import type { StoreChannel } from "./guild/StoreChannel";
 import type { VoiceChannel } from "./guild/VoiceChannel";
+import { has } from "@neocord/utils";
 
 export abstract class Channel extends SnowflakeBase {
   /**
@@ -44,6 +45,12 @@ export abstract class Channel extends SnowflakeBase {
    * @type {ChannelType}
    */
   public abstract readonly type: ChannelType;
+
+  /**
+   * Whether this channel has been deleted.
+   * @type {boolean}
+   */
+  public deleted = false;
 
   /**
    * Creates a new instanceof Channel.
@@ -86,6 +93,26 @@ export abstract class Channel extends SnowflakeBase {
       `(Channels) Received unknown channel type: ${data.type}.`
     );
     return null;
+  }
+
+  /**
+   * Check whether a channel is in a guild..
+   * @param {DiscordChannel} channel The channel to check
+   * @returns {boolean} Whether the channel is in a guild or not.
+   */
+  public static isGuildBased(channel: Channel): channel is GuildBasedChannel {
+    // @ts-expect-error
+    return has(channel, "guild");
+  }
+
+  /**
+   * Check whether a channel is textable.
+   * @param {DiscordChannel} channel The channel to check
+   * @returns {boolean} Whether the channel is textable or not.
+   */
+  public static isTextable(channel: Channel): channel is TextBasedChannel {
+    // @ts-expect-error
+    return has(channel, "messages");
   }
 }
 

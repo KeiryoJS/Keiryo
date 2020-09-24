@@ -7,7 +7,7 @@
 import { APIChannel, ChannelType } from "discord-api-types";
 import { Duration, snowflake } from "@neocord/utils";
 import { CategoryChannel } from "./CategoryChannel";
-import { DiscordStructure } from "../../../util";
+import { DiscordStructure, Permission } from "../../../util";
 import { GuildChannel } from "./GuildChannel";
 import { Typing } from "../Typing";
 import {
@@ -103,6 +103,49 @@ export class TextChannel extends GuildChannel {
   }
 
   /**
+   * Whether the current user can attach files in this channel.
+   * @type {boolean}
+   */
+  public get attachable(): boolean {
+    return (
+      this.postable &&
+      (this.guild.me.permissionsIn(this).has(Permission.AttachFiles) ?? false)
+    );
+  }
+
+  /**
+   * If the current user can send messages in this channel.
+   * @type {boolean}
+   */
+  public get postable(): boolean {
+    return (
+      this.viewable &&
+      (this.guild.me?.permissionsIn(this).has(Permission.SendMessages) ?? false)
+    );
+  }
+
+  /**
+   * If the current user can embed links in this channel.
+   * @type {boolean}
+   */
+  public get embeddable(): boolean {
+    return (
+      this.postable &&
+      (this.guild.me.permissionsIn(this).has(Permission.EmbedLinks) ?? false)
+    );
+  }
+
+  /**
+   * If the current user can view this channel.
+   * @type {boolean}
+   */
+  public get viewable(): boolean {
+    return (
+      this.guild.me.permissionsIn(this).has(Permission.ViewChannel) ?? false
+    );
+  }
+
+  /**
    * Creates a new message.
    * @param {Builder} builder The message builder.
    * @returns {Promise<Message[]>} The created messages.
@@ -150,42 +193,6 @@ export class TextChannel extends GuildChannel {
     options: BulkDeleteOptions = {}
   ): Promise<string[]> {
     return this.messages.bulkDelete(messages, options);
-  }
-
-  /**
-   * Whether the current user can attach files in this channel.
-   * @type {boolean}
-   */
-  public get attachable(): boolean {
-    // TODO: get the permissions for the current user.
-    return true;
-  }
-
-  /**
-   * If the current user can send messages in this channel.
-   * @type {boolean}
-   */
-  public get postable(): boolean {
-    // TODO: get the permissions for the current user.
-    return true;
-  }
-
-  /**
-   * If the current user can embed links in this channel.
-   * @type {boolean}
-   */
-  public get embeddable(): boolean {
-    // TODO: get the permissions for the current user.
-    return true;
-  }
-
-  /**
-   * If the current user can view this channel.
-   * @type {boolean}
-   */
-  public get viewable(): boolean {
-    // TODO: get the permissions for the current user.
-    return true;
   }
 
   /**

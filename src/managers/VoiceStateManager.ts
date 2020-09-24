@@ -5,11 +5,11 @@
  */
 
 import { BaseManager } from "./BaseManager";
-import { neo } from "../structures/Extender";
+import { neo } from "../structures";
+import { DiscordStructure } from "../util";
 
 import type { VoiceState } from "../structures/guild/VoiceState";
 import type { Guild } from "../structures/guild/Guild";
-import { DiscordStructure } from "../util";
 
 export class VoiceStateManager extends BaseManager<VoiceState> {
   /**
@@ -23,16 +23,11 @@ export class VoiceStateManager extends BaseManager<VoiceState> {
    * @param {Guild} guild The guild instance.
    */
   public constructor(guild: Guild) {
-    super(guild.client, neo.get("VoiceState"));
+    super(guild.client, {
+      structure: DiscordStructure.VoiceState,
+      class: neo.get("VoiceState"),
+    });
 
     this.guild = guild;
-  }
-
-  /**
-   * The amount of voice states that can be cached at one time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.VoiceState) ?? Infinity;
   }
 }

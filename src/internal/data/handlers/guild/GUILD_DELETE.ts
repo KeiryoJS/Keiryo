@@ -19,7 +19,7 @@ export default class GUILD_DELETE extends Handler<GatewayGuildDeleteDispatch> {
         return;
       }
 
-      this.client.guilds.delete(guild.id);
+      this.client.guilds.cache.delete(guild.id);
       guild.deleted = true;
       this.client.emit(this.clientEvent, guild);
     }

@@ -83,7 +83,7 @@ export abstract class GuildChannel extends Channel {
    */
   public async delete(reason?: string): Promise<Readonly<this>> {
     await this.guild.channels.remove(this, reason);
-    return this.freeze();
+    return this._freeze();
   }
 
   /**
@@ -136,7 +136,7 @@ export abstract class GuildChannel extends Channel {
       for (const overwrite of overwrites) {
         const existing = existingOverwrites.find((o) => o.id === overwrite.id);
         if (existing) {
-          this.overwrites.set(existing.id, existing);
+          this.overwrites["_set"](existing);
           existingOverwrites.delete(existing.id);
         }
 

@@ -13,8 +13,8 @@ export default class GUILD_MEMBER_REMOVE extends Handler<
     const member = guild.members.get(pk.d.user.id);
     if (member) {
       member.deleted = true;
-      guild.members.delete(member.id);
-      guild.voiceStates.delete(member.id);
+      guild.members.cache.delete(member.id);
+      guild.voiceStates.cache.delete(member.id);
       return this.client.emit(this.clientEvent, Object.freeze(member), guild);
     }
   }

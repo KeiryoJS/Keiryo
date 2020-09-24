@@ -6,11 +6,10 @@
 
 import { BaseManager } from "./BaseManager";
 import { neo } from "../structures";
+import { DiscordStructure } from "../util";
 
 import type { Presence } from "../structures/guild/Presence";
 import type { Guild } from "../structures/guild/Guild";
-import type { GatewayPresenceUpdate } from "discord-api-types";
-import { DiscordStructure } from "../util";
 
 export class PresenceManager extends BaseManager<Presence> {
   /**
@@ -24,26 +23,11 @@ export class PresenceManager extends BaseManager<Presence> {
    * @param {Guild} guild The guild this manager belongs to.
    */
   public constructor(guild: Guild) {
-    super(guild.client, neo.get("Presence"));
+    super(guild.client, {
+      structure: DiscordStructure.Presence,
+      class: neo.get("Presence"),
+    });
 
     this.guild = guild;
-  }
-
-  /**
-   * The amount of presences that can be cached at one time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.Presence) ?? Infinity;
-  }
-
-  /**
-   * Adds a new presence to this manager
-   * @private
-   */
-  protected _add(data: GatewayPresenceUpdate): Presence {
-    const existing = this.get(data.user.id);
-    if (existing) existing["_patch"](data);
-    return this._set(new this._item(this.client, data, this.guild));
   }
 }

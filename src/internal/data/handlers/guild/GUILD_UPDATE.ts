@@ -12,7 +12,7 @@ export default class GUILD_UPDATE extends Handler {
   public handle(data: GatewayGuildUpdateDispatch): void | number {
     const guild = this.client.guilds.get(data.d.id);
     if (guild) {
-      const old = guild.clone();
+      const old = guild._clone();
       const updated = guild["_patch"](data.d);
       return this.client.emit(this.clientEvent, updated, old);
     }

@@ -14,7 +14,7 @@ export default class USER_UPDATE extends Handler<GatewayUserUpdateDispatch> {
   public handle(data: GatewayUserUpdateDispatch): number {
     let user = this.client.users.get(data.d.id) ?? null;
     if (user) {
-      const old = user.clone();
+      const old = user._clone();
       user["_patch"](data.d);
       return this.client.emit(this.clientEvent, user, old);
     }

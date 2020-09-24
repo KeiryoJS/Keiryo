@@ -4,15 +4,14 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { ChannelType } from "discord-api-types";
 import { GatewayEvent, GatewayOpCode, Payload, Shard } from "@neocord/gateway";
-import { Class, Collection, Duration, isClass, mergeObjects, Timers, walk } from "@neocord/utils";
+import { Class, Collection, isClass, mergeObjects, walk } from "@neocord/utils";
 import { basename, join } from "path";
 import { DiscordStructure } from "../../util";
 
 import type { Client } from "../Client";
 import type { Handler } from "./Handler";
-import type { TextBasedChannel } from "../../structures/channel/Channel";
+import { EngineOptions, MemoryEngine } from "./MemoryEngine";
 
 const packetWhitelist = [
   GatewayEvent.Ready,
@@ -27,17 +26,14 @@ const packetWhitelist = [
 const eventWhitelist = [
   GatewayEvent.Ready,
   GatewayEvent.Resumed,
+  GatewayEvent.GuildCreate,
+  GatewayEvent.GuildDelete,
 ];
 
 const DEFAULTS: DataOptions = {
   track: [],
   disabledEvents: [],
-  caching: {
-    enabled: true,
-    limits: Infinity,
-    messageSweepInterval: 0,
-    messageLifetime: 0,
-  },
+  engine: {},
 };
 
 /**
@@ -52,6 +48,12 @@ export class DataManager {
   public readonly client: Client;
 
   /**
+   * The provided engines.
+   * @type {MemoryEngine}
+   */
+  public readonly engine: MemoryEngine;
+
+  /**
    * The event stats.
    * @type {Collection<GatewayEvent, number>}
    */
@@ -62,12 +64,6 @@ export class DataManager {
    * @type {Array<GatewayEvent> | "all"}
    */
   public track: GatewayEvent[] | "all";
-
-  /**
-   * Limits for discord structures.
-   * @type {Map<DiscordStructure, number>}
-   */
-  public limits: Map<DiscordStructure, number>;
 
   /**
    * Discord structures that can be cached.
@@ -110,29 +106,21 @@ export class DataManager {
 
     this.client = client;
     this.track = [];
-    this.limits = new Map();
     this.disabledEvents = new Set(options.disabledEvents ?? []);
     this.enabled = new Set();
+    this.engine = new MemoryEngine(options.engine ?? {})
+      .on("debug", client.emit.bind(client, "debug"))
+      .on("error", client.emit.bind(client, "error"));
 
     this._all = new Collection();
     this._queue = [];
 
-    if (typeof options.caching?.limits === "number") {
-      for (const structure of Object.values(DiscordStructure)) {
-        this.limits.set(structure as DiscordStructure, options.caching.limits);
-      }
-    } else {
-      if (options.caching?.limits instanceof Map)
-        this.limits = options.caching.limits;
-      else this.limits = new Collection(options.caching?.limits ?? []);
-    }
-
-    if (typeof options.caching?.enabled === "boolean") {
-      if (options.caching.enabled)
+    if (typeof options?.enabled === "boolean") {
+      if (options.enabled)
         for (const structure of Object.values(DiscordStructure)) {
           this.enabled.add(structure as DiscordStructure);
         }
-    } else this.enabled = new Set(options.caching?.enabled ?? []);
+    } else this.enabled = new Set(options?.enabled ?? []);
 
     if (options.track) {
       this.stats = new Collection();
@@ -142,68 +130,12 @@ export class DataManager {
   }
 
   /**
-   * Sweeps the messages in all cached channels.
-   * @param {number | string} messageLifetime
-   */
-  public async sweepMessages(
-    messageLifetime: string | number
-  ): Promise<number> {
-    const now = Date.now();
-    const lifetime =
-      typeof messageLifetime === "string"
-        ? Duration.parse(messageLifetime)
-        : messageLifetime * 1000;
-
-    if (lifetime <= 0) {
-      this.client.emit(
-        "debug",
-        "(Message Sweeper) Didn't sweep messages - lifetime is unlimited"
-      );
-      return -1;
-    }
-
-    let messages = 0;
-    for (const [, channel] of this.client.channels) {
-      if (
-        [ChannelType.GUILD_TEXT, ChannelType.GUILD_NEWS].includes(channel.type)
-      )
-        continue;
-
-      messages += (channel as TextBasedChannel).messages.sweep((m) => {
-        return now - (m.editedTimestamp ?? m.createdTimestamp) > lifetime;
-      });
-    }
-
-    this.client.emit(
-      "debug",
-      `(Message Sweeper) Swept ${messages} messages across all cached channels.`
-    );
-    return messages;
-  }
-
-  /**
    * Initializes the packet handling system.
    */
   public async init(): Promise<void> {
-    const sweepInterval = this.options.caching?.messageSweepInterval;
-    if (sweepInterval && sweepInterval !== 0) {
-      const ms =
-        typeof sweepInterval === "string"
-          ? Duration.parse(sweepInterval)
-          : sweepInterval;
-
-      this.client.emit(
-        "debug",
-        `(Message Sweeper) Now sweeping every ${Duration.parse(ms, true)}.`
-      );
-
-      Timers.setInterval(() => {
-        this.sweepMessages(this.options.caching?.messageLifetime ?? 0);
-      }, ms);
-    }
-
     await this._load();
 
+    this.engine.janitor.start();
     this.client.ws.on("raw", (pk: Payload<Dictionary>, shard: Shard) =>
       this._handle(pk, shard)
     );
@@ -221,7 +153,9 @@ export class DataManager {
       if (!isClass(Handler)) {
         this.client.emit(
           "warn",
-          `Built-in packet handler for ${basename(file)} doesn't return a class, this should be reported.`
+          `Built-in packet handler for ${basename(
+            file
+          )} doesn't return a class, this should be reported.`
         );
         continue;
       }
@@ -279,42 +213,22 @@ export class DataManager {
       this.client.emit(
         "error",
         e,
-        `(Packet Handling) ‹${event}› An error occurred, this should be reported to the developers`
+        `(Packet Handling) ‹${event}› An error occurred, this should be reported to the developers.`
       );
     }
   }
 }
 
-export interface CachingOptions {
+export interface DataOptions {
+  /**
+   * Options for the default engine.
+   */
+  engine?: EngineOptions;
+
   /**
    * Whether caching is enabled.
    */
   enabled?: boolean | Set<DiscordStructure> | DiscordStructure[];
-
-  /**
-   * Caching limits for discord structures.
-   */
-  limits?:
-    | number
-    | Map<DiscordStructure, number>
-    | Tuple<DiscordStructure, number>[];
-
-  /**
-   * The total lifetime of a message, can either be in seconds or it can be a duration string.
-   */
-  messageLifetime?: number | string;
-
-  /**
-   * The interval in which to sweep messages, can either be seconds or it can be a duration string.
-   */
-  messageSweepInterval?: number | string;
-}
-
-export interface DataOptions {
-  /**
-   * Options for caching.
-   */
-  caching?: CachingOptions;
 
   /**
    * Events that wont be handled.

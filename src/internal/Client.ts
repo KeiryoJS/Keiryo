@@ -140,6 +140,7 @@ export class Client extends Emitter {
     try {
       await this._data.init();
       await this._ws.connect();
+
       return this;
     } catch (e) {
       this.destroy();
@@ -202,6 +203,4 @@ export interface ClientOptions {
    * Options for data.
    */
   data?: DataOptions;
-
-  disableDebugging?: Set<"packetHandling" | "">
 }

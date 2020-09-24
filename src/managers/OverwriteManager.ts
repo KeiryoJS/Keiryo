@@ -28,7 +28,10 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
    * @param {GuildChannel} channel The guild channel this manager belongs to.
    */
   public constructor(channel: GuildChannel) {
-    super(channel.client, neo.get("PermissionOverwrite"));
+    super(channel.client, {
+      class: neo.get("PermissionOverwrite"),
+      structure: DiscordStructure.Overwrite,
+    });
 
     this.channel = channel;
   }
@@ -39,14 +42,6 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
    */
   public get guild(): Guild {
     return this.channel.guild;
-  }
-
-  /**
-   * The total amount of permission overwrites that can be cached at one point in time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.Overwrite) ?? Infinity;
   }
 
   /**
@@ -145,17 +140,6 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
     }
 
     return { everyone, role: this.get(target.id) };
-  }
-
-  /**
-   * Adds a new permission overwrite to this manager.
-   * @param {APIOverwrite} data
-   * @private
-   */
-  protected _add(data: APIOverwrite): PermissionOverwrite {
-    const existing = this.get(data.id);
-    if (existing) return existing["_patch"](data);
-    return this._set(new this._item(this.client, data, this.channel));
   }
 }
 

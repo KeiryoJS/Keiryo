@@ -11,9 +11,9 @@ import { neo } from "../../structures";
 import { Embed } from "../../structures/other/Embed";
 import { DiscordStructure, makeSafeQuery } from "../../util";
 
-import type { Message } from "../../structures/message/Message";
 import type { RequestData } from "@neocord/rest";
 import type { APIMessage } from "discord-api-types";
+import type { Message } from "../../structures/message/Message";
 import type { TextBasedChannel } from "../../structures/channel/Channel";
 
 export class MessageManager extends BaseManager<Message> {
@@ -27,17 +27,12 @@ export class MessageManager extends BaseManager<Message> {
    * @param {TextBasedChannel} channel The text channel instance.
    */
   public constructor(channel: TextBasedChannel) {
-    super(channel.client, neo.get("Message"));
+    super(channel.client, {
+      class: neo.get("Message"),
+      structure: DiscordStructure.Message,
+    });
 
     this.channel = channel;
-  }
-
-  /**
-   * The total amount of messages that can be cached at one point in time.
-   * @type {number}
-   */
-  public limit(): number {
-    return this.client.data.limits.get(DiscordStructure.Message) ?? Infinity;
   }
 
   /**
