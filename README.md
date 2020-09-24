@@ -1,31 +1,26 @@
-<img src="https://repository-images.githubusercontent.com/291619880/8b583d80-eb6d-11ea-8300-3206ef4d5136" />
+<img align="center" src="https://repository-images.githubusercontent.com/291619880/8b583d80-eb6d-11ea-8300-3206ef4d5136" />
 
 ---
 
-> NeoCord: A powerful and feature-rich discord library.
+> NeoCord is currently in alpha, meaning it will probably be broken and might not work.
+  If you want to contribute, please join our [support server](https://discord.gg/5WD9KhF) - It would be greatly appreciated.
 
-- **Coverage:** neocord covers the Discord Gateway, API/CDN, and in the near future, Voice. 
-- **Caching:** neocord has the most flexible and powerful caching out of all discord libraries (unless you're an eris fanboy).
+###### Table of Contents
 
+- [about](#about)
+- [installation](#installation)
+    - [optional packages](#option-packages)
+    - [basic usage](#basic-usage) 
 
-*Join our discord server for updates!*
+<h2 align="center">About</h2>
 
-**[discord.gg/5WD9KhF](https://discord.gg/5WD9KhF)**
+Neocord is a powerful and feature-rich discord library.
 
-<h2>Warning:</h2>
+- **Flexible**: Gives you the ability to extend specific structures, customize caching to your needs.
+- **Coverage**: Covers the Discord Gateway, API, CDN, and in the near future, Voice.
+- **Caching**: Boasts the most powerful and flexible caching solution across most discord libraries.
 
-NeoCord is currently in alpha, meaning it will probably be broken and might not work.
-If you want to contribute, please join our [support server](https://discord.gg/5WD9KhF) - It would be greatly appreciated.
-
-###### Missing Things
-
-- Invites
-- Guild Audit Logs
-- Guild Emojis
-
-These things will come soon.
-
-<h2 align="center">Installation and Usage</h2>
+## Installation
 
 As of **09/04/2020** (month/day/year), NeoCord can only be used with node.js v12 and up.
 
@@ -33,12 +28,24 @@ As of **09/04/2020** (month/day/year), NeoCord can only be used with node.js v12
 yarn add neocord
 ```
 
----
+##### Optional Packages
 
-**Basic Usage:**
+These are some optional packages you can install.
 
-> Support: **[discord.gg/5WD9KhF](https://discord.gg/5WD9KhF)**
->
+- Install **zlib-sync** or **pako** for data compression and inflation 
+    > - **[zlib-sync](https://npmjs.com/zlib-sync/)**    
+    > - **[pako](https://npmjs.com/pako/)**
+    > - or the native **zlib** module (no installation)
+
+
+- **[erlpack](https://npmjs.com/erlpack)** for significantly faster websocket (de)serialization. 
+- **[bufferutil](https://npmjs.com/bufferutil)** for a much faster websocket connection.
+    > And **[utf-8-validate](https://npmjs.com/utf-8-validate)** for faster websocket processing.
+
+
+##### Basic Usage
+
+`(typescript)` 
 ```ts
 import { Client } from "neocord";
 
@@ -71,9 +78,11 @@ client
 client.connect("your token here"); 
 ```
 
-<h2 align="center">In-Depth</h2>
+## Links
 
-*Nothing until full-release.*
+- **Support Server**: [discord.gg/5WD9KhF](https://discord.gg/5WD9KhF)
+- **Github**: <https://github.com/neo-cord/neocord>
+- **NPM**: <https://npmjs.com/neocord/
 
 ---
 
