@@ -26,6 +26,7 @@ import { Ban } from "./guild/Ban";
 import { Channel } from "./channel/Channel";
 import { Presence } from "./guild/Presence";
 import { MessageAttachment } from "./message/MessageAttachment";
+import { Integration } from "./guild/Integration";
 
 const structures = {
   WelcomeChannel,
@@ -41,7 +42,7 @@ const structures = {
   Message,
   User,
   MessageAttachment,
-
+  Integration,
   CategoryChannel,
   GuildChannel,
   NewsChannel,
