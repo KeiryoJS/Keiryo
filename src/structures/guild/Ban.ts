@@ -5,14 +5,13 @@
  */
 
 import { SnowflakeBase } from "../SnowflakeBase";
-import { DiscordStructure } from "../../util";
 
-import type { Guild } from "./Guild";
 import type { APIBan } from "discord-api-types";
+import type { Guild } from "./Guild";
+import type { User } from "../other/User";
+import type { Client } from "../../internal";
 
 export class Ban extends SnowflakeBase {
-  public readonly structureType = DiscordStructure.Ban;
-
   /**
    * ID of the banned user.
    * @type {string}
@@ -38,18 +37,26 @@ export class Ban extends SnowflakeBase {
   public deleted = false;
 
   /**
-   * Creates a new instanceof Ban.
-   * @param {Guild} guild The guild instance.
+   * @param {Client} client The client instance.
    * @param {APIBan} data The ban data from discord.
+   * @param {Guild} guild The guild instance.
    */
-  public constructor(guild: Guild, data: APIBan) {
-    super(guild.client);
+  public constructor(client: Client, data: APIBan, guild: Guild) {
+    super(client);
 
     this.id = this.client.users["_add"](data.user).id;
     this.guild = guild;
     this.reason = data.reason;
 
     this._patch(data);
+  }
+
+  /**
+   * The user that this ban is for.
+   * @type {User}
+   */
+  public get user(): User | null {
+    return this.client.users.get(this.id) ?? null;
   }
 
   /**
