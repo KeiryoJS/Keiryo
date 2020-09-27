@@ -9,7 +9,7 @@ import { ClientEvent } from "../../../../../util";
 
 import type { GatewayGuildRoleUpdateDispatch } from "discord-api-types";
 
-export default class GUILD_ROLE_CREATE extends Handler<
+export default class GUILD_ROLE_UPDATE extends Handler<
   GatewayGuildRoleUpdateDispatch
 > {
   public handle(pk: GatewayGuildRoleUpdateDispatch): number | void {

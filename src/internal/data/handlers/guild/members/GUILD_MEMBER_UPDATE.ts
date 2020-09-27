@@ -2,7 +2,7 @@ import { Handler } from "../../../Handler";
 
 import type { GatewayGuildMemberUpdateDispatch } from "discord-api-types";
 
-export default class GUILD_MEMBER_ADD extends Handler<
+export default class GUILD_MEMBER_UPDATE extends Handler<
   GatewayGuildMemberUpdateDispatch
 > {
   public handle(pk: GatewayGuildMemberUpdateDispatch): number | void {
