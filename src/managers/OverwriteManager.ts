@@ -13,7 +13,6 @@ import type { Role } from "../structures/guild/Role";
 import type { PermissionOverwrite } from "../structures/guild/PermissionOverwrite";
 import type { GuildChannel } from "../structures/channel/guild/GuildChannel";
 import type { Guild } from "../structures/guild/Guild";
-import type { RequiredExcept } from "./message/MessageBuilder";
 import type { APIOverwrite } from "discord-api-types";
 
 export class OverwriteManager extends BaseManager<PermissionOverwrite> {
@@ -21,7 +20,7 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
    * The channel this overwrite manager belongs to.
    * @type {GuildChannel}
    */
-  public readonly channel: GuildChannel;
+  readonly #channel: GuildChannel;
 
   /**
    * Creates a new instanceof OverwriteManager.
@@ -33,7 +32,15 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
       structure: DiscordStructure.Overwrite,
     });
 
-    this.channel = channel;
+    this.#channel = channel;
+  }
+
+  /**
+   * The channel that this manager belongs to.
+   * @type {GuildChannel}
+   */
+  public get channel(): GuildChannel {
+    return this.#channel;
   }
 
   /**
@@ -41,38 +48,8 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
    * @type {Guild}
    */
   public get guild(): Guild {
-    return this.channel.guild;
+    return this.#channel.guild;
   }
-
-  /**
-   * Adds a new permission overwrite to the channel permissions.
-   * @param {string} id The member or role.
-   * @param {OverwriteOptions} options The overwrite options.
-   */
-  public add(
-    id: string,
-    options: RequiredExcept<OverwriteOptions, "reason">
-  ): Promise<PermissionOverwrite>;
-
-  /**
-   * Adds a new permission overwrite to the channel permissions.
-   * @param {Role} target The role.
-   * @param {OverwriteOptions} options The overwrite options.
-   */
-  public add(
-    target: Role,
-    options: Omit<OverwriteOptions, "type">
-  ): Promise<PermissionOverwrite>;
-
-  /**
-   * Adds a new permission overwrite to the channel permissions.
-   * @param {Member} target The member.
-   * @param {OverwriteOptions} options The overwrite options.
-   */
-  public add(
-    target: Member,
-    options: Omit<OverwriteOptions, "type">
-  ): Promise<PermissionOverwrite>;
 
   /**
    * Adds a new permission overwrite to this channel.
@@ -105,7 +82,10 @@ export class OverwriteManager extends BaseManager<PermissionOverwrite> {
       body,
     });
 
-    return this._add({ id, ...body } as APIOverwrite);
+    return this._add({
+      id,
+      ...body,
+    } as APIOverwrite);
   }
 
   /**

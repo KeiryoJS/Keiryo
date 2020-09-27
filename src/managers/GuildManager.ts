@@ -24,8 +24,8 @@ export class GuildManager extends BaseManager<Guild> {
   }
 
   /**
-   * Deletes this guild. Current user must be the owner.
-   * @param {BaseResolvable} guild The guild to remove.
+   * Deletes the guild. Current user must be the owner.
+   * @param {GuildResolvable} guild The guild to remove.
    * @returns {Guild | null} The guild that was removed.
    */
   public async remove(guild: GuildResolvable): Promise<Guild | null> {
@@ -56,7 +56,9 @@ export class GuildManager extends BaseManager<Guild> {
    */
   public async fetch(guild: string): Promise<Guild> {
     const data = await this.client.api.get(`/guilds/${guild}`, {
-      query: { with_counts: "true" },
+      query: {
+        with_counts: true,
+      },
     });
 
     return this._add(data);

@@ -18,11 +18,9 @@ export default class MESSAGE_DELETE extends Handler<
   ): Channel | undefined {
     const guild = guildId ? client.guilds.get(guildId) : null;
 
-    const channel = guild
+    return guild
       ? guild.channels.get<TextChannel>(channelId)
       : client.dms.get(channelId);
-
-    return channel;
   }
 
   public handle(

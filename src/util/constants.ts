@@ -32,6 +32,7 @@ export enum DiscordStructure {
   User,
   Invite,
   GuildChannel,
+  Integration,
 }
 
 export enum Color {

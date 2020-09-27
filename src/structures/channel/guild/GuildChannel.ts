@@ -6,7 +6,8 @@
 
 import { Channel } from "../Channel";
 import { PermissionOverwrite } from "../../guild/PermissionOverwrite";
-import { OverwriteManager } from "../../../managers";
+import { ChannelInviteManager, OverwriteManager } from "../../../managers";
+import { exclude, Permission } from "../../../util";
 
 import type { CategoryChannel } from "./CategoryChannel";
 import type {
@@ -23,6 +24,12 @@ export abstract class GuildChannel extends Channel {
    * @type {Guild}
    */
   public readonly guild: Guild;
+
+  /**
+   * All invites for this channel.
+   * @type {ChannelInviteManager}
+   */
+  public readonly invites: ChannelInviteManager;
 
   /**
    * The permission overwrites that belong to this channel.
@@ -64,6 +71,7 @@ export abstract class GuildChannel extends Channel {
     super(client, data);
 
     this.guild = guild ?? (client.guilds.get(data.guild_id as string) as Guild);
+    this.invites = new ChannelInviteManager(this);
   }
 
   /**
@@ -74,6 +82,25 @@ export abstract class GuildChannel extends Channel {
     return this.parentId
       ? this.guild.channels.get<CategoryChannel>(this.parentId) ?? null
       : null;
+  }
+
+  /**
+   * Whether the current user can view this channel.
+   * @type {boolean}
+   */
+  public get viewable(): boolean {
+    return this.guild.me.permissionsIn(this).has(Permission.ViewChannel);
+  }
+
+  /**
+   * Whether the current user can manage this channel.
+   * @type {boolean}
+   */
+  public get manageable(): boolean {
+    return (
+      this.viewable &&
+      this.guild.me.permissionsIn(this).has(Permission.ManageChannels, false)
+    );
   }
 
   /**
@@ -88,28 +115,22 @@ export abstract class GuildChannel extends Channel {
 
   /**
    * Modifies this channel.
-   * @param {ModifyGuildChannel} data The channel modify options.
+   * @param {EditGuildChannel} data The channel modify options.
    * @param {string} [reason] The reason for updating this channel.
    */
-  public async modify(
-    data: ModifyGuildChannel,
-    reason?: string
-  ): Promise<this> {
+  public async edit(data: EditGuildChannel, reason?: string): Promise<this> {
     const result = await this.client.api.patch<RESTPatchAPIChannelResult>(
       `/channels/${this.id}`,
       {
         reason,
         body: {
-          name: data.name,
-          position: data.position,
-          permission_overwrites: data.permissionOverwrites
-            ? data.permissionOverwrites.map((o) =>
+          ...exclude(data, "permissionOverwrites", "parent"),
+          permission_overwrites:
+            data.permissionOverwrites &&
+            data.permissionOverwrites.map((o) =>
               PermissionOverwrite.resolve(o, this.guild)
-            )
-            : data.permissionOverwrites,
-          parent_id: data.parent
-            ? this.guild.channels.resolveId(data.parent)
-            : data.parent,
+            ),
+          parent_id: data.parent && this.guild.channels.resolveId(data.parent),
         },
       }
     );
@@ -150,7 +171,7 @@ export abstract class GuildChannel extends Channel {
   }
 }
 
-export interface ModifyGuildChannel extends Dictionary {
+export interface EditGuildChannel extends Dictionary {
   name?: string;
   position?: number | null;
   permissionOverwrites?: (PermissionOverwrite | APIOverwrite)[] | null;

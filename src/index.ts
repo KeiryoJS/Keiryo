@@ -12,7 +12,7 @@ export * from "./structures/channel/guild/VoiceChannel";
 
 export * from "./structures/channel/Channel";
 export * from "./structures/channel/DMChannel";
-export * from "./structures/channel/Typing";
+export * from "./structures/channel/TypingManager";
 
 export * from "./structures/guild/emoji/Base";
 export * from "./structures/guild/emoji/GuildEmoji";
@@ -28,12 +28,14 @@ export * from "./structures/guild/PermissionOverwrite";
 export * from "./structures/guild/Presence";
 export * from "./structures/guild/Role";
 export * from "./structures/guild/VoiceState";
+export * from "./structures/guild/Integration";
 
 export * from "./structures/message/Message";
 export * from "./structures/message/MessageAttachment";
 export * from "./structures/message/MessageMentions";
 
 export * from "./structures/other/ClientUser";
+export * from "./structures/other/Typing";
 export * from "./structures/other/Embed";
 export * from "./structures/other/Emoji";
 export * from "./structures/other/Invite";

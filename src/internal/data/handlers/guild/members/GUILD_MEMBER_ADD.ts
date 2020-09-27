@@ -10,7 +10,7 @@ export default class GUILD_MEMBER_ADD extends Handler<
     const guild = this.client.guilds.get(pk.d.guild_id);
     if (!guild) return;
 
-    const member = new (neo.get("Member"))(guild, pk.d);
+    const member = new (neo.get("Member"))(guild, pk.d, guild);
     member.guild.members["_set"](member);
     if (member.guild.memberCount !== null) ++member.guild.memberCount;
 

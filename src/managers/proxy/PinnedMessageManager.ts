@@ -51,7 +51,7 @@ export class PinnedMessageManager extends ProxyManager<Message> {
         }
       );
 
-      this.delete(toPin.id);
+      this._delete(toPin.id);
     }
 
     return toPin;
@@ -76,7 +76,7 @@ export class PinnedMessageManager extends ProxyManager<Message> {
         }
       );
 
-      this.set(toPin.id);
+      this._set(toPin.id);
     }
 
     return toPin;

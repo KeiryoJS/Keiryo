@@ -30,6 +30,18 @@ export class MemberRoleManager extends ProxyManager<Role> {
   }
 
   /**
+   * The highest role that this member has.
+   * @type {Role | null}
+   */
+  public get highest(): Role | null {
+    return this.reduce(
+      // @ts-expect-error
+      (h, r) => (h?.position > r.position ? h : r),
+      this.first
+    );
+  }
+
+  /**
    * The guild the channel belongs to.
    * @type {Guild}
    */

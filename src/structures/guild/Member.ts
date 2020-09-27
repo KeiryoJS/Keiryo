@@ -5,19 +5,24 @@
  */
 
 import { Base } from "../Base";
-import { BanOptions, MemberRoleManager } from "../../managers";
-import { DiscordStructure, Permissions } from "../../util";
+import {
+  BanOptions,
+  BaseResolvable,
+  MemberRoleManager,
+  RoleResolvable,
+} from "../../managers";
+import { exclude, Permission, Permissions } from "../../util";
 
 import type { APIGuildMember } from "discord-api-types/default";
-import type { Guild } from "./Guild";
 import type { User } from "../other/User";
-import type { VoiceState } from "./VoiceState";
 import type { GuildChannel } from "../channel/guild/GuildChannel";
+import type { VoiceChannel } from "../channel/guild/VoiceChannel";
+import type { Guild } from "./Guild";
+import type { VoiceState } from "./VoiceState";
 import type { Presence } from "./Presence";
+import type { Client } from "../../internal";
 
 export class Member extends Base {
-  public readonly structureType = DiscordStructure.Member;
-
   /**
    * The ID of this member.
    * @type {string}
@@ -74,14 +79,15 @@ export class Member extends Base {
 
   /**
    * Creates a new instanceof Member
-   * @param {Guild} guild
+   * @param {Client} client
    * @param {APIGuildMember} data
+   * @param {string} guild The guild that this role belongs to.
    */
-  public constructor(guild: Guild, data: APIGuildMember) {
-    super(guild.client);
+  public constructor(client: Client, data: APIGuildMember, guild: Guild) {
+    super(client);
 
-    this.id = data.user?.id as string;
     this.guild = guild;
+    this.id = data.user?.id as string;
     this.roles = new MemberRoleManager(this);
   }
 
@@ -110,10 +116,9 @@ export class Member extends Base {
       return new Permissions(Permissions.ALL).freeze();
 
     const perms = new Permissions(this.roles.map((r) => r.permissions));
-    return (perms.has(Permissions.FLAGS.Administrator)
-      ? perms.add(Permissions.ALL)
-      : perms
-    ).freeze();
+    if (perms.has(Permission.Administrator)) perms.add(Permissions.ALL);
+
+    return perms.freeze();
   }
 
   /**
@@ -138,6 +143,46 @@ export class Member extends Base {
    */
   public get mention(): string {
     return `<@${this.nickname ? "!" : ""}${this.id}>`;
+  }
+
+  /**
+   * Whether the current user can ban this member.
+   * @type {boolean}
+   */
+  public get bannable(): boolean {
+    return (
+      this.manageable && this.guild.me.permissions.has(Permission.BanMembers)
+    );
+  }
+
+  /**
+   * Whether the current user can ban this member.
+   * @type {boolean}
+   */
+  public get kickable(): boolean {
+    return (
+      this.manageable && this.guild.me.permissions.has(Permission.KickMembers)
+    );
+  }
+
+  /**
+   * Whether the current user can manage this member.
+   * @type {boolean}
+   */
+  public get manageable(): boolean {
+    const me = this.guild.me;
+
+    // If the current user is the guild owner, then it can manage itself.
+    if (this.guild.ownerId === me.id) return true;
+
+    // If this member is owner, then the current user cannot manage it.
+    if (this.guild.ownerId === this.id) return false;
+
+    const highest = this.roles.highest;
+    const meHighest = me.roles.highest;
+    return !highest || !meHighest
+      ? false
+      : meHighest.position > highest.position;
   }
 
   /**
@@ -189,7 +234,7 @@ export class Member extends Base {
   /**
    * Kicks this member from the {@link Guild guild}.
    * @param {string} [reason] The audit-log reason.
-   * @returns {Member}
+   * @returns {Promise<Member>}
    */
   public async kick(reason?: string): Promise<Readonly<Member>> {
     const mem = await this.guild.members.kick(this, reason);
@@ -199,11 +244,41 @@ export class Member extends Base {
   /**
    * Bans this member from the {@link Guild guild}.
    * @param {BanOptions} [options] The options for the {@link Ban ban}.
-   * @returns {Member}
+   * @returns {Promise<Member>}
    */
   public async ban(options?: BanOptions): Promise<Readonly<Member>> {
-    await this.guild.bans.new(this, options);
+    await this.guild.bans.add(this, options);
     return Object.freeze(this);
+  }
+
+  /**
+   * Edits this member
+   * @param {MemberUpdateData} data The data to update the member with.
+   * @param {string} [reason] The reason for editing this member.
+   * @returns {Promise<this>}
+   */
+  public async edit(data: MemberUpdateData, reason?: string): Promise<this> {
+    await this.client.api.patch(`/guilds/${this.guild.id}/members/${this.id}`, {
+      reason,
+      body: {
+        ...exclude(data, "channel", "roles"),
+        channel_id: data.channel
+          ? this.guild.channels.resolveId(data.channel)
+          : data.channel,
+        roles: (data.roles ?? []).map((r) => this.guild.roles.resolveId(r)),
+      },
+    });
+
+    return this;
+  }
+
+  /**
+   * Fetches this member from the api.
+   * @param {boolean} [force] Whether to skip the cache check.
+   * @returns {Promise<Member>}
+   */
+  public fetch(force?: boolean): Promise<Member> {
+    return this.guild.members.fetch(this.id, force);
   }
 
   /**
@@ -220,8 +295,44 @@ export class Member extends Base {
       ? Date.parse(data.premium_since)
       : null;
 
-    if (data.roles) for (const role of data.roles) this.roles.set(role);
+    if (data.roles) {
+      for (const role of data.roles) {
+        this.roles["_set"](role);
+      }
+    }
 
     return this;
   }
+}
+
+export interface MemberUpdateData {
+  /**
+   * Array of roles the member is assigned.
+   * @type {RoleResolvable[]}
+   */
+  roles?: RoleResolvable[];
+
+  /**
+   * Value to set users nickname to.
+   * @type {?string}
+   */
+  nick?: string | null;
+
+  /**
+   * Whether the user is deafened in voice channels.
+   * @type {boolean}
+   */
+  deaf?: boolean;
+
+  /**
+   * Whether the user is muted in voice channels.
+   * @type {boolean}
+   */
+  mute?: boolean;
+
+  /**
+   * ID of channel to move user to (if they are connected to voice)
+   * @type {BaseResolvable<VoiceChannel>}
+   */
+  channel?: BaseResolvable<VoiceChannel> | null;
 }

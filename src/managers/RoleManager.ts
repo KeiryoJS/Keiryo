@@ -122,7 +122,7 @@ export class RoleManager extends BaseManager<Role> {
       roles = await this.client.api.get(`/guilds/${this.guild.id}/roles`);
 
     for (const data of roles as RESTGetAPIGuildRolesResult) {
-      const role = this._add(data);
+      const role = this._add(data, this.guild);
       col.set(role.id, role);
     }
 

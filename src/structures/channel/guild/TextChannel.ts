@@ -6,10 +6,9 @@
 
 import { APIChannel, ChannelType } from "discord-api-types";
 import { Duration, snowflake } from "@neocord/utils";
-import { CategoryChannel } from "./CategoryChannel";
-import { DiscordStructure, Permission } from "../../../util";
-import { GuildChannel } from "./GuildChannel";
-import { Typing } from "../Typing";
+import { exclude, Permission } from "../../../util";
+import { EditGuildChannel, GuildChannel } from "./GuildChannel";
+import { TypingManager } from "../TypingManager";
 import {
   Builder,
   BulkDeleteOptions,
@@ -21,20 +20,13 @@ import {
   PinnedMessageManager,
 } from "../../../managers";
 
-import type { ModifyGuildChannel } from "./GuildChannel";
 import type { Client } from "../../../internal";
 import type { Message } from "../../message/Message";
+import type { Guild } from "../../guild/Guild";
 
 const MAX_RATE_LIMIT = 21600;
 
 export class TextChannel extends GuildChannel {
-  /**
-   * The structure type of this channel.
-   * @type {DiscordStructure}
-   */
-  public readonly structureType: DiscordStructure =
-    DiscordStructure.GuildChannel;
-
   /**
    * The type of this channel.
    * @type {ChannelType.GUILD_TEXT}
@@ -43,9 +35,9 @@ export class TextChannel extends GuildChannel {
 
   /**
    * The typing helper for this channel.
-   * @type {Typing}
+   * @type {TypingManager}
    */
-  public readonly typing: Typing;
+  public readonly typing: TypingManager;
 
   /**
    * The message manager for this channel.
@@ -93,11 +85,12 @@ export class TextChannel extends GuildChannel {
   /**
    * @param {Client} client The client instance.
    * @param {APIChannel} data The data from discord.
+   * @param {Guild} guild The guild instance.
    */
-  public constructor(client: Client, data: APIChannel) {
-    super(client, data);
+  public constructor(client: Client, data: APIChannel, guild: Guild) {
+    super(client, data, guild);
 
-    this.typing = new Typing(this);
+    this.typing = new TypingManager(this);
     this.messages = new MessageManager(this);
     this.pins = new PinnedMessageManager(this);
   }
@@ -197,10 +190,10 @@ export class TextChannel extends GuildChannel {
 
   /**
    * Modifies this text channel.
-   * @param {ModifyGuildChannel} data The data to modify the channel with.
+   * @param {EditGuildChannel} data The data to modify the channel with.
    * @param {string} [reason] The reason to provide.
    */
-  public async modify(data: ModifyTextChannel, reason?: string): Promise<this> {
+  public async edit(data: EditTextChannel, reason?: string): Promise<this> {
     let ratelimit =
       typeof data.userRatelimit === "string"
         ? Duration.parse(data.userRatelimit)
@@ -218,17 +211,10 @@ export class TextChannel extends GuildChannel {
       }
     }
 
-    return super.modify(
+    return super.edit(
       {
-        name: data.name,
-        position: data.position,
-        permissionOverwrites: data.permissionOverwrites,
-        topic: data.topic,
-        type: data.type,
-        nsfw: data.nsfw,
+        ...exclude(data, "userRatelimit"),
         rate_limit_per_user: ratelimit,
-        parent_id:
-          data.parent instanceof CategoryChannel ? data.parent.id : data.parent,
       },
       reason
     );
@@ -252,13 +238,9 @@ export class TextChannel extends GuildChannel {
   }
 }
 
-export interface ModifyTextChannel extends ModifyGuildTextChannel {
+export interface EditTextChannel extends EditGuildChannel {
   userRatelimit?: number | string | null;
-}
-
-export interface ModifyGuildTextChannel extends ModifyGuildChannel {
   type?: ChannelType.GUILD_TEXT | ChannelType.GUILD_NEWS;
   topic?: string | null;
   nsfw?: boolean;
-  parent?: string | CategoryChannel;
 }

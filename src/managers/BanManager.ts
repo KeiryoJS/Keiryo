@@ -5,7 +5,7 @@
  */
 
 import { Collection } from "@neocord/utils";
-import { BaseManager } from "./BaseManager";
+import { BaseManager, CLASS } from "./BaseManager";
 import { URLSearchParams } from "url";
 import { DiscordStructure } from "../util";
 import { neo } from "../structures";
@@ -41,7 +41,7 @@ export class BanManager extends BaseManager<Ban> {
    * @param {BanOptions} [options] The ban options. {@see BanOptions}
    * @returns {Promise<BanManager>} The {@link BanManager ban manager}
    */
-  public async new(
+  public async add(
     user: UserResolvable,
     options: BanOptions = {}
   ): Promise<BanManager> {
@@ -124,7 +124,7 @@ export class BanManager extends BaseManager<Ban> {
       const data = await this.client.api.get<APIBan>(
         `/guilds/${this.guild.id}/bans/${options.id}`
       );
-      const ban = new this.class(this.guild, data);
+      const ban = new this[CLASS](this.guild, data);
       return cache ? this._add(ban) : ban;
     }
 
@@ -135,7 +135,7 @@ export class BanManager extends BaseManager<Ban> {
       : new Collection<string, Ban>();
 
     for (const data of bans as APIBan[]) {
-      const ban = new this.class(data);
+      const ban = this._add(data, this.guild);
       if (col instanceof BaseManager) col._set(ban);
       else col.set(ban.id, ban);
     }

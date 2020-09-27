@@ -20,7 +20,7 @@ export default class GUILD_MEMBERS_CHUNK extends Handler<
       return;
     }
 
-    const members = pk.d.members.map((m) => guild.members["_add"](m));
+    const members = pk.d.members.map((m) => guild.members["_add"](m, guild));
     if (pk.d.presences) {
       for (const presence of pk.d.presences) guild.presences["_add"](presence);
     }

@@ -40,6 +40,25 @@ export function parseColor(hex: ColorResolvable): number {
 }
 
 /**
+ * Returns an object without the provided keys.
+ * @param {Dictionary} obj The object.
+ * @param {string[]} keys The keys to exclude.
+ */
+export function exclude<O extends Dictionary, K extends keyof O>(
+  obj: O,
+  ...keys: K[]
+): Omit<O, K> {
+  const o: Dictionary = {};
+  for (const key of Object.keys(obj)) {
+    if (!keys.includes(key as K)) {
+      o[key] = obj[key];
+    }
+  }
+
+  return o as O;
+}
+
+/**
  * Alternative to Node's `path.basename`, removing query string after the extension if it exists.
  * @param {string} path Path to get the basename of
  * @param {string} [ext] File extension to remove

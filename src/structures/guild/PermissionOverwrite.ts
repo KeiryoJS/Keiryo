@@ -6,12 +6,7 @@
 
 import { APIOverwrite, OverwriteType } from "discord-api-types";
 import { Base } from "../Base";
-import {
-  DiscordStructure,
-  Permission,
-  PermissionResolvable,
-  Permissions,
-} from "../../util";
+import { Permission, PermissionResolvable, Permissions } from "../../util";
 import { Role } from "./Role";
 
 import type { Client } from "../../internal";
@@ -19,8 +14,6 @@ import type { GuildChannel } from "../channel/guild/GuildChannel";
 import type { Guild } from "./Guild";
 
 export class PermissionOverwrite extends Base {
-  public readonly structureType = DiscordStructure.Overwrite;
-
   /**
    * The role or user ID.
    * @type {string}
@@ -145,7 +138,7 @@ export class PermissionOverwrite extends Base {
    * @param {string} [reason] Reason for creating/editing this overwrite.
    * @returns {PermissionOverwrite}
    */
-  public async update(
+  public async edit(
     options: Record<Permission, boolean | null>,
     reason?: string
   ): Promise<PermissionOverwrite> {

@@ -110,7 +110,7 @@ export class MessageManager extends BaseManager<Message> {
       split.map((d) => this.client.api.post<APIMessage[]>(ep, d))
     );
 
-    return messages.map((m) => this._add(m));
+    return messages.map((m) => this._add(m, this.channel));
   }
 
   /**
@@ -211,7 +211,7 @@ export class MessageManager extends BaseManager<Message> {
         const data = await this.client.api.get(
           `/channels/${this.channel.id}/messages/${options}`
         );
-        msg = this._add(data);
+        msg = this._add(data, this.channel);
       }
 
       return msg;
@@ -226,7 +226,7 @@ export class MessageManager extends BaseManager<Message> {
       );
 
     for (const data of messages) {
-      const message = this._add(data);
+      const message = this._add(data, this.channel);
       col.set(message.id, message);
     }
 

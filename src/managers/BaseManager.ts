@@ -7,9 +7,12 @@
 import { Class, Collection, define } from "@neocord/utils";
 import * as Util from "util";
 
-import type { Client, MemoryEngine } from "../internal";
+import type { Cache, Client } from "../internal";
 import type { Base } from "../structures";
 import type { DiscordStructure } from "../util";
+
+export const CLASS = Symbol.for("BaseManagerClass");
+export const STRUCTURE = Symbol.for("BaseManagerStructure");
 
 export class BaseManager<S extends Base> {
   /**
@@ -17,36 +20,39 @@ export class BaseManager<S extends Base> {
    * @type {Class}
    * @protected
    */
-  protected class: Class<S>;
+  protected [CLASS]: Class<S>;
 
   /**
    * The structure this manager manages.
    * @type {DiscordStructure}
    * @protected
    */
-  protected structure: DiscordStructure;
+  protected [STRUCTURE]: DiscordStructure;
+
+  /**
+   * The cache instance.
+   */
+  readonly #cache: Cache<S>;
 
   /**
    * The client instance.
    * @type {Client}
    * @private
    */
-  private readonly _client!: Client;
+  readonly #client!: Client;
 
   /**
    * @param {Client} client The client instance.
    * @param {ManagerData} data The data for this manager.
    */
   public constructor(client: Client, data: ManagerData<S>) {
-    this.class = data.class;
-    this.structure = data.structure;
+    // @ts-expect-error
+    define({ value: data.class })(this, CLASS);
+    // @ts-expect-error
+    define({ value: data.structure })(this, STRUCTURE);
 
-    define({
-      value: client,
-      writable: false,
-      configurable: false,
-      // @ts-expect-error
-    })(this, "_client");
+    this.#client = client;
+    this.#cache = client.data.cache.new(this[STRUCTURE]);
   }
 
   /**
@@ -61,15 +67,7 @@ export class BaseManager<S extends Base> {
    * @type {Client}
    */
   public get client(): Client {
-    return this._client;
-  }
-
-  /**
-   * The engine that this manager uses to cache.
-   * @type {MemoryEngine}
-   */
-  public get engine(): MemoryEngine {
-    return this.client.data.engine;
+    return this.#client;
   }
 
   /**
@@ -82,10 +80,10 @@ export class BaseManager<S extends Base> {
 
   /**
    * The cache of this base manager.
-   * @type {Collection<string, Base>}
+   * @type {Cache<Base>}
    */
-  public get cache(): Collection<string, S> {
-    return this.client.data.engine.all(this.structure);
+  public get cache(): Cache<S> {
+    return this.#cache;
   }
 
   /**
@@ -113,7 +111,7 @@ export class BaseManager<S extends Base> {
    */
   public resolveId(data: BaseResolvable<S>): string | null {
     if (typeof data === "string") return data;
-    if (data instanceof this.class || data.id) return data.id;
+    if (data instanceof this[CLASS] || data.id) return data.id;
     return null;
   }
 
@@ -168,10 +166,9 @@ export class BaseManager<S extends Base> {
   }
 
   /**
-   * Returns a filtered manager based on the provided predicate.
-   * @param fn The predicate used to determine whether or not an entry can be passed to the new collection.
-   * @param {any} thisArg Optional binding for the predicate.
-   * @returns {Collection<string, Base>}
+   * Returns a filtered collection based on the provided predicate.
+   * @param {Function} fn The predicate used to determine whether or not an entry can be passed to the new collection.
+   * @param {*} thisArg Optional binding for the predicate.
    */
   public filter(
     fn: (value: S, key: string, col: this) => boolean,
@@ -179,12 +176,12 @@ export class BaseManager<S extends Base> {
   ): Collection<string, S> {
     if (thisArg) fn = fn.bind(thisArg);
 
-    const col = new Collection<string, S>();
+    const col = new Collection();
     for (const [k, v] of this) {
       if (fn(v, k, this)) col.set(k, v);
     }
 
-    return col;
+    return col as Collection<string, S>;
   }
 
   /**
@@ -233,7 +230,7 @@ export class BaseManager<S extends Base> {
    * @protected
    */
   protected _set(item: S): S {
-    this.engine.set(this.structure, item.id, item);
+    this.cache.set(item.id, item);
     return item;
   }
 
@@ -246,7 +243,7 @@ export class BaseManager<S extends Base> {
   protected _add(data: Dictionary, ...args: unknown[]): S {
     const existing = this.cache.get(data.id);
     if (existing) existing["_patch"](data);
-    return this._set(new this.class(this.client, data, ...args));
+    return this._set(new this[CLASS](this.client, data, ...args));
   }
 }
 
@@ -295,6 +292,17 @@ export interface BaseManager<S extends Base> {
     fn: (value: S, key: string, col: this) => unknown,
     thisArg?: unknown
   ): this;
+
+  /**
+   * Returns a filtered manager based on the provided predicate.
+   * @param fn The predicate used to determine whether or not an entry can be passed to the new collection.
+   * @param {any} thisArg Optional binding for the predicate.
+   * @returns {Collection<string, Base>}
+   */
+  filter(
+    fn: (value: S, key: string, col: this) => boolean,
+    thisArg?: unknown
+  ): Collection<string, S>;
 
   /**
    * Finds a value using a predicate from this manager.

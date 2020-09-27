@@ -9,13 +9,17 @@ import type { BaseManager } from "./BaseManager";
 import type { Client } from "../internal";
 import { Collection } from "@neocord/utils";
 
-export class ProxyManager<S extends Base> extends Collection<string, S> {
+export class ProxyManager<S extends Base> {
   /**
    * The manager this proxies.
    * @type {BaseManager}
    */
   public readonly manager: BaseManager<S>;
 
+  /**
+   * All keys.
+   * @private
+   */
   #keys: string[];
 
   /**
@@ -24,8 +28,6 @@ export class ProxyManager<S extends Base> extends Collection<string, S> {
    * @param {string[]} [keys]
    */
   public constructor(manager: BaseManager<S>, keys?: string[]) {
-    super();
-
     this.manager = manager;
     this.#keys = keys ?? [];
   }
@@ -36,6 +38,14 @@ export class ProxyManager<S extends Base> extends Collection<string, S> {
    */
   public get client(): Client {
     return this.manager.client;
+  }
+
+  /**
+   * Cached items for this manager.
+   * @type {Collection<string, S>}
+   */
+  public get cache(): Collection<string, S> {
+    return this.manager.cache.filter((_v, k) => this.#keys.includes(k));
   }
 
   /**
@@ -60,7 +70,7 @@ export class ProxyManager<S extends Base> extends Collection<string, S> {
    * @returns {* | undefined}
    */
   public get(key: string): S | undefined {
-    return this.#keys.includes(key) ? this.manager.get(key) : undefined;
+    return this.#keys.includes(key) ? this.cache.get(key) : undefined;
   }
 
   /**
@@ -70,28 +80,6 @@ export class ProxyManager<S extends Base> extends Collection<string, S> {
    */
   public has(key: string): boolean {
     return this.#keys.includes(key) && this.manager.has(key);
-  }
-
-  /**
-   * Adds a key to the
-   * @param {any} key
-   * @returns {ProxyManager}
-   */
-  public set(key: string): this {
-    if (!this.#keys.includes(key) && this.manager.has(key))
-      this.#keys.push(key);
-    return this;
-  }
-
-  /**
-   * Removes a key from this store.
-   * @param {any} key
-   * @returns {boolean}
-   */
-  public delete(key: string): boolean {
-    const i = this.#keys.indexOf(key);
-    if (i !== -1) this.#keys.splice(i, 1);
-    return i !== -1;
   }
 
   /**
@@ -152,4 +140,112 @@ export class ProxyManager<S extends Base> extends Collection<string, S> {
     for (const [key, value] of this.manager.entries())
       if (this.#keys.includes(key)) yield value;
   }
+
+  /**
+   * Removes a key from this store.
+   * @param {any} key
+   * @returns {boolean}
+   */
+  protected _delete(key: string): boolean {
+    const i = this.#keys.indexOf(key);
+    if (i !== -1) this.#keys.splice(i, 1);
+    return i !== -1;
+  }
+
+  /**
+   * Adds a key to the
+   * @param {any} key
+   * @returns {ProxyManager}
+   */
+  protected _set(key: string): this {
+    if (!this.#keys.includes(key) && this.manager.has(key))
+      this.#keys.push(key);
+
+    return this;
+  }
+}
+
+for (const prop of ["each", "some", "map", "reduce", "find", "first", "last"]) {
+  Object.defineProperty(
+    ProxyManager.prototype,
+    prop,
+    Reflect.getOwnPropertyDescriptor(
+      Collection.prototype,
+      prop
+    ) as PropertyDescriptor
+  );
+}
+
+export interface ProxyManager<S extends Base> {
+  /**
+   * The first item in this manager.
+   * @type {Base | null}
+   */
+  first: S | null;
+
+  /**
+   * The last item in this manager.
+   * @type {Base | null}
+   */
+  last: S | null;
+
+  /**
+   * Tests whether or not an entry in this manager meets the provided predicate.
+   * @param {Function} predicate A predicate that tests all entries.
+   * @param {any} thisArg An optional binding for the predicate function.
+   */
+  some(
+    predicate: (value: S, key: string, col: this) => unknown,
+    thisArg?: unknown
+  ): boolean;
+
+  /**
+   * Collection#forEach but it returns the manager instead of nothing.
+   * @param {Function} fn The function to be ran on all entries.
+   * @param {any} thisArg An optional binding for the fn parameter.
+   */
+  each(
+    fn: (value: S, key: string, col: this) => unknown,
+    thisArg?: unknown
+  ): this;
+
+  /**
+   * Finds a value using a predicate from this manager.
+   * @param {Function} fn Function used to find the value.
+   * @param {any} thisArg Optional binding to use.
+   */
+  find(
+    fn: (value: S, key: string, col: this) => boolean,
+    thisArg?: unknown
+  ): S | null;
+
+  /**
+   * Reduces this manager down into a single value.
+   * @template {any} A
+   * @param {Function} fn The function used to reduce this manager.
+   * @param {A} acc The accumulator.
+   * @param {any} thisArg Optional binding for the reducer function.
+   * @returns
+   */
+  reduce<A>(
+    fn: (acc: A, value: S, key: string, col: this) => A,
+    acc: A,
+    thisArg?: unknown
+  ): A;
+
+  /**
+   * Maps this manager into an array. Array#map equivalent.
+   * T - The type of element of each element in the returned array.
+   * @template {any} T
+   * @param {Function} fn Function used to map values to an array.
+   * @param {any} thisArg Optional binding for the map function.
+   * @returns {T[]}
+   */
+  map<T>(fn: (value: S, key: string, col: this) => T, thisArg?: unknown): T[];
+
+  /**
+   * Returns a clone of this collection.
+   * @returns {Collection<string, Base>}
+   */
+  clone(): Collection<string, S>;
 }

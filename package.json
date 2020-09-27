@@ -1,6 +1,6 @@
 {
   "name": "neocord",
-  "version": "0.0.0-alpha.4",
+  "version": "0.0.0-alpha.5",
   "description": "A powerful and feature-rich discord library.",
   "keywords": [
     "discord",
@@ -25,17 +25,16 @@
     "format": "prettier --write src/ && yarn lint:fix"
   },
   "dependencies": {
-    "@neocord/gateway": "^1.1.0",
+    "@neocord/gateway": "^1.2.1",
     "@neocord/rest": "^1.2.0",
     "@neocord/utils": "1.0.15",
     "discord-api-types": "^0.5.0"
   },
   "devDependencies": {
     "@neocord/eslint-config": "neo-cord/eslint-config",
-    "@types/lru-cache": "^5.1.0",
-    "@types/node": "^14.11.1",
-    "@typescript-eslint/eslint-plugin": "^4.1.1",
-    "@typescript-eslint/parser": "^4.1.1",
+    "@types/node": "^14.11.2",
+    "@typescript-eslint/eslint-plugin": "^4.2.0",
+    "@typescript-eslint/parser": "^4.2.0",
     "discord.js-docgen": "discordjs/docgen",
     "eslint": "^7.9.0",
     "jsdoc": "^3.6.6",

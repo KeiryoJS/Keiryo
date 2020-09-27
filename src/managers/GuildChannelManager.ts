@@ -23,7 +23,7 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
    * The guild this channel cache belongs to.
    * @type {Guild}
    */
-  public readonly guild: Guild;
+  readonly #guild: Guild;
 
   /**
    * Creates a new instanceof GuildChannelCache
@@ -35,7 +35,15 @@ export class GuildChannelManager extends BaseManager<GuildChannel> {
       structure: DiscordStructure.GuildChannel,
     });
 
-    this.guild = guild;
+    this.#guild = guild;
+  }
+
+  /**
+   * The guild this channel cache belongs to.
+   * @type {Guild}
+   */
+  public get guild(): Guild {
+    return this.#guild;
   }
 
   /**

@@ -1,4 +1,4 @@
-import { ISMEvent, ISMOptions, ShardManager } from "@neocord/gateway";
+import { ShardManager, ShardManagerOptions, SMEvent } from "@neocord/gateway";
 import { Emitter, Timers } from "@neocord/utils";
 import { API, APIEvent, APIOptions } from "@neocord/rest";
 import { DataManager, DataOptions } from "./data/DataManager";
@@ -6,6 +6,7 @@ import {
   ChannelManager,
   DMChannelManager,
   GuildManager,
+  InviteManager,
   UserManager,
 } from "../managers";
 
@@ -38,16 +39,28 @@ export class Client extends Emitter {
   public readonly dms: DMChannelManager;
 
   /**
+   * The manager for discord invites.
+   * @type {InviteManager}
+   */
+  public readonly invites: InviteManager;
+
+  /**
    * The current user.
-   * @type {ClientUser?}
+   * @type {?ClientUser}
    */
   public user?: ClientUser;
 
   /**
    * The token of this client.
-   * @type {string}
+   * @type {?string}
    */
-  public token!: string;
+  public token?: string;
+
+  /**
+   * When the client last became ready.
+   * @type {?number}
+   */
+  public readyAt?: number;
 
   /**
    * The internal sharding manager for this client.
@@ -97,12 +110,13 @@ export class Client extends Emitter {
     this.users = new UserManager(this);
     this.channels = new ChannelManager(this);
     this.dms = new DMChannelManager(this);
+    this.invites = new InviteManager(this);
 
     this._pass();
   }
 
   /**
-   * The internal sharding manager instance.
+   * The shard manager for this client.
    * @type {ShardManager}
    */
   public get ws(): ShardManager {
@@ -110,7 +124,7 @@ export class Client extends Emitter {
   }
 
   /**
-   * An interface for the discord api and cdn.
+   * The interface for the discord api and cdn.
    * @type {API}
    */
   public get api(): API {
@@ -126,11 +140,20 @@ export class Client extends Emitter {
   }
 
   /**
+   * How long it has been since the client last became ready.
+   * @type {?number}
+   */
+  public get uptime(): number | null {
+    return this.readyAt ? Date.now() - this.readyAt : null;
+  }
+
+  /**
    * Connects the bot to the discord gateway.
    * @param {string} [token] The bot token.
-   * @returns {Client}
+   * @returns {Promise<Client>}
    */
-  public async connect(token: string = this.token): Promise<this> {
+  public async connect(token?: string): Promise<this> {
+    if (!token) token = this.token;
     if (!token) throw new Error("Please provide a token.");
 
     Object.defineProperty(this, "token", { value: token });
@@ -150,10 +173,12 @@ export class Client extends Emitter {
 
   /**
    * Destroys this client.
+   * @returns {void}
    */
   public destroy(): void {
     this._ws.destroy();
     Timers.clear();
+    this.token = undefined;
   }
 
   /**
@@ -173,8 +198,10 @@ export class Client extends Emitter {
    * @private
    */
   private _pass(): void {
-    for (const evt of Object.values(ISMEvent))
+    this._ws.on(SMEvent.Ready, () => (this.readyAt = Date.now()));
+    for (const evt of Object.values(SMEvent)) {
       this._ws.on(evt, (...args) => this.emit(evt, ...args));
+    }
 
     for (const evt of Object.values(APIEvent))
       this._api.on(evt, (...args) => this.emit(evt, ...args));
@@ -192,7 +219,7 @@ export interface ClientOptions {
   /**
    * Options for the sharding manager.
    */
-  ws?: ISMOptions;
+  ws?: ShardManagerOptions;
 
   /**
    * Options for the REST manager.

@@ -4,7 +4,8 @@
  * See the LICENSE file in the project root for more details.
  */
 
-export * from "./data/MemoryEngine";
+export * from "./data/CachingManager";
+export * from "./data/Cache";
 
 export * from "./data/janitor/Janitor";
 export * from "./data/janitor/Job";

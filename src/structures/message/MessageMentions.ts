@@ -81,7 +81,8 @@ export class MessageMentions {
           message.guild.members["_add"](
             Object.assign(mention.member, {
               user: mention,
-            })
+            }),
+            message.guild
           );
         }
 

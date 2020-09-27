@@ -9,7 +9,7 @@ import { DiscordStructure } from "../../util";
 import { Channel } from "./Channel";
 
 import type { User } from "../other/User";
-import { Typing } from "./Typing";
+import { TypingManager } from "./TypingManager";
 import {
   Builder,
   BulkDeleteOptions,
@@ -47,9 +47,9 @@ export class DMChannel extends Channel {
 
   /**
    * The typing helper for this channel.
-   * @type {Typing}
+   * @type {TypingManager}
    */
-  public readonly typing: Typing;
+  public readonly typing: TypingManager;
 
   /**
    * The message manager for this channel.
@@ -82,7 +82,7 @@ export class DMChannel extends Channel {
   public constructor(client: Client, data: APIChannel) {
     super(client, data);
 
-    this.typing = new Typing(this);
+    this.typing = new TypingManager(this);
     this.messages = new MessageManager(this);
     this.pins = new PinnedMessageManager(this);
   }

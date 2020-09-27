@@ -6,14 +6,11 @@
 
 import { Snowflake } from "@neocord/utils";
 import { Base } from "../Base";
-import { DiscordStructure } from "../../util";
 
 import type { APIEmoji } from "discord-api-types";
 import type { Client } from "../../internal";
 
 export abstract class Emoji extends Base {
-  public readonly structureType = DiscordStructure.Emoji;
-
   /**
    * The ID of this emoji.
    * @type {string}

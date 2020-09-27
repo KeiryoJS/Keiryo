@@ -12,7 +12,6 @@ import { DiscordStructure } from "../util";
 
 import type {
   APIGuildMember,
-  APIUser,
   RESTGetAPIGuildMembersResult,
 } from "discord-api-types";
 import type { User } from "../structures/other/User";
@@ -105,7 +104,7 @@ export class MemberManager extends BaseManager<Member> {
     target: MemberResolvable,
     options?: BanOptions
   ): Promise<MemberResolvable | null> {
-    await this.guild.bans.new(target, options);
+    await this.guild.bans.add(target, options);
     return target;
   }
 
@@ -132,7 +131,7 @@ export class MemberManager extends BaseManager<Member> {
       const member = await this.client.api.get<APIGuildMember>(
         `/guilds/${this.guild.id}/${options}`
       );
-      return this._add(member);
+      return this._add(member, this.guild);
     }
 
     const col = new Collection<string, Member>();
@@ -145,7 +144,7 @@ export class MemberManager extends BaseManager<Member> {
     );
 
     for (const _member of members) {
-      const member = this._add(_member);
+      const member = this._add(_member, this.guild);
       col.set(member.id, member);
     }
 
@@ -206,17 +205,6 @@ export class MemberManager extends BaseManager<Member> {
     });
 
     return resp.pruned;
-  }
-
-  /**
-   * Adds a new member to this manager.
-   * @param {APIGuildMember} data
-   * @private
-   */
-  protected _add(data: APIGuildMember): Member {
-    const existing = this.get((data.user as APIUser).id);
-    if (existing) return existing["_patch"](data);
-    return this._set(new this.class(this.guild, data));
   }
 }
 

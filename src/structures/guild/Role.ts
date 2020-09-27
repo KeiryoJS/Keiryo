@@ -4,12 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import {
-  DiscordStructure,
-  parseColor,
-  PermissionResolvable,
-  Permissions,
-} from "../../util";
+import { parseColor, PermissionResolvable, Permissions } from "../../util";
 import { SnowflakeBase } from "../SnowflakeBase";
 
 import type { APIRole, APIRoleTags } from "discord-api-types/default";
@@ -25,8 +20,6 @@ import type { Client } from "../../internal";
  * @extends {SnowflakeBase}
  */
 export class Role extends SnowflakeBase {
-  public readonly structureType = DiscordStructure.Role;
-
   /**
    * The ID of this role.
    * @type {string}
@@ -153,7 +146,7 @@ export class Role extends SnowflakeBase {
    * @param {ModifyRoleData} data The data to update this role with.
    * @param {string} [reason]
    */
-  public async modify(data: ModifyRoleData, reason?: string): Promise<this> {
+  public async edit(data: ModifyRoleData, reason?: string): Promise<this> {
     const body = {
       ...data,
       color: data.color ? parseColor(data.color) : data.color,

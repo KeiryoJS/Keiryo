@@ -12,22 +12,19 @@ import {
 import { Collection } from "@neocord/utils";
 import { Embed } from "../other/Embed";
 import { neo } from "../Extender";
-import { DiscordStructure } from "../../util";
 import { MessageMentions } from "./MessageMentions";
 import { NewsChannel } from "../channel/guild/NewsChannel";
 import { SnowflakeBase } from "../SnowflakeBase";
+import { Channel, TextBasedChannel } from "../channel/Channel";
 
 import type { Client } from "../../internal";
 import type { User } from "../other/User";
 import type { Guild } from "../guild/Guild";
 import type { Member } from "../guild/Member";
-import type { TextBasedChannel } from "../channel/Channel";
 import type { MessageDeleteOptions, MessageEditOptions } from "../../managers";
 import type { MessageAttachment } from "./MessageAttachment";
 
 export class Message extends SnowflakeBase {
-  public readonly structureType = DiscordStructure.Message;
-
   /**
    * The ID of this message.
    * @type {string}
@@ -45,12 +42,6 @@ export class Message extends SnowflakeBase {
    * @type {Member | null}
    */
   public readonly member: Member | null;
-
-  /**
-   * The guild that this message was sent in.
-   * @type {Guild | null}
-   */
-  public readonly guild: Guild | null;
 
   /**
    * The channel that this message was sent.
@@ -134,26 +125,38 @@ export class Message extends SnowflakeBase {
    * Creates a new instance of Message.
    * @param {Client} client The client instance.
    * @param {APIMessage} data The decoded message object.
-   * @param {Guild} guild The guild instance.
+   * @param {TextBasedChannel} channel The channel that this message was sent in.
    */
-  public constructor(client: Client, data: APIMessage, guild?: Guild) {
+  public constructor(
+    client: Client,
+    data: APIMessage,
+    channel: TextBasedChannel
+  ) {
     super(client);
 
     this.id = data.id;
     this.embeds = [];
+    this.attachments = new Collection();
 
-    this.guild = guild ?? client.guilds.get(data.guild_id as string) ?? null;
-    this.channel = this.client.channels.get(
-      data.channel_id
-    ) as TextBasedChannel;
+    this.channel = channel;
     this.author = this.client.users["_add"](data.author);
     this.member =
       data.member && this.guild
-        ? this.guild.members["_add"]({ ...data.member, user: data.author })
+        ? this.guild.members["_add"](
+          { ...data.member, user: data.author },
+          this.guild
+        )
         : null;
-    this.attachments = new Collection();
 
     this._patch(data);
+  }
+
+  /**
+   * The guild that this message was sent in.
+   * @type {string}
+   */
+  public get guild(): Guild | null {
+    return Channel.isGuildBased(this.channel) ? this.channel.guild : null;
   }
 
   /**

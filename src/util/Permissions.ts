@@ -20,7 +20,7 @@ export enum Permission {
   ViewChannel = 1 << 10,
   SendMessages = 1 << 11,
   SendTTSMessage = 1 << 12,
-  MangeMessages = 1 << 13,
+  ManageMessages = 1 << 13,
   EmbedLinks = 1 << 14,
   AttachFiles = 1 << 15,
   ReadMessageHistory = 1 << 16,
@@ -60,6 +60,16 @@ export class Permissions extends BitField<PermissionResolvable> {
   public static GUILD_SCOPE_PERMISSIONS = 1275592878;
 
   /**
+   * Makes a permission name more readable.
+   * @param {Permission} permission The permission
+   */
+  public static humanize(permission: Permission): string {
+    if (permission === Permission.UseVAD) return "Use Voice Activity";
+    if (permission === Permission.SendTTSMessage) return "Send TTS Messages";
+    return Permission[permission].replace(/([a-z])([A-Z])/, "$1 $2");
+  }
+
+  /**
    * Checks whether the bitfield has a permission, or any of multiple permissions.
    * @param {PermissionResolvable} permission Permission(s) to check for
    * @param {boolean} [checkAdmin] Whether to allow the administrator permission to override
@@ -90,3 +100,5 @@ export type PermissionResolvable =
   | number
   | BitFieldObject
   | (keyof typeof Permission | number | BitFieldObject)[];
+
+Permissions.humanize(Permission.SendTTSMessage);

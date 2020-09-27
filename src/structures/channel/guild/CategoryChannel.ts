@@ -6,13 +6,10 @@
 
 import { ChannelType } from "discord-api-types/default";
 import { GuildChannel } from "./GuildChannel";
-import { DiscordStructure } from "../../../util";
 
 import type { Collection } from "@neocord/utils";
 
 export class CategoryChannel extends GuildChannel {
-  public readonly structureType = DiscordStructure.GuildChannel;
-
   /**
    * The type of channel this is.
    * @type {ChannelType.GUILD_CATEGORY}

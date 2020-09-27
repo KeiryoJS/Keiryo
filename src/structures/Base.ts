@@ -5,7 +5,6 @@
  */
 
 import type { Client } from "../internal";
-import type { DiscordStructure } from "../util";
 
 export abstract class Base {
   /**
@@ -13,12 +12,6 @@ export abstract class Base {
    * @type {string}
    */
   public abstract readonly id: string;
-
-  /**
-   * The typeof discord structure this is.
-   * @type {DiscordStructure}
-   */
-  public abstract readonly structureType: DiscordStructure;
 
   /**
    * The client instance.

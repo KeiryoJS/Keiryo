@@ -10,14 +10,16 @@ import { neo } from "../Extender";
 import {
   BanManager,
   GuildChannelManager,
+  GuildIntegrationManager,
   MemberManager,
   PresenceManager,
   RoleManager,
   VoiceStateManager,
 } from "../../managers";
-import { DiscordStructure } from "../../util";
+import { VoiceRegion } from "../other/VoiceRegion";
 
 import type { Shard } from "@neocord/gateway";
+import type { ImageURLOptions } from "@neocord/rest";
 import type {
   APIGuild,
   APIVoiceRegion,
@@ -27,26 +29,17 @@ import type {
   GuildSystemChannelFlags,
   GuildVerificationLevel,
   RESTGetAPIGuildVanityUrlResult,
-} from "discord-api-types/default";
+} from "discord-api-types";
 import type { WelcomeScreen } from "./welcome/WelcomeScreen";
 import type { Client } from "../../internal";
 import type { Member } from "./Member";
-import type { ImageURLOptions } from "@neocord/rest";
 
 export class Guild extends Base {
-  public readonly structureType = DiscordStructure.Guild;
-
   /**
    * The ID of this guild.
    * @type {string}
    */
   public readonly id: string;
-
-  /**
-   * The shard that this guild operates on.
-   * @type {Shard}
-   */
-  public readonly shard: Shard;
 
   /**
    * All cached roles for this guild.
@@ -65,6 +58,12 @@ export class Guild extends Base {
    * @type {VoiceStateManager}
    */
   public readonly voiceStates: VoiceStateManager;
+
+  /**
+   * The integrations manager for this guild.
+   * @type {GuildIntegrationManager}
+   */
+  public readonly integrations: GuildIntegrationManager;
 
   /**
    * All cached channels for this guild.
@@ -146,7 +145,7 @@ export class Guild extends Base {
 
   /**
    * Enabled guild features.
-   * @type {Array<GuildFeature>}
+   * @type {GuildFeature[]}
    */
   public features!: GuildFeature[];
 
@@ -279,19 +278,25 @@ export class Guild extends Base {
     super(client);
 
     this.id = data.id;
-
-    const shardId =
-      Snowflake.deconstruct(data.id).timestamp % client.ws.shards.size;
-    this.shard = this.client.ws.shards.get(shardId) as Shard;
-
     this.roles = new RoleManager(this);
     this.voiceStates = new VoiceStateManager(this);
     this.channels = new GuildChannelManager(this);
     this.members = new MemberManager(this);
     this.bans = new BanManager(this);
     this.presences = new PresenceManager(this);
+    this.integrations = new GuildIntegrationManager(this);
 
     this._patch(data);
+  }
+
+  /**
+   * The shard that this guild belongs to.
+   * @type {Shard}
+   */
+  public get shard(): Shard {
+    const shardId =
+      Snowflake.deconstruct(this.id).timestamp % this.client.ws.shards.size;
+    return this.client.ws.shards.get(shardId) as Shard;
   }
 
   /**
@@ -324,10 +329,13 @@ export class Guild extends Base {
 
   /**
    * The list of voice regions for this guild.
-   * @returns {Promise<Array<APIVoiceRegion>>} The voice regions for this guild.
+   * @returns {Promise<VoiceRegion[]>} The voice regions for this guild.
    */
-  public fetchRegions(): Promise<APIVoiceRegion[]> {
-    return this.client.api.get(`/guilds/${this.id}/regions`);
+  public async fetchRegions(): Promise<VoiceRegion[]> {
+    const regions = await this.client.api.get<APIVoiceRegion[]>(
+      `/guilds/${this.id}/regions`
+    );
+    return regions.map((r) => new VoiceRegion(r));
   }
 
   /**
@@ -421,39 +429,45 @@ export class Guild extends Base {
 
     if (data.welcome_screen) {
       if (!this.welcomeScreen) {
-        const welcomeScreen = new (neo.get("WelcomeScreen"))(
+        this.welcomeScreen = new (neo.get("WelcomeScreen"))(
           this,
           data.welcome_screen
         );
-
-        this.welcomeScreen = welcomeScreen;
       } else this.welcomeScreen["_patch"](data.welcome_screen);
     }
 
     if (data.roles) {
       this.roles.clear();
-      for (const role of data.roles) this.roles["_add"](role);
+      for (const role of data.roles) {
+        this.roles["_add"](role, this);
+      }
     }
 
     if (data.presences) {
-      for (const presence of data.presences) this.presences["_add"](presence);
+      for (const presence of data.presences) {
+        this.presences["_add"](presence);
+      }
     }
 
     if (data.members) {
       this.members.clear();
-      for (const member of data.members) this.members["_add"](member);
+      for (const member of data.members) {
+        this.members["_add"](member, this);
+      }
     }
 
     if (data.channels) {
       this.channels.clear();
-      for (const channel of data.channels)
+      for (const channel of data.channels) {
         this.client.channels["_add"](channel, this);
+      }
     }
 
     if (data.voice_states) {
       this.voiceStates.clear();
-      for (const voiceState of data.voice_states)
-        this.voiceStates["_add"](voiceState);
+      for (const voiceState of data.voice_states) {
+        this.voiceStates["_add"](voiceState, this);
+      }
     }
 
     return this;

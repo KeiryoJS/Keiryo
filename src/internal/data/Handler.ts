@@ -44,8 +44,8 @@ export abstract class Handler<T extends GatewayDispatchPayload = any> {
 
   /**
    * Handles a packet that matches the name of the handler.
-   * @param {GatewayDispatchPayload} payload The full payload that was received.
-   * @param {Shard} shard
+   * @param {GatewayDispatchPayload} data The full payload that was received.
+   * @param {Shard} [shard]
    */
-  public abstract handle(payload: T, shard: Shard): Promise<unknown> | unknown;
+  public abstract handle(data: T, shard?: Shard): Promise<unknown> | unknown;
 }

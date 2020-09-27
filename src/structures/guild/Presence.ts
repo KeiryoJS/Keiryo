@@ -5,7 +5,6 @@
  */
 
 import { Base } from "../Base";
-import { DiscordStructure } from "../../util";
 
 import type {
   GatewayActivity,
@@ -18,8 +17,6 @@ import type { Guild } from "./Guild";
 import type { Member } from "./Member";
 
 export class Presence extends Base {
-  public readonly structureType = DiscordStructure.Presence;
-
   /**
    * The id of the member this presence corresponds to.
    * @type {string}

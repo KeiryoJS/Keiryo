@@ -9,38 +9,39 @@ import { Timers } from "@neocord/utils";
 import type { Client } from "../../internal";
 import type { TextBasedChannel } from "./Channel";
 
-export class Typing {
-  /**
-   * The client instance.
-   * @type {Client}
-   */
-  public readonly client: Client;
-
+export class TypingManager {
   /**
    * The channel instance.
    * @type {TextBasedChannel}
    */
-  public readonly channel: TextBasedChannel;
+  readonly #channel: TextBasedChannel;
 
   /**
    * The interval typing counter.
    * @type {number}
    */
-  private _count = 0;
+  #count = 0;
 
   /**
    * The interval to send typing requests.
    * @type {NodeJS.Timeout | null}
    */
-  private _interval: NodeJS.Timeout | null = null;
+  #interval: NodeJS.Timeout | null = null;
 
   /**
    * Creates a new instanceof Typing.
    * @param {TextBasedChannel} channel The channel instance.
    */
   public constructor(channel: TextBasedChannel) {
-    this.client = channel.client;
-    this.channel = channel;
+    this.#channel = channel;
+  }
+
+  /**
+   * The client instance.
+   * @type {Client}
+   */
+  public get client(): Client {
+    return this.#channel.client;
   }
 
   /**
@@ -49,8 +50,8 @@ export class Typing {
    * @returns {Promise<Typing>} This instanceof Typing.
    */
   public async start(count = 1): Promise<this> {
-    this._count += count;
-    if (!this._interval) await this._start();
+    this.#count += count;
+    if (!this.#interval) await this._start();
     return this;
   }
 
@@ -60,9 +61,9 @@ export class Typing {
    * @returns {Typing} This instanceof Typing.
    */
   public stop(count = 1): this {
-    this._count -= count;
-    if (this._count < 0) this._count = 0;
-    if (!this._count) this._stop();
+    this.#count -= count;
+    if (this.#count < 0) this.#count = 0;
+    if (!this.#count) this._stop();
     return this;
   }
 
@@ -79,9 +80,9 @@ export class Typing {
    * @returns {Promise<void>} Nothing...
    */
   protected async _start(): Promise<void> {
-    if (this._interval) return;
+    if (this.#interval) return;
     await this._send();
-    this._interval = Timers.setInterval(() => this._send(), 9000);
+    this.#interval = Timers.setInterval(() => this._send(), 9000);
   }
 
   /**
@@ -89,9 +90,9 @@ export class Typing {
    * @returns {void} Nothing...
    */
   protected _stop(): void {
-    if (!this._interval) return;
-    Timers.clearInterval(this._interval);
-    this._interval = null;
+    if (!this.#interval) return;
+    Timers.clearInterval(this.#interval);
+    this.#interval = null;
   }
 
   /**
@@ -100,9 +101,9 @@ export class Typing {
    */
   protected async _send(): Promise<void> {
     try {
-      await this.client.api.post(`/channels/${this.channel.id}/typing`);
+      await this.client.api.post(`/channels/${this.#channel.id}/typing`);
     } catch {
-      this._count = 0;
+      this.#count = 0;
       this._stop();
     }
   }

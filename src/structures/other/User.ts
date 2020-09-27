@@ -7,18 +7,11 @@
 import { SnowflakeBase } from "../SnowflakeBase";
 
 import type { ImageURLOptions } from "@neocord/rest";
-import type {
-  APIUser,
-  UserFlags,
-  UserPremiumType,
-} from "discord-api-types/default";
+import type { APIUser, UserFlags, UserPremiumType } from "discord-api-types";
 import type { Client } from "../../internal";
 import type { DMChannel } from "../channel/DMChannel";
-import { DiscordStructure } from "../../util";
 
 export class User extends SnowflakeBase {
-  public readonly structureType = DiscordStructure.User;
-
   /**
    * The ID of this user.
    * @type {string}
