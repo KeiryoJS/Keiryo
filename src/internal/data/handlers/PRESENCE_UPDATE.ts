@@ -28,13 +28,15 @@ export default class PRESENCE_UPDATE extends Handler<
 
     const old = guild.presences.get(user.id)?._clone() ?? null;
     if (data.d.status && data.d.status !== "offline") {
-      // @ts-expect-error
-      guild.members["_add"]({
-        user: data.d.user as Required<APIUser>,
-        roles: data.d.roles ?? [],
-        deaf: false,
-        mute: false,
-      });
+      guild.members["_add"](
+        {
+          user: data.d.user as Required<APIUser>,
+          roles: data.d.roles ?? [],
+          deaf: false,
+          mute: false,
+        },
+        guild
+      );
     }
 
     const presence = guild.presences["_add"](data.d);
