@@ -1,13 +1,13 @@
-import type { MemoryEngine } from "../MemoryEngine";
 import type { Job } from "./Job";
 import type { DiscordStructure } from "../../../util";
+import type { Client } from "../../Client";
 
 export class Janitor {
   /**
    * The engine this janitor belongs to.
-   * @type {MemoryEngine}
+   * @type {CachingManager}
    */
-  public readonly engine: MemoryEngine;
+  public readonly client: Client;
 
   /**
    * The jobs that janitor has.
@@ -16,19 +16,20 @@ export class Janitor {
   public readonly jobs: Map<DiscordStructure, Job>;
 
   /**
-   * @param {MemoryEngine} engine The engine this janitor belongs to.
+   * @param {Client} client The engine this janitor belongs to.
    * @param {JanitorJobs} jobs The jobs that this janitor has.
    */
-  public constructor(engine: MemoryEngine, jobs?: JanitorJobs) {
-    this.engine = engine;
+  public constructor(client: Client, jobs?: JanitorJobs) {
+    this.client = client;
     this.jobs = new Map();
 
     if (jobs) {
-      if (jobs instanceof Map) this.jobs = jobs;
-      else {
-        for (const [s, j] of Object.entries(jobs)) {
+      for (const [s, j] of jobs instanceof Map ? jobs : Object.entries(jobs)) {
+        try {
           // @ts-expect-error
-          this.jobs.set(s, j);
+          this.jobs.set(s, new j(this));
+        } catch (e) {
+          console.log(e);
         }
       }
     }
@@ -40,14 +41,14 @@ export class Janitor {
   public start(): void {
     for (const job of this.jobs.values()) {
       try {
-        job.start(this.engine);
+        job.start();
       } catch (e) {
-        this.engine.emit("error", e);
+        this.client.emit("error", e);
       }
     }
   }
 }
 
 export type JanitorJobs =
-  | Map<DiscordStructure, Job>
-  | Partial<Record<DiscordStructure, Job>>;
+  | Map<DiscordStructure, typeof Job>
+  | Partial<Record<DiscordStructure, typeof Job>>;

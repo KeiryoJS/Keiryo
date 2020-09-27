@@ -4,14 +4,20 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { GatewayEvent, GatewayOpCode, Payload, Shard } from "@neocord/gateway";
+import {
+  GatewayEvent,
+  GatewayOpCode,
+  Payload,
+  Shard,
+  SMEvent,
+} from "@neocord/gateway";
 import { Class, Collection, isClass, mergeObjects, walk } from "@neocord/utils";
 import { basename, join } from "path";
-import { DiscordStructure } from "../../util";
+import { CachingManager, CachingOptions } from "./CachingManager";
+import { Janitor, JanitorJobs } from "./janitor/Janitor";
 
 import type { Client } from "../Client";
 import type { Handler } from "./Handler";
-import { EngineOptions, MemoryEngine } from "./MemoryEngine";
 
 const packetWhitelist = [
   GatewayEvent.Ready,
@@ -33,7 +39,7 @@ const eventWhitelist = [
 const DEFAULTS: DataOptions = {
   track: [],
   disabledEvents: [],
-  engine: {},
+  caching: {},
 };
 
 /**
@@ -49,9 +55,15 @@ export class DataManager {
 
   /**
    * The provided engines.
-   * @type {MemoryEngine}
+   * @type {CachingManager}
    */
-  public readonly engine: MemoryEngine;
+  public readonly cache: CachingManager;
+
+  /**
+   * The janitor instance.
+   * @this {Janitor}
+   */
+  public readonly janitor: Janitor;
 
   /**
    * The event stats.
@@ -64,12 +76,6 @@ export class DataManager {
    * @type {Array<GatewayEvent> | "all"}
    */
   public track: GatewayEvent[] | "all";
-
-  /**
-   * Discord structures that can be cached.
-   * @type {Set<DiscordStructure>}
-   */
-  public enabled: Set<DiscordStructure>;
 
   /**
    * All events that won't be handled.
@@ -88,13 +94,13 @@ export class DataManager {
    * @type {Array<Payload<Dictionary[]>>}
    * @private
    */
-  private _queue: Payload<Dictionary>[];
+  readonly #queue: Payload<Dictionary>[];
 
   /**
    * All of the loaded handlers.
    * @type {Collection<GatewayEvent, Handler>}
    */
-  private readonly _all: Collection<GatewayEvent, Handler>;
+  readonly #all: Collection<GatewayEvent, Handler>;
 
   /**
    * Creates a new Handlers instance.
@@ -105,22 +111,15 @@ export class DataManager {
     this.options = options = mergeObjects(options, DEFAULTS);
 
     this.client = client;
-    this.track = [];
     this.disabledEvents = new Set(options.disabledEvents ?? []);
-    this.enabled = new Set();
-    this.engine = new MemoryEngine(options.engine ?? {})
+    this.track = [];
+    this.#all = new Collection();
+    this.#queue = [];
+
+    this.janitor = new Janitor(this.client, options.janitor);
+    this.cache = new CachingManager(this.janitor, options.caching ?? {})
       .on("debug", client.emit.bind(client, "debug"))
       .on("error", client.emit.bind(client, "error"));
-
-    this._all = new Collection();
-    this._queue = [];
-
-    if (typeof options?.enabled === "boolean") {
-      if (options.enabled)
-        for (const structure of Object.values(DiscordStructure)) {
-          this.enabled.add(structure as DiscordStructure);
-        }
-    } else this.enabled = new Set(options?.enabled ?? []);
 
     if (options.track) {
       this.stats = new Collection();
@@ -133,11 +132,12 @@ export class DataManager {
    * Initializes the packet handling system.
    */
   public async init(): Promise<void> {
+    this.janitor.start();
     await this._load();
 
-    this.engine.janitor.start();
-    this.client.ws.on("raw", (pk: Payload<Dictionary>, shard: Shard) =>
-      this._handle(pk, shard)
+    this.client.ws.on(
+      SMEvent.RawPacket,
+      (pk: Payload<Dictionary>, shard: Shard) => this._handle(pk, shard)
     );
   }
 
@@ -161,7 +161,7 @@ export class DataManager {
       }
 
       const handler: Handler = new Handler(this.client);
-      this._all.set(handler.name, handler);
+      this.#all.set(handler.name, handler);
     }
   }
 
@@ -181,10 +181,10 @@ export class DataManager {
       this.stats.set(event, (prev ?? 0) + 1);
     }
 
-    // () Check whether the sharding manager is ready.
+    // (1) Check whether the sharding manager is ready.
     if (!this.client.ws.ready) {
       if (!packetWhitelist.includes(event)) {
-        this._queue.push(pk);
+        this.#queue.push(pk);
         return;
       }
     }
@@ -195,20 +195,27 @@ export class DataManager {
     }
 
     // (3) Check whether or not there's any packets in the queue.
-    if (this._queue.length) {
-      const queued = this._queue.shift();
+    if (this.#queue.length) {
+      const queued = this.#queue.shift();
       setImmediate(() => this._handle(queued as Payload<Dictionary>, shard));
     }
 
     // (4) Handle the packet.
-    const handler = this._all.get(event) as Handler;
+    const handler = this.#all.get(event) as Handler;
+    if (!handler) {
+      this.client.emit(
+        "debug",
+        `(Packet Handling) ‹${event}› Handler missing.`
+      );
+      return;
+    }
 
     try {
       await handler.handle(pk, shard);
-      this.client.emit(
-        "debug",
-        `(Packet Handling) ‹${event}› Ran successfully.`
-      );
+      // this.client.emit(
+      //   "debug",
+      //   `(Packet Handling) ‹${event}› Ran successfully.`
+      // );
     } catch (e) {
       this.client.emit(
         "error",
@@ -222,21 +229,25 @@ export class DataManager {
 export interface DataOptions {
   /**
    * Options for the default engine.
+   * @types {CachingOptions}
    */
-  engine?: EngineOptions;
+  caching?: CachingOptions;
 
   /**
-   * Whether caching is enabled.
+   * The jobs for the janitor.
+   * @type {JanitorJobs}
    */
-  enabled?: boolean | Set<DiscordStructure> | DiscordStructure[];
+  janitor?: JanitorJobs;
 
   /**
    * Events that wont be handled.
+   * @type {Set<GatewayEvent> | GatewayEvent[]}
    */
   disabledEvents?: Set<GatewayEvent> | GatewayEvent[];
 
   /**
    * Tracks how many times a certain event is received.
+   * @type {GatewayEvent[] | "all" | boolean}
    */
   track?: GatewayEvent[] | "all" | boolean;
 }

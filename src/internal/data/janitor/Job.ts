@@ -1,6 +1,10 @@
 import { Duration, Timers } from "@neocord/utils";
 
-export abstract class Job<O extends JobOptions = JobOptions> {
+import type { Janitor } from "./Janitor";
+import type { Cache } from "../Cache";
+import type { Base } from "../../../structures";
+
+export class Job<O extends JobOptions = JobOptions> {
   /**
    * The name of this job.
    * @type {string}
@@ -14,35 +18,44 @@ export abstract class Job<O extends JobOptions = JobOptions> {
   public readonly interval: number;
 
   /**
+   * The janitor instance.
+   * @type {Janitor}
+   */
+  public readonly janitor: Janitor;
+
+  /**
+   * The caches this job is for.
+   * @type {Set<Cache>}
+   */
+  public readonly caches: Set<Cache<Base>>;
+
+  /**
    * The current shift of this job.
    * @type {?CurrentShift}
    */
   public shift?: CurrentShift;
 
   /**
-   * The options provided to this job.
-   * @type {JobOptions}
-   */
-  protected _options: O;
-
-  /**
    * The timeout of this job.
    * @type {NodeJS.Timeout}
    * @private
    */
-  private _timeout?: NodeJS.Timeout;
+  #timeout?: NodeJS.Timeout;
 
   /**
+   * @param {Janitor} janitor The janitor instance.
    * @param {string} name The name of this job.
    * @param {JobOptions} options Options for the job.
    */
-  public constructor(name: string, options: O) {
+  public constructor(janitor: Janitor, name: string, options: O) {
+    this.janitor = janitor;
     this.name = name;
+    this.caches = new Set();
     this.interval =
       typeof options.interval === "string"
         ? Duration.parse(options.interval)
         : options.interval;
-    this._options = options;
+
     this.do = this.do.bind(this);
   }
 
@@ -66,20 +79,14 @@ export abstract class Job<O extends JobOptions = JobOptions> {
 
       // eslint-disable-next-line no-async-promise-executor
       shift.promise = new Promise(async (res, rej) => {
-        this._timeout?.unref();
+        this.#timeout?.unref();
         try {
-          await this.do(
-            {
-              startedAt: shift.startedAt,
-              id: shift.id,
-            },
-            ...args
-          );
+          await this.do(shift, ...args);
 
-          this._timeout?.refresh();
+          this.#timeout?.refresh();
           res();
         } catch (e) {
-          this._timeout?.refresh();
+          this.#timeout?.refresh();
           rej(e);
         }
       });
@@ -87,7 +94,7 @@ export abstract class Job<O extends JobOptions = JobOptions> {
       this.shift = shift;
     };
 
-    this._timeout = Timers.setTimeout(() => work(), this.interval);
+    this.#timeout = Timers.setTimeout(() => work(), this.interval);
   }
 
   /**
@@ -99,20 +106,21 @@ export abstract class Job<O extends JobOptions = JobOptions> {
       delete this.shift;
     }
 
-    if (this._timeout) {
-      Timers.clearInterval(this._timeout);
-      delete this._timeout;
+    if (this.#timeout) {
+      Timers.clearInterval(this.#timeout);
+      this.#timeout = undefined;
     }
   }
 
   /**
    * Doe the job.
-   * @returns {number}
+   * @returns {*}
    */
-  public abstract do(
-    shift: Omit<CurrentShift, "promise">,
-    ...args: unknown[]
-  ): Promise<unknown>;
+  public do(shift: CurrentShift, ...args: unknown[]): any {
+    void shift;
+    void args;
+    throw new Error("Method not implemented.");
+  }
 }
 
 export interface JobOptions {

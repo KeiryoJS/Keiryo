@@ -4,11 +4,12 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Duration } from "@neocord/utils";
 import { CurrentShift, Job, JobOptions } from "./Job";
+import { Duration } from "@neocord/utils";
 import { DiscordStructure } from "../../../util";
 
-import type { Cached, MemoryEngine } from "../MemoryEngine";
+import type { Janitor } from "./Janitor";
+import type { Cache } from "../Cache";
 import type { Message } from "../../../structures/message/Message";
 
 export abstract class Jobs {
@@ -21,47 +22,44 @@ export abstract class Jobs {
   public static Default({
     structure,
     ...options
-  }: SweeperJobOptions & { structure: DiscordStructure }): Job {
+  }: SweeperJobOptions & { structure: DiscordStructure }): typeof Job {
     const lifetime =
       typeof options.lifetime === "string"
         ? Duration.parse(options.lifetime)
         : options.lifetime;
 
-    return new (class DefaultJob extends Job {
-      public constructor() {
-        super(`default-${(Math.random() * 100).toFixed(0)}`, options);
+    return class DefaultJob extends Job {
+      public constructor(janitor: Janitor) {
+        super(janitor, `default-${(Math.random() * 100).toFixed(0)}`, options);
+
+        if (lifetime <= 0) {
+          janitor.client.emit(
+            "debug",
+            `(Janitor) ${DiscordStructure[structure]} Job: Can't sweep anything - lifetime is unlimited.`
+          );
+        }
       }
 
       /**
        * Sweeps all cached messages.
        * @param {CurrentShift} shift The current shift of this job.
-       * @param {MemoryEngine} engine The engine.
        */
-      public async do(
-        shift: CurrentShift,
-        engine: MemoryEngine
-      ): Promise<unknown> {
+      public async do(shift: CurrentShift): Promise<unknown> {
         const now = Date.now();
-        if (lifetime <= 0) {
-          engine.emit(
-            "debug",
-            `(Message Job) Shift ${shift.id}: Didn't sweep messages - lifetime is unlimited`
-          );
-          return -1;
+
+        let items = 0;
+        for (const cache of this.caches) {
+          items += cache.sweep((m) => Math.abs(now - m.cachedAt) > lifetime);
         }
 
-        const items = engine
-          .all<Cached<Dictionary>>(structure)
-          .sweep((i) => now - i.cachedAt > lifetime);
-
-        engine.emit(
+        this.janitor.client.emit(
           "debug",
-          `(${DiscordStructure[structure]} Job) Shift ${shift.id}: Swept ${items} cached items.`
+          `(Janitor) ${DiscordStructure[structure]} Job: ‹Shift ${shift.id}› Swept ${items} cached items.`
         );
 
         return items;
       }
-    })();
+    };
   }
 
   /**
@@ -69,50 +67,55 @@ export abstract class Jobs {
    * @param {SweeperJobOptions} options
    * @constructor
    */
-  public static Message(options: SweeperJobOptions): Job {
+  public static Message(options: SweeperJobOptions): typeof Job {
     const lifetime =
       typeof options.lifetime === "string"
         ? Duration.parse(options.lifetime)
         : options.lifetime;
 
-    return new (class MessageJob extends Job {
-      public constructor() {
-        super(`messages-${(Math.random() * 100).toFixed(0)}`, options);
+    return class MessageJob extends Job {
+      /**
+       * The caches this job is for.
+       * @type {Set<Cache>}
+       */
+      public readonly caches!: Set<Cache<Message>>;
+
+      /**
+       * @param {Janitor} janitor The janitor instance.
+       */
+      public constructor(janitor: Janitor) {
+        super(janitor, `messages-${(Math.random() * 100).toFixed(0)}`, options);
+
+        if (lifetime <= 0) {
+          janitor.client.emit(
+            "debug",
+            "(Janitor) Message Job: Can't sweep messages - lifetime is unlimited."
+          );
+        }
       }
 
       /**
        * Sweeps all cached messages.
        * @param {CurrentShift} shift The current shift of this job.
-       * @param {MemoryEngine} engine The engine.
        */
-      public async do(
-        shift: CurrentShift,
-        engine: MemoryEngine
-      ): Promise<unknown> {
+      public async do(shift: CurrentShift): Promise<unknown> {
         const now = Date.now();
-        if (lifetime <= 0) {
-          engine.emit(
-            "debug",
-            `(Janitor) Message Job: ‹Shift ${shift.id}› Didn't sweep messages - lifetime is unlimited`
-          );
-          return -1;
-        }
-
-        const messages = engine
-          .all<Message>(DiscordStructure.Message)
-          .sweep((m) => {
+        let messages = 0;
+        for (const cache of this.caches) {
+          messages += cache.sweep((m) => {
             const timestamp = m.editedTimestamp ?? m.createdTimestamp;
             return now - timestamp > lifetime;
           });
+        }
 
-        engine.emit(
+        this.janitor.client.emit(
           "debug",
           `(Janitor) Message Job: ‹Shift ${shift.id}› Swept ${messages} cached messages.`
         );
 
         return messages;
       }
-    })();
+    };
   }
 }
 
