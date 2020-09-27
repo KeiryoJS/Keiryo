@@ -5,19 +5,17 @@
  */
 
 import { Base } from "../Base";
-import { DiscordStructure } from "../../util";
 
 import type {
   APIExtendedInvite,
+  APIInvite,
   InviteTargetUserType,
-} from "discord-api-types/default";
+} from "discord-api-types";
 import type { Guild } from "../guild/Guild";
-import type { Channel } from "../channel/Channel";
 import type { User } from "./User";
+import type { GuildChannel } from "../channel/guild/GuildChannel";
 
 export class Invite extends Base {
-  public readonly structureType = DiscordStructure.Invite;
-
   /**
    * The "ID" of this invite. (the code of the invite)
    * @type {string}
@@ -28,7 +26,7 @@ export class Invite extends Base {
    * The channel this invite belongs to.
    * @type {Channel}
    */
-  public readonly channel: Channel;
+  public readonly channel: GuildChannel;
 
   /**
    * The guild the channel belongs to. If the channel is in a guild.
@@ -102,7 +100,11 @@ export class Invite extends Base {
    * @param {APIExtendedInvite} data The data returned from the API.
    * @param {Guild} [guild]
    */
-  public constructor(channel: Channel, data: APIExtendedInvite, guild?: Guild) {
+  public constructor(
+    channel: GuildChannel,
+    data: APIExtendedInvite,
+    guild?: Guild
+  ) {
     super(channel.client);
 
     this.id = data.code;
@@ -118,22 +120,42 @@ export class Invite extends Base {
     return this.id;
   }
 
-  protected _patch(data: APIExtendedInvite): this {
-    this.createdTimestamp = data.created_at
-      ? Date.parse(data.created_at)
-      : null;
-    this.maxAge = data.max_age ?? null;
-    this.maxUses = data.max_uses ?? null;
-    this.temporary = data.temporary ?? false;
-    this.uses = data.uses ?? 0;
+  /**
+   * Deletes this invite.
+   * @returns {Promise<Readonly<Invite>>}
+   */
+  public delete(): Promise<Readonly<Invite>> {
+    return this.channel.invites.remove(this) as Promise<Readonly<Invite>>;
+  }
+
+  /**
+   * Updates this invite with data from discord.
+   * @param {APIExtendedInvite} data
+   * @protected
+   */
+  protected _patch(data: APIInvite | APIExtendedInvite): this {
+    if ("created_at" in data) {
+      this.createdTimestamp = data.created_at
+        ? Date.parse(data.created_at)
+        : null;
+    }
+
+    if ("max_age" in data) this.maxAge = data.max_age ?? null;
+    if ("max_uses" in data) this.maxUses = data.max_uses ?? null;
+    if ("temporary" in data) this.temporary = data.temporary ?? false;
+    if ("uses" in data) this.uses = data.uses ?? 0;
+
     this.approximateMemberCount = data.approximate_member_count ?? null;
+
     this.approximatePresenceCount = data.approximate_presence_count ?? null;
+
     this.inviter = data.inviter
       ? this.client.users.get(data.inviter.id) ?? null
       : null;
     this.targetUser = data.target_user
       ? this.client.users.get(data.target_user.id) ?? null
       : null;
+
     this.targetUserType = data.target_user_type ?? null;
 
     return this;
