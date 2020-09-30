@@ -4,11 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import {
-  APIMessage,
-  MessageFlags,
-  MessageType,
-} from "discord-api-types/default";
+import { APIMessage, MessageFlags, MessageType } from "discord-api-types/default";
 import { Collection } from "@neocord/utils";
 import { Embed } from "../other/Embed";
 import { neo } from "../Extender";
@@ -189,7 +185,7 @@ export class Message extends SnowflakeBase {
 
   /**
    * Pins this message to the channel.
-   * @param reason
+   * @param {string} reason
    */
   public async pin(reason?: string): Promise<Message> {
     await this.channel.pins.add(this, reason);
@@ -229,7 +225,7 @@ export class Message extends SnowflakeBase {
     content: MessageEditData,
     options?: MessageEditOptions
   ): Promise<Message> {
-    const [edit] = await this.channel.messages.resolveMessageData(
+    const [ edit ] = await this.channel.messages.resolveMessageData(
       content,
       options
     );

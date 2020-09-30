@@ -46,17 +46,16 @@ export class BaseManager<S extends Base> {
    * @param {ManagerData} data The data for this manager.
    */
   public constructor(client: Client, data: ManagerData<S>) {
-    // @ts-expect-error
-    define({ value: data.class })(this, CLASS);
-    // @ts-expect-error
-    define({ value: data.structure })(this, STRUCTURE);
+    define({ value: data.class })(this as any, CLASS);
+    define({ value: data.structure })(this as any, STRUCTURE);
 
     this.#client = client;
     this.#cache = client.data.cache.new(this[STRUCTURE]);
   }
 
   /**
-   * The number of cached items in this
+   * The number of cached items in this.
+   * @type {number}
    */
   public get size(): number {
     return this.cache.size;
@@ -86,9 +85,6 @@ export class BaseManager<S extends Base> {
     return this.#cache;
   }
 
-  /**
-   * @returns {typeof Collection}
-   */
   public static [Symbol.species](): typeof Collection {
     return Collection;
   }
@@ -202,7 +198,7 @@ export class BaseManager<S extends Base> {
 
   /**
    * The keys iterator.
-   * @returns {AsyncIterator<[string, Base]>}
+   * @returns {IterableIterator}
    */
   public *keys(): IterableIterator<string> {
     yield* this.cache.keys();
@@ -210,7 +206,7 @@ export class BaseManager<S extends Base> {
 
   /**
    * The keys iterator.
-   * @returns {AsyncIterator<[string, Base]>}
+   * @returns {IterableIterator}
    */
   public *entries(): IterableIterator<[string, S]> {
     yield* this.cache.entries();
@@ -218,7 +214,7 @@ export class BaseManager<S extends Base> {
 
   /**
    * The keys iterator.
-   * @returns {AsyncIterator<[string, Base]>}
+   * @returns {IterableIterator}
    */
   public *values(): IterableIterator<S> {
     yield* this.cache.values();

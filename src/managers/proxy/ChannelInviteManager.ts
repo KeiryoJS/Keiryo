@@ -43,7 +43,7 @@ export class ChannelInviteManager extends ProxyManager<Invite> {
   /**
    * Creates a new invite for this channel.
    * @param {AddChannelInvite} data
-   * @returns {yarn foPromise<Invite>}
+   * @returns {Promise<Invite>}
    */
   public async add(data: AddChannelInvite = {}): Promise<Invite> {
     const ep = `${this.channel.endpoint}/invites`;

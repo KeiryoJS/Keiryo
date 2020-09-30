@@ -156,7 +156,7 @@ export class Client extends Emitter {
     if (!token) token = this.token;
     if (!token) throw new Error("Please provide a token.");
 
-    Object.defineProperty(this, "token", { value: token });
+    Object.defineProperty(this, "token", { value: token, writable: true });
     this._ws.token = token;
     this._api.token = token;
 

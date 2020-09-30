@@ -8,7 +8,7 @@ import { ProxyManager } from "../ProxyManager";
 
 import type { snowflake } from "@neocord/utils";
 import type { Message } from "../../structures/message/Message";
-import type { MessageResolvable } from "..";
+import type { MessageResolvable } from "../index";
 import type { TextBasedChannel } from "../../structures/channel/Channel";
 
 export class PinnedMessageManager extends ProxyManager<Message> {
