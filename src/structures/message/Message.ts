@@ -229,10 +229,11 @@ export class Message extends SnowflakeBase {
       content,
       options
     );
-    const data = await this.client.api.get<APIMessage>(
+    const data = await this.client.api.patch<APIMessage>(
       `/channels/${this.channel.id}/messages/${this.id}`,
       edit
     );
+
     return this._clone()._patch(data);
   }
 
