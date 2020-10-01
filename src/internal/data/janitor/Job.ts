@@ -27,7 +27,7 @@ export class Job<O extends JobOptions = JobOptions> {
    * The caches this job is for.
    * @type {Set<Cache>}
    */
-  public readonly caches: Set<Cache<Base>>;
+  public caches?: Set<Cache<Base>>;
 
   /**
    * The current shift of this job.
@@ -50,7 +50,6 @@ export class Job<O extends JobOptions = JobOptions> {
   public constructor(janitor: Janitor, name: string, options: O) {
     this.janitor = janitor;
     this.name = name;
-    this.caches = new Set();
     this.interval =
       typeof options.interval === "string"
         ? Duration.parse(options.interval)

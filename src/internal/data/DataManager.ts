@@ -148,8 +148,8 @@ export class DataManager {
   private async _load(): Promise<void> {
     for (const file of walk(join(__dirname, "handlers"))) {
       const imported = await import(file);
-      const Handler: Class<Handler> =
-        "default" in imported ? imported.default : imported;
+      const Handler: Class<Handler> = "default" in imported ? imported.default : imported;
+
       if (!isClass(Handler)) {
         this.client.emit(
           "warn",
@@ -212,10 +212,6 @@ export class DataManager {
 
     try {
       await handler.handle(pk, shard);
-      // this.client.emit(
-      //   "debug",
-      //   `(Packet Handling) ‹${event}› Ran successfully.`
-      // );
     } catch (e) {
       this.client.emit(
         "error",

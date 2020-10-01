@@ -19,10 +19,7 @@ export abstract class Jobs {
    * @param {SweeperJobOptions} options The options for this job.
    * @constructor
    */
-  public static Default({
-    structure,
-    ...options
-  }: SweeperJobOptions & { structure: DiscordStructure }): typeof Job {
+  public static Default({ structure, ...options }: DefaultJobOptions): typeof Job {
     const lifetime =
       typeof options.lifetime === "string"
         ? Duration.parse(options.lifetime)
@@ -31,6 +28,8 @@ export abstract class Jobs {
     return class DefaultJob extends Job {
       public constructor(janitor: Janitor) {
         super(janitor, `default-${(Math.random() * 100).toFixed(0)}`, options);
+
+        this.caches = new Set();
 
         if (lifetime <= 0) {
           janitor.client.emit(
@@ -48,8 +47,9 @@ export abstract class Jobs {
         const now = Date.now();
 
         let items = 0;
-        for (const cache of this.caches) {
-          items += cache.sweep((m) => Math.abs(now - m.cachedAt) > lifetime);
+        if (this.caches) {
+          for (const cache of this.caches)
+            items += cache.sweep((m) => now - m.cachedAt > lifetime);
         }
 
         this.janitor.client.emit(
@@ -78,7 +78,7 @@ export abstract class Jobs {
        * The caches this job is for.
        * @type {Set<Cache>}
        */
-      public readonly caches!: Set<Cache<Message>>;
+      public caches: Set<Cache<Message>>;
 
       /**
        * @param {Janitor} janitor The janitor instance.
@@ -86,6 +86,7 @@ export abstract class Jobs {
       public constructor(janitor: Janitor) {
         super(janitor, `messages-${(Math.random() * 100).toFixed(0)}`, options);
 
+        this.caches = new Set();
         if (lifetime <= 0) {
           janitor.client.emit(
             "debug",
@@ -100,6 +101,7 @@ export abstract class Jobs {
        */
       public async do(shift: CurrentShift): Promise<unknown> {
         const now = Date.now();
+
         let messages = 0;
         for (const cache of this.caches) {
           messages += cache.sweep((m) => {
@@ -117,6 +119,10 @@ export abstract class Jobs {
       }
     };
   }
+}
+
+interface DefaultJobOptions extends SweeperJobOptions {
+  structure: DiscordStructure;
 }
 
 export interface SweeperJobOptions extends JobOptions {

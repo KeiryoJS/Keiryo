@@ -11,9 +11,9 @@ export class Janitor {
 
   /**
    * The jobs that janitor has.
-   * @type {Map<DiscordStructure, Job>}
+   * @type {Map<DiscordStructure | string, Job>}
    */
-  public readonly jobs: Map<DiscordStructure, Job>;
+  public readonly jobs: Map<DiscordStructure | string, Job>;
 
   /**
    * @param {Client} client The engine this janitor belongs to.
@@ -24,12 +24,14 @@ export class Janitor {
     this.jobs = new Map();
 
     if (jobs) {
-      for (const [s, j] of jobs instanceof Map ? jobs : Object.entries(jobs)) {
+      for (const [ s, j ] of Object.entries(jobs)) {
+        if (this.jobs.has(s)) continue;
+
         try {
           // @ts-expect-error
           this.jobs.set(s, new j(this));
         } catch (e) {
-          console.log(e);
+          this.client.emit("error", e);
         }
       }
     }
@@ -49,6 +51,4 @@ export class Janitor {
   }
 }
 
-export type JanitorJobs =
-  | Map<DiscordStructure, typeof Job>
-  | Partial<Record<DiscordStructure, typeof Job>>;
+export type JanitorJobs = Partial<Record<DiscordStructure | string, typeof Job>>;

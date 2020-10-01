@@ -28,7 +28,7 @@ export class Cache<V extends Base> extends Collection<string, Cached<V>> {
     this.#options = options;
 
     const job = janitor.jobs.get(options.structure);
-    if (job) {
+    if (job && job.caches) {
       job.caches.add(this);
     }
   }
