@@ -67,7 +67,14 @@
     form-data "^3.0.0"
     rikuesuto "^1.0.6"
 
-"@neocord/utils@1.0.15", "@neocord/utils@^1.0.13", "@neocord/utils@^1.0.15":
+"@neocord/utils@1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.1.4.tgz#46fe75a22e1aaeb91013c16a051c9ab7c7caffe4"
+  integrity sha512-JRoIl0CWGegrzuMfv8f+Z9wnN66W3YeXBSnUmpLHjKDp+PY1LHUi4xWy0hMy9tAYPTJb357qppUKhftPPJCUyg==
+  dependencies:
+    tslib "^2.0.1"
+
+"@neocord/utils@^1.0.13", "@neocord/utils@^1.0.15":
   version "1.0.15"
   resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.15.tgz#c15b47a8a054fdda9c7643456e70b482d97bf66d"
   integrity sha512-YSEOcYNwDV+y2RCvQ9uNzF+0PySuiSYrmS80HZEob+ET4oaGvDslrhFT3Zq1EcIjRT/oSY0elDknxf+GSy55gA==
