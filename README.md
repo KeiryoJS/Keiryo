@@ -84,6 +84,10 @@ client.connect("your token here");
 - **Github**: <https://github.com/neo-cord/neocord>
 - **NPM**: <https://npmjs.com/neocord/>
 
+## Acknowledgements
+
+- Thanks to [Anthony](https://github.com/acollierr17) from **NCD** for the input on the job system.
+
 ---
 
-<p align="center"><a href="https://github.com/melike2d">melike2d</a> &copy; 2020</p>
+<p align="ce2nter"><a href="https://github.com/melike2d">melike2d</a> &copy; 2020</p>

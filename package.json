@@ -1,44 +1,23 @@
 {
   "name": "neocord",
-  "version": "0.0.0-alpha.7",
-  "description": "A powerful and feature-rich discord library.",
-  "keywords": [
-    "discord",
-    "typescript",
-    "powerful",
-    "feature-rich"
-  ],
-  "author": "MeLike2D",
-  "homepage": "https://github.com/neo-cord/neocord#readme",
-  "license": "MIT",
+  "version": "0.0.0",
+  "description": "A powerful and flexible discord library for all.",
   "main": "dist/index.js",
-  "types": "typings/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/neo-cord/neocord.git"
-  },
-  "scripts": {
-    "build": "rm -rf dist && tsc --removeComments",
-    "build:types": "tsc -d",
-    "lint": "eslint  --ext .ts",
-    "lint:fix": "eslint  --ext .ts --fix",
-    "format": "prettier --write src && yarn lint:fix"
-  },
+  "repository": "https://github.com/neo-cord/neocord",
+  "author": "MeLike2D",
+  "license": "MIT",
   "dependencies": {
-    "@neocord/gateway": "^1.2.3",
-    "@neocord/rest": "^1.2.0",
-    "@neocord/utils": "1.0.15",
-    "discord-api-types": "^0.5.0",
-    "tslib": "^2.0.1"
+    "@neocord/gateway": "^1.3.1",
+    "@neocord/rest": "^1.2.1",
+    "discord-api-types": "^0.6.0"
   },
   "devDependencies": {
     "@neocord/eslint-config": "neo-cord/eslint-config",
-    "@types/node": "^14.11.2",
-    "@typescript-eslint/eslint-plugin": "^4.3.0",
-    "@typescript-eslint/parser": "^4.3.0",
-    "discord.js-docgen": "discordjs/docgen",
-    "eslint": "^7.10.0",
-    "jsdoc": "^3.6.6",
+    "@neocord/utils": "^1.1.4",
+    "@types/node": "^14.11.8",
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.4.1",
+    "eslint": "^7.11.0",
     "prettier": "^2.1.2",
     "typescript": "^4.0.3"
   }
