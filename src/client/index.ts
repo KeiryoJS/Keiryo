@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-export * from "./internal/Cache";
-export * from "./internal/CacheManager";
+export * from "./internal/caching/Cache";
+export * from "./internal/caching/CacheManager";
 
 export * from "./Client";

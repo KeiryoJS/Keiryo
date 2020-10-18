@@ -17,7 +17,11 @@ export enum ResourceType {
   Presence,
   Ban,
   Integration,
-  Role
+  Role,
+  Relationship,
+  PermissionOverwrite,
+  GuildChannel,
+  DMChannel
 }
 
 export const resourceTypes = Object.values(ResourceType) as ResourceType[];

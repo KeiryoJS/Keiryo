@@ -9,9 +9,7 @@
   "overrides": [
     {
       "files": [
-        "./src/structures/**/*.ts",
-        "./src/managers/**/*.ts",
-        "./src/lib/data/handlers/**/*.ts"
+        "./src/external/***/**/*.ts"
       ],
       "rules": {
         "camelcase": "off"

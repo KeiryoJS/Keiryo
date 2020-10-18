@@ -4,10 +4,12 @@
  * See the LICENSE file in the project root for more details.
  */
 
+import { DeconstructedSnowflake, Snowflake } from "@neocord/utils";
+
 import type { Client } from "../../client";
 
 /**
- * Represents a Discord Resource like a Guild, User, Channel, etc...
+ * Represents a Discord Resource like an Embed, VoiceRegion, Invite...
  */
 export abstract class Resource {
   /**
@@ -68,5 +70,37 @@ export abstract class Resource {
     void data;
     void args;
     return this;
+  }
+}
+
+/**
+ * Represents a Discord Resource like a Guild, User, Channel, etc... or anything that uses a snowflake.
+ */
+export abstract class SnowflakeResource extends Resource {
+  /**
+   * The date when this object was created.
+   *
+   * @type {Date}
+   */
+  public get createdAt(): Date {
+    return new Date(this.createdTimestamp);
+  }
+
+  /**
+   * The time when this object was created.
+   *
+   * @type {number}
+   */
+  public get createdTimestamp(): number {
+    return Snowflake.deconstruct(this.id).timestamp;
+  }
+
+  /**
+   * The snowflake data.
+   *
+   * @type {DeconstructedSnowflake}
+   */
+  public get snowflake(): DeconstructedSnowflake {
+    return Snowflake.deconstruct(this.id);
   }
 }

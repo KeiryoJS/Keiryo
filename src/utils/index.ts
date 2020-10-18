@@ -8,3 +8,4 @@ export * from "./errors/UncachedResourceError";
 
 export * from "./Color";
 export * from "./Functions";
+export * from "./ImageResolver";

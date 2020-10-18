@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { ResourcePool } from "../abstract/ResourcePool";
+import { ResourceLike, ResourcePool } from "../abstract/ResourcePool";
 import { ResourceType } from "../abstract/ResourceType";
 import { resources } from "../resource/Resources";
 
@@ -41,3 +41,5 @@ export class UserPool extends ResourcePool<User> {
     return user;
   }
 }
+
+export type UserLike = ResourceLike<User>

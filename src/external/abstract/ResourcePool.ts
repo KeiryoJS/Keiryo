@@ -17,14 +17,13 @@ export abstract class ResourcePool<R extends Resource> {
    * The class this pool manages.
    *
    * @type {Class}
-   * @private
    */
-  protected class: Class<R>;
+  public class: Class<R>;
 
   /**
    * The resource cache for this pool.
    *
-   * @type {ResourceCache<Resource>}
+   * @type {Cache<Resource>}
    * @private
    */
   readonly #cache: Cache<R>;
@@ -51,7 +50,7 @@ export abstract class ResourcePool<R extends Resource> {
   /**
    * The resource cache for this pool.
    *
-   * @type {ResourceCache<Resource>}
+   * @type {Cache<Resource>}
    */
   public get cache(): Cache<R> {
     return this.#cache;

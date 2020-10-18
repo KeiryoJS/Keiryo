@@ -4,14 +4,20 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Resource } from "../../../abstract/Resource";
+import { Permission, Permissions } from "@neocord/utils";
+import { Resource, ResourceLike, ResourceType } from "../../../abstract";
 import { exclude, UncachedResourceError } from "../../../../utils";
-import { ResourceType } from "../../../abstract/ResourceType";
+
+import { GuildMemberRoles } from "../../../pool/proxy/GuildMemberRoles";
 
 import type { APIGuildMember } from "discord-api-types";
 import type { Client } from "../../../../client";
 import type { Guild } from "../Guild";
+import type { VoiceState } from "./VoiceState";
 import type { User } from "../../user/User";
+import type { RoleLike } from "../../../pool/guild/GuildRolePool";
+import type { VoiceChannel } from "../../channel/guild/VoiceChannel";
+import type { GuildChannel } from "../../channel/guild/GuildChannel";
 
 export class GuildMember extends Resource {
   /**
@@ -27,6 +33,13 @@ export class GuildMember extends Resource {
    * @type {Guild}
    */
   public readonly guild: Guild;
+
+  /**
+   * The roles that this member has.
+   *
+   * @type {GuildMemberRoles}
+   */
+  public readonly roles: GuildMemberRoles;
 
   /**
    * This users guild nickname.
@@ -84,10 +97,18 @@ export class GuildMember extends Resource {
     }
 
     this.guild = guild;
+    this.roles = new GuildMemberRoles(this);
 
     this._patch(data);
   }
 
+  /**
+   * The {@link VoiceState voice state} of this member.
+   * @type {VoiceState | null}
+   */
+  public get voice(): VoiceState | null {
+    return this.guild.voiceStates.cache.get(this.id) ?? null;
+  }
 
   /**
    * The mention string for this member.
@@ -96,6 +117,24 @@ export class GuildMember extends Resource {
    */
   public get mention(): string {
     return `<@${this.nickname ? "!" : ""}${this.id}>`;
+  }
+
+  /**
+   * The calculated permissions from the member's roles.
+   *
+   * @type {Permissions}
+   */
+  public get permissions(): Permissions {
+    if (this.id === this.guild.ownerId) {
+      return new Permissions(Permissions.ALL).freeze();
+    }
+
+    const perms = new Permissions(this.roles.cache.map((r) => r.permissions));
+    if (perms.has(Permission.Administrator)) {
+      perms.add(Permissions.ALL);
+    }
+
+    return perms.freeze();
   }
 
   /**
@@ -134,6 +173,45 @@ export class GuildMember extends Resource {
   }
 
   /**
+   * Checks permissions for this member in a given channel.
+   * @param {GuildChannel} channel The guild channel.
+   * @param {boolean} [guildScope]
+   *
+   * @type {Readonly<Permissions>}
+   */
+  public permissionsIn(
+    channel: GuildChannel,
+    guildScope = true
+  ): Readonly<Permissions> {
+    const { permissions } = this;
+
+    if (permissions.equals(Permissions.ALL)) return permissions;
+
+    const guildScopePermissions = guildScope
+      ? permissions.mask(Permissions.GUILD_SCOPE_PERMISSIONS)
+      : 0;
+    const overwrites = channel.overwrites.for(this);
+
+    return permissions
+      .remove(overwrites.everyone ? overwrites.everyone.deny : 0)
+      .add(overwrites.everyone ? overwrites.everyone.allow : 0)
+      .remove(
+        overwrites.roles.length > 0
+          ? overwrites.roles.map((role) => role.deny)
+          : 0
+      )
+      .add(
+        overwrites.roles.length > 0
+          ? overwrites.roles.map((role) => role.allow)
+          : 0
+      )
+      .remove(overwrites.member ? overwrites.member.deny : 0)
+      .add(overwrites.member ? overwrites.member.allow : 0)
+      .add(guildScopePermissions)
+      .freeze();
+  }
+
+  /**
    * The string representation of this member.
    *
    * @type {string}
@@ -165,9 +243,9 @@ export interface MemberUpdateData {
   /**
    * Array of roles the member is assigned.
    *
-   * @type {RoleResolvable[]}
+   * @type {RoleLike[]}
    */
-  roles?: RoleResolvable[];
+  roles?: RoleLike[];
 
   /**
    * Value to set users nickname to.
@@ -193,8 +271,8 @@ export interface MemberUpdateData {
   /**
    * ID of channel to move user to (if they are connected to voice)
    *
-   * @type {BaseResolvable<VoiceChannel>}
+   * @type {ResourceLike<VoiceChannel>}
    */
-  channel?: BaseResolvable<VoiceChannel> | null;
+  channel?: ResourceLike<VoiceChannel> | null;
 }
 

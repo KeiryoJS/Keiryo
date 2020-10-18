@@ -10,6 +10,7 @@ import { Resource } from "../../abstract/Resource";
 import type { ImageURLOptions } from "@neocord/rest";
 import type { APIUser, UserFlags, UserPremiumType } from "discord-api-types";
 import type { Client } from "../../../client";
+import type { DMChannel } from "../channel/DMChannel";
 
 export class User extends Resource {
   /**
@@ -116,6 +117,7 @@ export class User extends Resource {
 
   /**
    * The tag of this user.
+   *
    * @type {string}
    */
   public get tag(): string {
@@ -124,6 +126,7 @@ export class User extends Resource {
 
   /**
    * The mention string for this user.
+   *
    * @type {string}
    */
   public get mention(): string {
@@ -132,6 +135,7 @@ export class User extends Resource {
 
   /**
    * The default avatar url for this user.
+   *
    * @type {string}
    */
   public get defaultAvatarUrl(): string {
@@ -141,6 +145,7 @@ export class User extends Resource {
   /**
    * The URL for this user's avatar.
    * @param {ImageURLOptions} [options] The options for the url.
+   *
    * @returns {string | null}
    */
   public avatarURL(options: ImageURLOptions = {}): string | null {
@@ -150,13 +155,17 @@ export class User extends Resource {
 
   /**
    * Gets an existing DM channel or creates one.
+   *
    * @returns {DMChannel}
    */
-  // public async dm(): Promise<DMChannel> {
-  //   let dm = this.client.dms.get(this.id);
-  //   if (!dm) dm = await this.client.dms.new(this);
-  //   return dm;
-  // }
+  public async dm(): Promise<DMChannel> {
+    let dm = this.client.dms.cache.get(this.id);
+    if (!dm) {
+      dm = await this.client.dms.create(this);
+    }
+
+    return dm;
+  }
 
   /**
    * The display avatar url for this user.
@@ -169,6 +178,7 @@ export class User extends Resource {
 
   /**
    * Get the string representation of this user.
+   *
    * @returns {string}
    */
   public toString(): string {
@@ -178,6 +188,7 @@ export class User extends Resource {
   /**
    * Updates this user with data from the api.
    * @param {APIUser} data
+   *
    * @protected
    */
   protected _patch(data: APIUser): this {
