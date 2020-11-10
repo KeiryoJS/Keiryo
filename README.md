@@ -9,20 +9,22 @@
 
 - [about](#about)
 - [installation](#installation)
-    - [optional packages](#option-packages)
+    - [optional packages](#optional-packages)
     - [basic usage](#basic-usage) 
 
-<h2 align="center">About</h2>
+## About
 
 Neocord is a powerful and feature-rich discord library.
 
 - **Flexible**: Gives you the ability to extend specific structures, customize caching to your needs.
-- **Coverage**: Covers the Discord Gateway, API, CDN, and in the near future, Voice.
-- **Caching**: Boasts the most powerful and flexible caching solution across most discord libraries.
+- **Coverage**: Covers the Discord Gateway, RestHandler, CDN, and in the near future, Voice.
+
+NeoCord will be fairly customizable but when it comes to User Accounts/Self Bots we will **not** take any responsibility for any damages or consequences you may receive.
+As per the Discord ToS we will not endorse the use of a self bot, therefore any requested support will be ignored.
 
 ## Installation
 
-As of **09/04/2020** (month/day/year), NeoCord can only be used with node.js v12 and up.
+As of **09/04/2020** (month/day/year), neocord can only be used with node.js v12 and up.
 
 ```shell script
 yarn add neocord
@@ -86,8 +88,8 @@ client.connect("your token here");
 
 ## Acknowledgements
 
-- Thanks to [Anthony](https://github.com/acollierr17) from **NCD** for the input on the job system.
-
+- Big thanks to [TheAkio](https://github.com/theakio), the gateway was inspired by TypeCord, one of their projects. 
+- [Dirigeants](https://github.com/dirigeants)
 ---
 
-<p align="ce2nter"><a href="https://github.com/melike2d">melike2d</a> &copy; 2020</p>
+<p align="center"><a href="https://github.com/melike2d">melike2d</a> &copy; 2020</p>
