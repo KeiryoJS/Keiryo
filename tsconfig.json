@@ -10,7 +10,6 @@
     "inlineSourceMap": true,
     "declaration": false,
     "allowJs": true,
-    "importHelpers": true,
     "rootDir": "./src",
     "outDir": "./dist",
 
