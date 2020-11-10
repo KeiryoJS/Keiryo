@@ -5,7 +5,6 @@ src/
 
 
 .eslintignore
-.eslintrc.json
 .prettierrc.json
 .gitignore
 yarn.lock
