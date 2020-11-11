@@ -8,7 +8,13 @@ import { EventEmitter } from "events";
 import { Bucket, Timers } from "@neocord/utils";
 import WebSocket from "ws";
 
-import { ClientEvent, GatewayCloseCode, GatewayOp, ShardEvent, Status } from "../../utils";
+import {
+  ClientEvent,
+  GatewayCloseCode,
+  GatewayOp,
+  ShardEvent,
+  Status,
+} from "../../utils";
 import { Heartbeat, Session } from "./connection";
 import { Serialization } from "./serialization";
 import { Compression } from "./compression";
@@ -171,7 +177,9 @@ export class Shard extends EventEmitter {
    */
   destroy({ code = 1000, emit = true, log = true, reset = false } = {}) {
     if (log) {
-      this._debug(`Destroying; Code = ${code}, Resetting? = ${reset ? "yes" : "no"}`);
+      this._debug(
+        `Destroying; Code = ${code}, Resetting? = ${reset ? "yes" : "no"}`
+      );
     }
 
     // (Step 0) Reset some of the session/heartbeat stuff.
@@ -251,15 +259,18 @@ export class Shard extends EventEmitter {
     // Step 2.2 - Compression
     if (this.manager.compression) {
       this.#compression = Compression.create(this.manager.compression)
-        .on("data", buffer => this._packet(buffer))
-        .on("error", error => this.emit(ShardEvent.ERROR, error))
-        .on("debug", message => this._debug(message));
+        .on("data", (buffer) => this._packet(buffer))
+        .on("error", (error) => this.emit(ShardEvent.ERROR, error))
+        .on("debug", (message) => this._debug(message));
 
       qs.append("compress", "zlib-stream");
     }
 
     /* Step 5 - Set the status and wait for the hello op code. */
-    this.status = this.status === Status.DISCONNECTED ? Status.RECONNECTING : Status.CONNECTING;
+    this.status =
+      this.status === Status.DISCONNECTED
+        ? Status.RECONNECTING
+        : Status.CONNECTING;
     this.session.setHelloTimeout();
 
     /**
@@ -299,7 +310,7 @@ export class Shard extends EventEmitter {
         this.emit(ShardEvent.READY);
 
         this.session.id = pak.d.session_id;
-        this.expectedGuilds = new Set(pak.d.guilds.map(g => g.id));
+        this.expectedGuilds = new Set(pak.d.guilds.map((g) => g.id));
         this.status = Status.WAITING_FOR_GUILDS;
 
         this.heartbeat.acked = true;
@@ -355,7 +366,10 @@ export class Shard extends EventEmitter {
         this.heartbeat.ack();
         break;
       default:
-        if (this.status === Status.WAITING_FOR_GUILDS && pak.t === "GUILD_CREATE") {
+        if (
+          this.status === Status.WAITING_FOR_GUILDS &&
+          pak.t === "GUILD_CREATE"
+        ) {
           this.expectedGuilds.delete(pak.d.id);
           this._checkReady();
         }
@@ -395,7 +409,9 @@ export class Shard extends EventEmitter {
    */
   _open() {
     this.status = Status.HANDSHAKING;
-    this._debug(`Connected. ${this.#ws?.url} in ${Date.now() - this.connectedAt}`);
+    this._debug(
+      `Connected. ${this.#ws?.url} in ${Date.now() - this.connectedAt}`
+    );
 
     if (this.#queue.length) {
       this._debug(`${this.#queue.length} packets waiting... sending all now.`);
@@ -428,7 +444,9 @@ export class Shard extends EventEmitter {
    */
   _close(evt) {
     const reason = (evt.reason || GatewayCloseCode[evt.code]) ?? "unknown";
-    this._debug(`Closed; Code = ${evt.code}, Clean? = ${evt.wasClean}, Reason = ${reason}`);
+    this._debug(
+      `Closed; Code = ${evt.code}, Clean? = ${evt.wasClean}, Reason = ${reason}`
+    );
 
     if (this.#seq !== -1) {
       this.#closingSeq = this.#seq;
