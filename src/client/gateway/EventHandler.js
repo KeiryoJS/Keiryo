@@ -15,14 +15,15 @@ const packetWhitelist = [
   "GUILD_DELETE",
   "GUILD_MEMBERS_CHUNK",
   "GUILD_MEMBER_ADD",
-  "GUILD_MEMBER_REMOVE"
+  "GUILD_MEMBER_REMOVE",
 ];
 
 const eventWhitelist = [
   "READY",
   "RESUMED",
   "GUILD_CREATE",
-  "GUILD_DELETE"
+  "GUILD_DELETE",
+  "MESSAGE_CREATE",
 ];
 
 export class EventHandler {
@@ -88,7 +89,7 @@ export class EventHandler {
   get options() {
     return {
       track: this.manager.options.track,
-      disabledEvents: this.manager.options.disabledEvents
+      disabledEvents: this.manager.options.disabledEvents,
     };
   }
 
@@ -184,7 +185,12 @@ export class EventHandler {
         Handler = "default" in imported ? imported.default : imported;
 
       if (!isClass(Handler)) {
-        this.client.emit("warn", `(Packet Handling) Built-in packet handler for ${basename(file)} doesn't return a class, this should be reported.`);
+        this.client.emit(
+          "warn",
+          `(Packet Handling) Built-in packet handler for ${basename(
+            file
+          )} doesn't return a class, this should be reported.`
+        );
         continue;
       }
 

@@ -7,12 +7,17 @@
 import { User } from "./user/User";
 import { ClientUser } from "./user/ClientUser";
 import { Relationship } from "./user/Relationship";
+import { Message } from "./message/Message";
+import { Member } from "./member/Member";
+
 import { Extender } from "@neocord/utils";
 
 const structures = {
   User,
   ClientUser,
-  Relationship
+  Relationship,
+  Message,
+  Member,
 };
 
 export const resources = Extender.Immutable(structures);
