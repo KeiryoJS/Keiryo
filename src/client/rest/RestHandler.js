@@ -30,7 +30,7 @@ const defaults = {
   offset: 0,
   userAgent: "DiscordBot (https://github.com/neo-cord. 1.0.0)",
   apiUrl: "https://discord.com/api",
-  tokenPrefix: "Bot"
+  tokenPrefix: "Bot",
 };
 
 export class RestHandler extends EventEmitter {
@@ -48,7 +48,7 @@ export class RestHandler extends EventEmitter {
     this.handlers = new Collection();
     this.globalTimeout = null;
 
-    Timers.setInterval(() => this.handlers.sweep(h => h.inactive), 3e5);
+    Timers.setInterval(() => this.handlers.sweep((h) => h.inactive), 3e5);
   }
 
   /**
@@ -138,7 +138,7 @@ export class RestHandler extends EventEmitter {
     const url = `${this.options.apiUrl}/v${this.options.version}${request.endpoint}${qs}`,
       headers = {
         "User-Agent": this.options.userAgent,
-        "X-RateLimit-Precision": "millisecond"
+        "X-RateLimit-Precision": "millisecond",
       };
 
     // (1) If authorize is set to true append the authorization header.
@@ -147,7 +147,9 @@ export class RestHandler extends EventEmitter {
         throw new Error("No bot token has been provided.");
       }
 
-      headers.authorization = `${this.options.tokenPrefix.trim()} ${this.client.token}`;
+      headers.authorization = `${this.options.tokenPrefix.trim()} ${
+        this.client.token
+      }`;
     }
 
     // (2) Set the reason of the action.
@@ -156,7 +158,8 @@ export class RestHandler extends EventEmitter {
     }
 
     // (3) File Handling.
-    let body, _headers = {};
+    let body,
+      _headers = {};
     if (request.files?.length) {
       if (!FormData) {
         throw new Error("Please install the 'form-data' package.");
@@ -169,18 +172,21 @@ export class RestHandler extends EventEmitter {
         }
       }
 
-      if (typeof request.body !== "undefined") {
-        body.append("payload_json", JSON.stringify(await request.body));
+      if (typeof request.data !== "undefined") {
+        body.append("payload_json", JSON.stringify(await request.data));
       }
 
       _headers = body.getHeaders();
+    } else if (request.data != null) {
+      body = JSON.stringify(request.data);
+      _headers = { "Content-Type": "application/json" };
     }
 
     const options = {
       method: request.method,
       body,
       headers: { ...(request.headers ?? {}), ..._headers, ...headers },
-      agent
+      agent,
     };
 
     return { url, options };
