@@ -24,6 +24,9 @@ const eventWhitelist = [
   "GUILD_CREATE",
   "GUILD_DELETE",
   "MESSAGE_CREATE",
+  "MESSAGE_DELETE",
+  "MESSAGE_UPDATE",
+  "MESSAGE_DELELTE_BULK"
 ];
 
 export class EventHandler {

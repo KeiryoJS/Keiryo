@@ -120,7 +120,7 @@ export class Client extends EventEmitter {
    */
   async connect(token = this.#token) {
     if (!token) {
-      throw new Error("Please provide a token");
+      throw new Error("Client#Token was not provided. Please provide your token. \nhttps://discord.com/developers/applications/BOTID/bot\n");
     }
 
     this.#token = token;
