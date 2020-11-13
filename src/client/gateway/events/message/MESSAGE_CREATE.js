@@ -5,9 +5,9 @@
  */
 
 import { Event } from "../Event";
-import { resources } from "../../../external/resource/Resources";
+import { resources } from "../../../../external/resource/Resources";
 
-import { Message } from "../../../external/resource/message/Message";
+import { Message } from "../../../../external/resource/message/Message";
 
 export default class MESSAGE_CREATE extends Event {
   async handle(data) {

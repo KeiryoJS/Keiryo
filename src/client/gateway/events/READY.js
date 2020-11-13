@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Event } from "../Event";
+import { Event } from "./Event";
 import { resources } from "../../../external/resource/Resources";
 
 export default class READY extends Event {
