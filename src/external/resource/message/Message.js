@@ -4,12 +4,8 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Resource } from "../../abstract/Resource";
 import { MessageFlags } from "@neocord/utils";
-
-import { User } from "../user/User";
-import { Member } from "../member/Member";
-
+import { Resource } from "../../abstract/Resource";
 import { resources } from "../Resources";
 
 export class Message extends Resource {
@@ -20,6 +16,8 @@ export class Message extends Resource {
    */
   constructor(client, data) {
     super(client);
+
+    client.users.add(data.author);
 
     /**
      * The ID of the message
@@ -108,20 +106,15 @@ export class Message extends Resource {
       ? new Date(data.edited_timestamp).getTime()
       : null;
 
-    /**
-     * The author that sent the message
-     * @type {User}
-     */
-    this.author = new (resources.get("User"))(this.client, data.author);
 
     if (Reflect.has(data, "member")) {
       /**
        * The member who sent the message
-       * @type {Member}
+       * @type {GuildMember}
        */
-      this.member = new (resources.get("Member"))(this.client, {
+      this.member = new (resources.get("GuildMember"))(this.client, {
         ...data.member,
-        user: this.author,
+        user: data.author,
       });
     }
 

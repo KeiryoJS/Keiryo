@@ -5,17 +5,17 @@
  */
 
 import { Event } from "../Event";
-import { resources } from "../../../external/resource/Resources";
-import { Message } from "../../../external/resource/message/Message";
+import { resources } from "../../../../external/resource/Resources";
+import { Message } from "../../../../external/resource/message/Message";
 
-export default class MESSAGE_DELETE_BULK extends Event {
+export default class MESSAGE_UPDATE extends Event {
   async handle(data) {
     const message = new(resources.get("Message"))(this.client, data.d);
 
     /**
      * When a message gets edited in the guild.
-     * @prop {Message} message 
+     * @prop {Message} message
      */
-    this.client.emit("messageDeleteBulk", message);
+    this.client.emit("messageUpdate", message);
   }
 }

@@ -4,7 +4,6 @@
  * See the LICENSE file in the project root for more details.
  */
 
-export * from "./Constants";
-export * from "./Functions";
-export * from "./ImageResolver";
-export * from "./Color";
+import { GuildBasedChannel } from "./GuildBasedChannel";
+
+export class CategoryChannel extends GuildBasedChannel {}

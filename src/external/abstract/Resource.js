@@ -18,7 +18,7 @@ export class Resource {
 
   /**
    * Clone this resource.
-   * @return {Resource}
+   * @return {this}
    */
   _clone() {
     return Object.assign(Object.create(this), this);
@@ -26,7 +26,7 @@ export class Resource {
 
   /**
    * Freeze this resource.
-   * @returns {Resource}
+   * @returns {this}
    */
   _freeze() {
     return Object.freeze(this);
@@ -34,7 +34,7 @@ export class Resource {
 
   /**
    * Patch this resource.
-   * @return {Resource}
+   * @return {this}
    */
   _patch(data) {
     return this;

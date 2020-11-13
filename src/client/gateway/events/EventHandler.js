@@ -4,9 +4,9 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { basename, join } from "path";
-import { isClass, Timers, walk } from "@neocord/utils";
-import { GatewayOp } from "../../utils";
+import { basename } from "path";
+import { isClass, walk } from "@neocord/utils";
+import { GatewayOp } from "../../../utils";
 
 const packetWhitelist = [
   "READY",
@@ -15,18 +15,14 @@ const packetWhitelist = [
   "GUILD_DELETE",
   "GUILD_MEMBERS_CHUNK",
   "GUILD_MEMBER_ADD",
-  "GUILD_MEMBER_REMOVE",
+  "GUILD_MEMBER_REMOVE"
 ];
 
 const eventWhitelist = [
   "READY",
   "RESUMED",
   "GUILD_CREATE",
-  "GUILD_DELETE",
-  "MESSAGE_CREATE",
-  "MESSAGE_DELETE",
-  "MESSAGE_UPDATE",
-  "MESSAGE_DELELTE_BULK"
+  "GUILD_DELETE"
 ];
 
 export class EventHandler {
@@ -92,7 +88,7 @@ export class EventHandler {
   get options() {
     return {
       track: this.manager.options.track,
-      disabledEvents: this.manager.options.disabledEvents,
+      disabledEvents: this.manager.options.disabledEvents
     };
   }
 
@@ -182,8 +178,8 @@ export class EventHandler {
    * @private
    */
   async _load() {
-    const dir = join(__dirname, "events");
-    for (const file of walk(dir)) {
+    const filter = f => [ "Event", "EventHandler" ].includes(basename(f, ".js"));
+    for (const file of walk(__dirname).filter(filter)) {
       const imported = await import(file),
         Handler = "default" in imported ? imported.default : imported;
 

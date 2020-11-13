@@ -8,7 +8,7 @@ import { Collection, Intents, mergeObjects, sleep } from "@neocord/utils";
 import { EventEmitter } from "events";
 import { Shard } from "./Shard";
 import { ClientEvent, GatewayCloseCode, ShardEvent, Status } from "../../utils";
-import { EventHandler } from "./EventHandler";
+import { EventHandler } from "./events/EventHandler";
 
 const unrecoverable = Object.values(GatewayCloseCode).slice(1),
   unresumable = [ 1000, 4006, GatewayCloseCode.INVALID_SESSION ];
