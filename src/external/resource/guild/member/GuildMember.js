@@ -1,15 +1,12 @@
-import { FlushValues } from "pako";
 /*
  * Copyright (c) 2020. MeLike2D & aesthetical All Rights Reserved.
  * Neo is licensed under the MIT License.
  * See the LICENSE file in the project root for more details.
  */
 
-import { Resource } from "../../abstract/Resource";
+import { Resource } from "../../../abstract/Resource";
 
-import { User } from "../user/User";
-
-export class Member extends Resource {
+export class GuildMember extends Resource {
   /**
    * Creates a new instance of a Discord Member.
    * @param {Client} client
@@ -27,11 +24,7 @@ export class Member extends Resource {
    */
   _patch(data) {
     if (Reflect.has(data, "user")) {
-      /**
-       * The user of this member
-       * @type {User}
-       */
-      this.user = data.user;
+      this.client.users.add(data.user)
     }
 
     /**

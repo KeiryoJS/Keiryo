@@ -4,7 +4,4 @@
  * See the LICENSE file in the project root for more details.
  */
 
-export * from "./Constants";
-export * from "./Functions";
-export * from "./ImageResolver";
-export * from "./Color";
+2
