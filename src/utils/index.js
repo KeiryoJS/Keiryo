@@ -7,3 +7,4 @@
 export * from "./Constants";
 export * from "./Functions";
 export * from "./ImageResolver";
+export * from "./Color";
