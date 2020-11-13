@@ -10,7 +10,7 @@ import { User } from "./user/User";
 import { ClientUser } from "./user/ClientUser";
 import { Relationship } from "./user/Relationship";
 
-import { Member } from "./member/Member";
+import { GuildMember } from "./guild/member/GuildMember";
 
 import { Message } from "./message/Message";
 import { WelcomeChannel } from "./guild/welcomeScreen/WelcomeChannel";
@@ -21,7 +21,7 @@ const structures = {
   ClientUser,
   Relationship,
   Message,
-  Member,
+  GuildMember,
   WelcomeScreen,
   WelcomeChannel
 };
