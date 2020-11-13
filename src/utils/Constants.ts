@@ -13,7 +13,7 @@ export enum Status {
   DISCONNECTED,
   HANDSHAKING,
   CONNECTING,
-  RECONNECTING
+  RECONNECTING,
 }
 
 export enum GatewayCloseCode {
@@ -56,7 +56,17 @@ export enum ClientEvent {
   SHARD_RECONNECTING = "shardReconnecting",
   INVALIDATED = "invalidated",
   DEBUG = "debug",
-  LIMITED = "rate-limited"
+  LIMITED = "rate-limited",
+}
+
+export enum ChannelTypes {
+  TEXT = 0,
+  DM = 1,
+  VOICE = 2,
+  GROUP = 3,
+  CATEGORY = 4,
+  NEWS = 5,
+  STORE = 6,
 }
 
 export enum ShardEvent {
@@ -69,7 +79,6 @@ export enum ShardEvent {
   FULL_READY = "fullReady",
 }
 
-
 export enum GatewayOp {
   DISPATCH,
   HEARTBEAT,
@@ -81,7 +90,7 @@ export enum GatewayOp {
   REQUEST_GUILD_MEMBERS,
   INVALID_SESSION,
   HELLO,
-  HEARTBEAT_ACK
+  HEARTBEAT_ACK,
 }
 
 /**
@@ -95,10 +104,9 @@ export enum RelationshipType {
   FRIEND,
   BLOCK,
   INCOMING_FRIEND_REQUEST,
-  OUTGOING_FRIEND_REQUEST
+  OUTGOING_FRIEND_REQUEST,
 }
-
 
 export const IMAGE_SIZES = Array.from({ length: 9 }, (_e, i) => 2 ** (i + 4));
 
-export const IMAGE_FORMATS = [ "jpg", "jpeg", "png", "webp", "gif" ];
+export const IMAGE_FORMATS = ["jpg", "jpeg", "png", "webp", "gif"];
