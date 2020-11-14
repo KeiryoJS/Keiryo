@@ -120,10 +120,11 @@ export class Message extends Resource {
     }
 
     /**
-     * The author
+     * The author that sent the message
      * @type {User}
      */
-    this.author = client.users.get(data.author.id) ?? new (resources.get("User"))(this.client, data.author)
+    this.author = this.client.users.get(data.author.id) ?? 
+      new (resources.get("User"))(this.client, data.author)
 
     /**
      * The type of message
