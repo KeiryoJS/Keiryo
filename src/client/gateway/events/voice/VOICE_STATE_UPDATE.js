@@ -6,12 +6,12 @@
 
 import { Event } from "../Event";
 
-export class VOICE_STATE_UPDATE extends Event {
+export default class VOICE_STATE_UPDATE extends Event {
   async handle(packet) {
     /**
      * Emits the VOICE_STATE_UPDATE even
      * @prop {Object} packet
      */
-    this.emit("VOICE_STATE_UPDATE", packet);
+    this.client.emit("VOICE_STATE_UPDATE", packet);
   }
 }

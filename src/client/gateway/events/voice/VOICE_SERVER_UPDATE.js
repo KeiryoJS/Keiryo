@@ -6,7 +6,7 @@
 
 import { Event } from "../Event";
 
-export class VOICE_SERVER_UPDATE extends Event {
+export default class VOICE_SERVER_UPDATE extends Event {
   async handle(packet) {
     /**
      * Emits the VOICE_SERVER_UPDATE even
