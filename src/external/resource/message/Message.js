@@ -7,6 +7,7 @@
 import { MessageFlags } from "@neocord/utils";
 import { Resource } from "../../abstract/Resource";
 import { resources } from "../Resources";
+import { User } from "../user/User";
 
 export class Message extends Resource {
   /**
@@ -117,6 +118,12 @@ export class Message extends Resource {
         user: data.author,
       });
     }
+
+    /**
+     * The author
+     * @type {User}
+     */
+    this.author = client.users.get(data.author.id) ?? new (resources.get("User"))(this.client, data.author)
 
     /**
      * The type of message

@@ -178,7 +178,7 @@ export class EventHandler {
    * @private
    */
   async _load() {
-    const filter = f => [ "Event", "EventHandler" ].includes(basename(f, ".js"));
+    const filter = f => ![ "Event", "EventHandler" ].includes(basename(f, ".js"));
     for (const file of walk(__dirname).filter(filter)) {
       const imported = await import(file),
         Handler = "default" in imported ? imported.default : imported;
