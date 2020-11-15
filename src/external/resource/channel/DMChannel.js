@@ -12,7 +12,7 @@ export class DMChannel extends Channel {
    * @param {Object} data
    */
   constructor(client, data) {
-    super(client);
+    super(client, data);
 
     this.type = "dm";
     this._patch(data);

@@ -12,7 +12,7 @@ export class GuildBasedChannel extends Channel {
    * @param {Object} data
    */
   constructor(guild, data) {
-    super(guild.client);
+    super(guild.client, data);
 
     /**
      * The guild the channel is in
