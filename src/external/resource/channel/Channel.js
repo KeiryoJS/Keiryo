@@ -66,6 +66,7 @@ export class Channel extends Resource {
 
   /**
    * The string representation of this channel
+   * @returns {string}
    */
   toString() {
     return this.mention;

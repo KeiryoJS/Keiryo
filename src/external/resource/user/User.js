@@ -71,7 +71,7 @@ export class User extends Resource {
 
   /**
    * The string representation of this user.
-   * @return {string}
+   * @returns {string}
    */
   toString() {
     return this.mention;
