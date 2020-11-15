@@ -5,7 +5,7 @@
  */
 
 import { Resource } from "../../abstract/Resource";
-import { ChannelTypes } from "../../../";
+import { ChannelTypes } from "../../../utils/Constants";
 
 import { Snowflake } from "@neocord/utils";
 
@@ -57,7 +57,7 @@ export class Channel extends Resource {
   }
 
   /**
-   * The mention string for this channe;
+   * The mention string for this channel
    * @type {string}
    */
   get mention() {
