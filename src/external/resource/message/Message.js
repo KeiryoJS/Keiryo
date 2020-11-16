@@ -8,6 +8,7 @@ import { MessageFlags } from "@neocord/utils";
 import { Resource } from "../../abstract/Resource";
 import { resources } from "../Resources";
 import { User } from "../user/User";
+import { MessageCollector, MessageCollectorOptions } from "./MessageCollector";
 
 export class Message extends Resource {
   /**
@@ -29,6 +30,15 @@ export class Message extends Resource {
   }
 
   /**
+   * Waits for new messages
+   * @param {((message: Message) => boolean)} filter
+   * @param {MessageCollectorOptions} options
+   */
+  awaitMessages(filter, options) {
+    return new MessageCollector(this.client, this, filter, options);
+  }
+
+  /**
    * Update this message
    * @param {Object} data
    */
@@ -38,6 +48,12 @@ export class Message extends Resource {
      * @type {string}
      */
     this.nonce = data.nonce;
+
+    /**
+     * The ID of the channel the message was sent in.
+     * @type {string}
+     */
+    this.channelID = data.channel_id;
 
     /**
      * The content of the message
@@ -107,7 +123,6 @@ export class Message extends Resource {
       ? new Date(data.edited_timestamp).getTime()
       : null;
 
-
     if (Reflect.has(data, "member")) {
       /**
        * The member who sent the message
@@ -123,8 +138,9 @@ export class Message extends Resource {
      * The author that sent the message
      * @type {User}
      */
-    this.author = this.client.users.get(data.author.id) ?? 
-      new (resources.get("User"))(this.client, data.author)
+    this.author =
+      this.client.users.get(data.author.id) ??
+      new (resources.get("User"))(this.client, data.author);
 
     /**
      * The type of message
