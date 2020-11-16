@@ -13,8 +13,11 @@ import { Relationship } from "./user/Relationship";
 import { GuildMember } from "./guild/member/GuildMember";
 
 import { Message } from "./message/Message";
+
+import { Guild } from "./guild/Guild";
 import { WelcomeChannel } from "./guild/welcomeScreen/WelcomeChannel";
 import { WelcomeScreen } from "./guild/welcomeScreen/WelcomeScreen";
+
 
 const structures = {
   User,
@@ -22,8 +25,9 @@ const structures = {
   Relationship,
   Message,
   GuildMember,
+  Guild,
   WelcomeScreen,
-  WelcomeChannel
+  WelcomeChannel,
 };
 
 export const resources = Extender.Immutable(structures);
