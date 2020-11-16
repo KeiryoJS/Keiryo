@@ -13,7 +13,7 @@ export class NewsChannel extends TextChannel {
    * @param {Object} data
    */
   constructor(guild, data) {
-    super(guild);
+    super(guild, data);
 
     this._patch(data);
   }
