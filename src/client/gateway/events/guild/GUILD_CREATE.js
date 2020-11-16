@@ -5,12 +5,12 @@
  */
 
 import { Event } from "../Event";
-import { resource } from "../../../../external/resource/Resources";
+import { resources } from "../../../../external/resource/Resources";
 import { Guild } from "../../../../external/resource/guild/Guild";
 
 export default class GUILD_CREATE extends Event {
   async handle(data) {
-    const guild = new(resource.get("Guild"))(this.client, data.d);
+    const guild = new(resources.get("Guild"))(this.client, data.d);
 
     /**
      * When a new guild is created
