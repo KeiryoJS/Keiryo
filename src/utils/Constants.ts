@@ -93,6 +93,10 @@ export enum GatewayOp {
   HEARTBEAT_ACK,
 }
 
+export enum IntegrationExpireBehavior {
+  STREAM = 1
+}
+
 /**
  * @typedef {Object} RelationshipType
  * @property {number} FRIEND
@@ -109,4 +113,4 @@ export enum RelationshipType {
 
 export const IMAGE_SIZES = Array.from({ length: 9 }, (_e, i) => 2 ** (i + 4));
 
-export const IMAGE_FORMATS = ["jpg", "jpeg", "png", "webp", "gif"];
+export const IMAGE_FORMATS = [ "jpg", "jpeg", "png", "webp", "gif" ];
