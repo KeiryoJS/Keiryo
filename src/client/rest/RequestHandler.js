@@ -1,9 +1,8 @@
-import { AsyncQueue, sleep, Snowflake, Timers } from "@neocord/utils";
 import fetch from "node-fetch";
 
 import { AbortSignal } from "./misc/AbortSignal";
 import { DiscordAPIError, DiscordHTTPError } from "../../errors";
-import { ClientEvent } from "../../utils";
+import { AsyncQueue, ClientEvent, sleep, Snowflake, Timers } from "../../utils";
 
 const headers = [ "x-ratelimit-limit", "x-ratelimit-remaining", "x-ratelimit-reset-after", "x-ratelimit-reset", "via" ];
 

@@ -4,24 +4,16 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { EventEmitter } from "events";
-import { Bucket, Timers } from "@neocord/utils";
 import WebSocket from "ws";
 
-import {
-  ClientEvent,
-  GatewayCloseCode,
-  GatewayOp,
-  ShardEvent,
-  Status,
-} from "../../utils";
+import { Bucket, ClientEvent, Emitter, GatewayCloseCode, GatewayOp, ShardEvent, Status, Timers } from "../../utils";
 import { Heartbeat, Session } from "./connection";
 import { Serialization } from "./serialization";
 import { Compression } from "./compression";
 
 const connectionStates = Object.keys(WebSocket);
 
-export class Shard extends EventEmitter {
+export class Shard extends Emitter {
   /**
    * The serialization handler.
    * @type {Serialization}

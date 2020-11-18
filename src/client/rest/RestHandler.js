@@ -4,13 +4,12 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Collection, mergeObjects, Timers } from "@neocord/utils";
-import { EventEmitter } from "events";
 import { Agent } from "https";
 import { URLSearchParams } from "url";
 
 import { RequestHandler } from "./RequestHandler";
 import { CDN } from "./CDN";
+import { Collection, Emitter, mergeObjects, Timers } from "../../utils";
 
 let FormData;
 try {
@@ -30,10 +29,10 @@ const defaults = {
   offset: 0,
   userAgent: "DiscordBot (https://github.com/neo-cord. 1.0.0)",
   apiUrl: "https://discord.com/api",
-  tokenPrefix: "Bot",
+  tokenPrefix: "Bot"
 };
 
-export class RestHandler extends EventEmitter {
+export class RestHandler extends Emitter {
   /**
    * @param {Client} client
    * @param {RestOptions} options
@@ -138,7 +137,7 @@ export class RestHandler extends EventEmitter {
     const url = `${this.options.apiUrl}/v${this.options.version}${request.endpoint}${qs}`,
       headers = {
         "User-Agent": this.options.userAgent,
-        "X-RateLimit-Precision": "millisecond",
+        "X-RateLimit-Precision": "millisecond"
       };
 
     // (1) If authorize is set to true append the authorization header.
@@ -186,7 +185,7 @@ export class RestHandler extends EventEmitter {
       method: request.method,
       body,
       headers: { ...(request.headers ?? {}), ..._headers, ...headers },
-      agent,
+      agent
     };
 
     return { url, options };

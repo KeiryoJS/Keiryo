@@ -4,8 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Timers } from "@neocord/utils";
-import { EventEmitter } from "events";
+import { Emitter, Timers } from "../utils";
 
 import { ShardManager } from "./gateway/ShardManager";
 import { RestHandler } from "./rest/RestHandler";
@@ -15,7 +14,7 @@ import { UserPool } from "../external/pool/UserPool";
 import { RelationshipPool } from "../external/pool/RelationshipPool";
 import { resources } from "../external/resource/Resources";
 
-export class Client extends EventEmitter {
+export class Client extends Emitter {
   /**
    * The shard manager
    * @type {ShardManager}

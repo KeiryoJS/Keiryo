@@ -4,8 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Timers } from "@neocord/utils";
-import { GatewayOp, Status } from "../../../utils";
+import { GatewayOp, Status, Timers } from "../../../utils";
 
 export class Session {
   /**

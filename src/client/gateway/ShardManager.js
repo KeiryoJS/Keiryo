@@ -4,11 +4,20 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Collection, Intents, mergeObjects, sleep } from "@neocord/utils";
-import { EventEmitter } from "events";
+import { Intents } from "@neocord/utils";
+
 import { Shard } from "./Shard";
-import { ClientEvent, GatewayCloseCode, ShardEvent, Status } from "../../utils";
 import { EventHandler } from "./events/EventHandler";
+import {
+  ClientEvent,
+  Collection,
+  Emitter,
+  GatewayCloseCode,
+  mergeObjects,
+  ShardEvent,
+  sleep,
+  Status
+} from "../../utils";
 
 const unrecoverable = Object.values(GatewayCloseCode).slice(1),
   unresumable = [ 1000, 4006, GatewayCloseCode.INVALID_SESSION ];
@@ -33,7 +42,7 @@ const defaults = {
   track: []
 };
 
-export class ShardManager extends EventEmitter {
+export class ShardManager extends Emitter {
   /**
    * All shards that are currently spawned.
    * @type {Collection<string, Shard>}

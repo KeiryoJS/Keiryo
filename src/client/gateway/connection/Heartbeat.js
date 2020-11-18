@@ -4,8 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Timers } from "@neocord/utils";
-import { Status, GatewayOp } from "../../../utils";
+import { Status, GatewayOp, Timers } from "../../../utils";
 
 export class Heartbeat {
   /**

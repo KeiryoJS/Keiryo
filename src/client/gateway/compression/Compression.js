@@ -4,10 +4,10 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { EventEmitter } from "events";
 import { CompressionError } from "../../../errors";
+import { Emitter } from "../../../utils";
 
-export class Compression extends EventEmitter {
+export class Compression extends Emitter {
   static CHUNK_SIZE = 128 * 1024;
 
   constructor() {
