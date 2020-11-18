@@ -24,36 +24,36 @@ export class Guild extends Resource {
   }
 
   /**
-   * Updates this guild
-   * @param {Object} data 
+   * Updates this guild.
+   * @param {Object} data
    */
   _patch(data) {
     /**
-     * This guilds name
+     * This guilds name.
      * @type {string}
      */
     this.name = data.name;
 
     /**
-     * The voice channel ID you are moved to when the guild marks you as AFK
+     * The voice channel ID you are moved to when the guild marks you as AFK.
      * @type {?number}
      */
     this.afkChannelID = data.afk_channel_id;
 
     /**
-     * The amount of time until the guild marks you as AFK in a voice channel
+     * The amount of time until the guild marks you as AFK in a voice channel.
      * @type {?number}
      */
     this.afkTimeout = data.afk_timeout;
 
     /**
-     * About how many members are in this guild
+     * About how many members are in this guild.
      * @type {?number}
      */
     this.approximateMemberCount = data.approximate_member_count ?? null;
 
     /**
-     * About how many presences there are in this guild
+     * About how many presences there are in this guild.
      * @type {?number}
      */
     this.approximatePresenceCount = data.approximate_presence_count ?? null;
@@ -71,19 +71,19 @@ export class Guild extends Resource {
     this.description = data.description ?? null;
 
     /**
-     * The descovery splash hash
+     * The discovery splash hash.
      * @type {?string}
      */
     this.discoverySplash = data.discovery_splash ?? null;
 
     /**
-     * The content filter level of this guild
+     * The content filter level of this guild.
      * @type {number}
      */
     this.contentFilter = data.explicit_content_filter ?? 0;
 
     /**
-     * The features this guild has
+     * The features this guild has.
      * @type {string[]}
      */
     this.features = data.features ?? [];
