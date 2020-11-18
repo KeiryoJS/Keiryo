@@ -4,3 +4,8 @@
  * See the LICENSE file in the project root for more details.
  */
 
+import { Resource } from "../../../abstract/Resource";
+
+export class Presence extends Resource {
+
+}
