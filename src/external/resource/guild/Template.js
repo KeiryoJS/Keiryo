@@ -39,6 +39,14 @@ export class Template extends Resource {
   }
 
   /**
+   * The guild that this template is based on.
+   * @type {?Guild}
+   */
+  get guild() {
+    return this.client.guilds.get(this.guildId);
+  }
+
+  /**
    * The "ID" of this template.
    * @return {string}
    */
