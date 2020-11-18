@@ -34,13 +34,14 @@ yarn add neocord
 
 These are some optional packages you can install.
 
+- **[form-data](https://npmjs.com/form-data)** if you plan on sending files. 
 - Install **zlib-sync** or **pako** for data compression and inflation 
     > - **[zlib-sync](https://npmjs.com/zlib-sync/)**    
     > - **[pako](https://npmjs.com/pako/)**
     > - or the native **zlib** module (no installation)
 
 
-- **[erlpack](https://npmjs.com/erlpack)** for significantly faster websocket (de)serialization. 
+- **[etf.js](https://npmjs.com/erlpack)** for significantly faster websocket (de)serialization. 
 - **[bufferutil](https://npmjs.com/bufferutil)** for a much faster websocket connection.
     > And **[utf-8-validate](https://npmjs.com/utf-8-validate)** for faster websocket processing.
 
@@ -90,6 +91,7 @@ client.connect("your token here");
 
 - Big thanks to [TheAkio](https://github.com/theakio), the gateway was inspired by TypeCord, one of their projects. 
 - [Dirigeants](https://github.com/dirigeants)
+- Thanks to [TeamKKB](https://teamkkb.xyz/) for dedicating some of their development team to get neocord done faster.
 ---
 
 <p align="center"><a href="https://github.com/melike2d">melike2d</a> &copy; 2020</p>
