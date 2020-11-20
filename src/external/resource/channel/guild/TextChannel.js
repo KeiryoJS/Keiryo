@@ -5,9 +5,9 @@
  */
 
 import { ImageResolver } from "../../../../utils";
-import { GuildBasedChannel } from "./GuildBasedChannel";
+import { GuildChannel } from "./GuildChannel";
 
-export class TextChannel extends GuildBasedChannel {
+export class TextChannel extends GuildChannel {
   /**
    * @param {Guild} guild
    * @param {Object} data

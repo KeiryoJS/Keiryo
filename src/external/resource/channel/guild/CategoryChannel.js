@@ -4,6 +4,6 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { GuildBasedChannel } from "./GuildBasedChannel";
+import { GuildChannel } from "./GuildChannel";
 
-export class CategoryChannel extends GuildBasedChannel {}
+export class CategoryChannel extends GuildChannel {}
