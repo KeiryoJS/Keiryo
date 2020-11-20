@@ -29,14 +29,14 @@ export class Message extends Resource {
     this._patch(data);
   }
 
-  /**
-   * Waits for new messages
-   * @param {((message: Message) => boolean)} filter
-   * @param {MessageCollectorOptions} options
-   */
-  awaitMessages(filter, options) {
-    return new MessageCollector(this.client, this, filter, options);
-  }
+  // /**
+  //  * Waits for new messages
+  //  * @param {((message: Message) => boolean)} filter
+  //  * @param {MessageCollectorOptions} options
+  //  */
+  // awaitMessages(filter, options) {
+  //   return new MessageCollector(this.client, this, filter, options);
+  // }
 
   /**
    * Update this message
@@ -113,25 +113,18 @@ export class Message extends Resource {
      * When the message was created
      * @type {number}
      */
-    this.sentAt = new Date(data.timestamp).getTime();
+    this.createdTimestamp = new Date(data.timestamp).getTime();
 
     /**
      * When and if the message was edited
      * @type {number | null}
      */
-    this.editedAt = data.edited_timestamp
+    this.editedTimestamp = data.edited_timestamp
       ? new Date(data.edited_timestamp).getTime()
       : null;
 
     if (Reflect.has(data, "member")) {
-      /**
-       * The member who sent the message
-       * @type {GuildMember}
-       */
-      this.member = new (resources.get("GuildMember"))(this.client, {
-        ...data.member,
-        user: data.author,
-      });
+      this.guild.members.add(data.member);
     }
 
     /**
