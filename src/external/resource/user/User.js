@@ -32,6 +32,14 @@ export class User extends Resource {
   }
 
   /**
+   * Whether this user is partial.
+   * @return {boolean}
+   */
+  get partial() {
+    return typeof this.username !== "string";
+  }
+
+  /**
    * The mention string for this user.
    * @type {string}
    */
@@ -68,7 +76,6 @@ export class User extends Resource {
     return this.avatarURL(options) ?? this.defaultAvatarUrl;
   }
 
-
   /**
    * The string representation of this user.
    * @returns {string}
@@ -78,15 +85,29 @@ export class User extends Resource {
   }
 
   /**
+   * Fetches this user from the API.
+   * @param {boolean} [force=false] Whether to skip the cache check.
+   * @returns {Promise<User>}
+   */
+  async fetch(force = false) {
+    return this.client.users.fetch(this.id, { force });
+  }
+
+
+  /**
    * Update this user.
    * @param {Object} data
    */
   _patch(data) {
-    /**
-     * The user's username, not unique across the platform.
-     * @type {string}
-     */
-    this.username = data.username;
+    if ("username" in data) {
+      /**
+       * The user's username, not unique across the platform.
+       * @type {?string}
+       */
+      this.username = data.username;
+    } else if (typeof data.username !== "string") {
+      this.username = null;
+    }
 
     /**
      * The user's 4-digit discord-tag

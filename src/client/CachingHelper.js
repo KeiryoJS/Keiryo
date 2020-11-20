@@ -4,6 +4,8 @@
  * See the LICENSE file in the project root for more details.
  */
 
+import { PartialResource } from "../utils/Constants";
+
 const resources = [
   "user",
   "guild",
@@ -21,7 +23,7 @@ const resources = [
   "template",
   "invite",
   "emoji"
-]
+];
 
 export class CachingHelper {
   /**
@@ -38,10 +40,29 @@ export class CachingHelper {
     }
 
     /**
+     * Resources that are allowed to be partial.
+     * @type {PartialResource[]}
+     */
+    this.partials = (options.partials ?? []).filter(p => !PartialResource[p]) ?? [];
+
+    /**
      * The caching limits.
      * @type {Map<string, number>}
      */
     this.limits = limits;
+  }
+
+  /**
+   * Check whether a resource is allowed to be partial
+   * @param {PartialResource | string} type The resource name or partial type.
+   * @return {boolean}
+   */
+  cbp(type) {
+    if (!PartialResource[type]) {
+      return false;
+    }
+
+    return this.partials.includes(type);
   }
 
   /**
@@ -56,7 +77,8 @@ export class CachingHelper {
 
 /**
  * @typedef {Object} CachingOptions
- * @property {Map<string, number>} [limits=Infinity]
- * @property {number} [messageSweepInterval]
- * @property {number} [messageLifetime]
+ * @prop {Map<string, number>} [limits=Infinity]
+ * @prop {number} [messageSweepInterval]
+ * @prop {number} [messageLifetime]
+ * @prop {(PartialResource | string)[]} [partials] Resources that are allowed to be partial.
  */
