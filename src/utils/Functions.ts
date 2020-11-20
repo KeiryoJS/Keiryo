@@ -5,6 +5,7 @@
  */
 
 import { Timers } from "./Timers";
+import { capitalize } from "@neocord/utils";
 
 /**
  * Pauses the event loop for a set duration of time.
@@ -38,9 +39,7 @@ export function exclude<O extends Dictionary, K extends keyof O>(
  * Merges objects into one.
  * @param {Dictionary} objects The objects to merge.
  */
-export function mergeObjects<
-  O extends Record<PropertyKey, any> = Record<PropertyKey, any>
-  >(...objects: Partial<O>[]): O {
+export function mergeObjects<O extends Record<PropertyKey, any> = Record<PropertyKey, any>>(...objects: Partial<O>[]): O {
   const o: Record<PropertyKey, any> = {};
   for (const object of objects) {
     for (const key of Reflect.ownKeys(object)) {
@@ -72,3 +71,22 @@ export function isPromise<V = unknown>(input: unknown): input is Promise<V> {
 export function isObject(input: unknown): input is Dictionary {
   return input !== null && typeof input === "object";
 }
+
+export function humanizeEnum(enumObj: Dictionary): string[] {
+  const keys = [];
+  for (const key of Object.keys(enumObj).filter(key => isNaN(parseInt(key)))) {
+    keys.push(humanizeEnumKey(key as string));
+  }
+
+  return keys;
+}
+
+/**
+ * Humanizes an enum key.
+ * @param {string} key The enum key.
+ * @returns {string} The humanized enum key.
+ */
+export const humanizeEnumKey = (key: string) => key
+  .split(/_/g)
+  .map(part => capitalize(part))
+  .join(" ");
