@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Collection } from "@neocord/utils";
+import { Collection } from "../../utils";
 
 export class ResourcePool extends Collection {
   static [Symbol.species] = Collection;
@@ -19,8 +19,13 @@ export class ResourcePool extends Collection {
     /**
      * The client instance.
      * @type {Client}
+     * @readonly
      */
-    this.client = client;
+    Object.defineProperty(this, "client", {
+      value: client,
+      configurable: false,
+      writable: false
+    })
 
     /**
      * The total number of items this pool can hold.
@@ -91,6 +96,17 @@ export class ResourcePool extends Collection {
     return data;
   }
 
+  set(id, value, checkLimit = true) {
+    super.set(id, value);
+
+    if (checkLimit && (this.limit && this.size > this.limit)) {
+      const keys = [ ...this.keys() ];
+      while (this.size > this.limit) {
+        this.delete(keys.shift());
+      }
+    }
+  }
+
   /**
    * The JSON representation of this resource pool.
    */
@@ -114,13 +130,6 @@ export class ResourcePool extends Collection {
    */
   _set(resource) {
     this.set(resource.id, resource);
-    if (this.limit && this.size > this.limit) {
-      const keys = [ ...this.keys() ];
-      while (this.size > this.limit) {
-        this.delete(keys.shift());
-      }
-    }
-
     return resource;
   }
 
@@ -143,4 +152,10 @@ export class ResourcePool extends Collection {
 
 /**
  * @typedef {Resource | string | { id: string }} ResourceLike
+ */
+
+/**
+ * @typedef {Object} FetchOptions
+ * @prop {boolean} [force=false] Whether to force fetch the resource.
+ * @prop {boolean} {cache=true} Whether to cache the fetched resource.
  */
