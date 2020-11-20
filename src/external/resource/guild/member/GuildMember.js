@@ -15,7 +15,17 @@ export class GuildMember extends Resource {
   constructor(client, data) {
     super(client);
 
+    /**
+     * The ID of the user.
+     * @type {string}
+     */
+    this.id = data.user.id;
+
     this._patch(data);
+  }
+
+  get user() {
+    return this.client.users.get(this.id);
   }
 
   /**
@@ -70,5 +80,7 @@ export class GuildMember extends Resource {
      * @type {boolean}
      */
     this.deafened = data.deaf ?? false;
+
+    return this
   }
 }

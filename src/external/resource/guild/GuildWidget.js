@@ -4,4 +4,6 @@
  * See the LICENSE file in the project root for more details.
  */
 
+export class GuildWidget {
 
+}

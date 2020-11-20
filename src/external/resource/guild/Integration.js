@@ -7,6 +7,11 @@
 import { Resource } from "../../abstract/Resource";
 
 export class Integration extends Resource {
+  /**
+   * @param {Client} client The client instance.
+   * @param {Object} data The integration data.
+   * @param {Guild} guild The guild that this integration belongs to.
+   */
   constructor(client, data, guild) {
     super(client);
 

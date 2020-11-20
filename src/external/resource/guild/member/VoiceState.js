@@ -7,5 +7,12 @@
 import { Resource } from "../../../abstract/Resource";
 
 export class VoiceState extends Resource {
-  
+  /**
+   * @param {Client} client The client instance.
+   * @param {Object} data The voice state data.
+   */
+  constructor(client, data) {
+    super(client);
+  }
+
 }

@@ -8,7 +8,6 @@ import { Resource } from "../../abstract/Resource";
 
 export class Template extends Resource {
   /**
-   *
    * @param {Client} client
    * @param {Object} data
    */
