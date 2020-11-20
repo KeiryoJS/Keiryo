@@ -19,9 +19,9 @@ export class UserPool extends ResourcePool {
   }
 
   /**
-   * Fetches a user from the API.
+   * Fetches a user from the Discord API.
    * @param {string} id ID of the User to fetch.
-   * @param {FetchUserOptions} [options] Fetch options.
+   * @param {FetchUserOptions} [options] The fetch options.
    * @return {Promise<User>}
    */
   async fetch(id, { cache = true, force = false } = {}) {
@@ -29,14 +29,11 @@ export class UserPool extends ResourcePool {
       return this.get(id);
     }
 
-    const data = await this.client.rest.get(`/users/${id}`),
-      user = this._create(data);
+    const data = await this.client.rest.queue({
+      endpoint: `/users/${id}`
+    });
 
-    if (cache) {
-      this._set(user);
-    }
-
-    return user;
+    return cache ? this.add(data) : this._create(data);
   }
 }
 
