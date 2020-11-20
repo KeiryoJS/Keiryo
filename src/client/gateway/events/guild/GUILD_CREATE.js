@@ -5,17 +5,20 @@
  */
 
 import { Event } from "../Event";
-import { resources } from "../../../../external/resource/Resources";
-import { Guild } from "../../../../external/resource/guild/Guild";
 
 export default class GUILD_CREATE extends Event {
   async handle(data) {
-    const guild = new(resources.get("Guild"))(this.client, data.d);
+    let guild = this.client.guilds.get(data.d.id);
+    if (!guild) {
+      guild = this.client.guilds.add(data.d);
+      return this.client.emit(this.clientEvent, guild);
+    }
 
-    /**
-     * When a new guild is created
-     * @prop {Guild} guild
-     */
-    this.client.emit("guildCreate", guild)
+    const unavailable = guild.unavailable;
+
+    guild["_patch"](data.d);
+    if (unavailable && !guild.unavailable) {
+      this.client.emit(this.clientEvent, guild);
+    }
   }
 }

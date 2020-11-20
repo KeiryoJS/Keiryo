@@ -5,17 +5,20 @@
  */
 
 import { Event } from "../Event";
-import { resources } from "../../../../external/resource/Resources";
-import { Guild } from "../../../../external/resource/guild/Guild";
+import { ClientEvent } from "../../../../utils";
 
 export default class GUILD_DELETE extends Event {
   async handle(data) {
-    const guild = new(resources.get("Guild"))(this.client, data.d);
+    const guild = this.client.guilds.get(data.d.id);
+    if (guild) {
+      if (data.d.unavailable) {
+        guild.unavailable = true;
+        return this.client.emit(ClientEvent.GUILD_UNAVAILABLE, guild);
+      }
 
-    /**
-     * When a new guild is created
-     * @prop {Guild} guild
-     */
-    this.client.emit("guildDelete", guild)
+      this.client.guilds.delete(data.d.id);
+      guild.deleted = true;
+      return this.client.emit(this.clientEvent, guild._freeze());
+    }
   }
 }

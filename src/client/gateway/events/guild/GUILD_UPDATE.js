@@ -10,12 +10,13 @@ import { Guild } from "../../../../external/resource/guild/Guild";
 
 export default class GUILD_UPDATE extends Event {
   async handle(data) {
-    const guild = new(resources.get("Guild"))(this.client, data.d);
+    const guild = this.client.guilds.get(data.d.id);
+    if (guild) {
+      const old = guild._clone();
+      guild["_patch"](data.d);
+      return this.emit(guild, old._freeze());
+    }
 
-    /**
-     * When a new guild is updated
-     * @prop {Guild} guild
-     */
-    this.client.emit("guildUpdate", guild)
+    this.client.guilds.add(data.d);
   }
 }

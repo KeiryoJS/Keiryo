@@ -141,14 +141,15 @@ export class EventHandler {
     /* Step 3 - Handle the packet. */
     const handler = this.handlers.get(event);
     if (!handler) {
-      // this.client.emit("debug", `(Packet Handling) ‹${event}› Handler missing.`);
+      this.client.emit("debug", `(Packet Handling) ‹${event}› Handler missing.`);
       return;
     }
 
     try {
       await handler.handle(pak, shard);
-      // this.client.emit("debug", `(Packet Handling) ‹${event}› Ran successfully.`);
+      this.client.emit("debug", `(Packet Handling) ‹${event}› Ran successfully.`);
     } catch (e) {
+      console.log(e);
       this.client.emit("error", e);
     }
   }
