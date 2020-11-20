@@ -12,8 +12,13 @@ export class Resource {
     /**
      * The client.
      * @type {Client}
+     * @readonly
      */
-    this.client = client;
+    Object.defineProperty(this, "client", {
+      value: client,
+      writable: false,
+      configurable: false
+    });
   }
 
   /**
