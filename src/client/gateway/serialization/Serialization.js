@@ -15,9 +15,9 @@ export class Serialization {
     switch (type) {
       case "etf":
         try {
-          require("etf.js");
+          require("erlpack");
         } catch {
-          throw new SerializationError("Module: 'etf.js' not found.");
+          throw new SerializationError("Module: 'erlpack' not found.");
         }
 
         return new (require("./Etf").Etf)();

@@ -8,11 +8,11 @@ import { Serialization } from "./Serialization";
 import { SerializationError } from "../../../errors";
 
 /**
- * @type {import("etf.js")}
+ * @type {import("erlpack")}
  */
-let etf;
+let erlpack;
 try {
-  etf = require("etf.js");
+  erlpack = require("erlpack");
 } catch {
   // no-op
 }
@@ -24,7 +24,7 @@ export class Etf extends Serialization {
    * @returns {Uint8Array}
    */
   encode(payload) {
-    return etf.pack(payload);
+    return erlpack.pack(payload);
   }
 
   /**
@@ -44,7 +44,7 @@ export class Etf extends Serialization {
     }
 
     if (data) {
-      return etf.unpack(data);
+      return erlpack.unpack(data);
     }
 
     throw new SerializationError("Received invalid data.");
