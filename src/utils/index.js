@@ -13,7 +13,14 @@ export * from "./Extender";
 export * from "./AsyncQueue";
 export * from "./Bucket";
 export * from "./Timers";
-export * from "./Snowflake";
+
+export * from "./discord/ActivityFlags";
+export * from "./discord/Permissions";
+export * from "./discord/UserFlags";
+export * from "./discord/Intents";
+export * from "./discord/Snowflake";
+export * from "./discord/MessageFlags";
+export * from "./discord/BitField";
 
 export * from "./events/Emitter";
 export * from "./events/EventCollector";
