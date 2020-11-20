@@ -6,6 +6,14 @@
 
 import { Resource } from "../../abstract/Resource";
 
+import { GuildBanPool } from "../../pool/guild/GuildBanPool";
+import { GuildRolePool } from "../../pool/guild/GuildRolePool";
+import { GuildPresencePool } from "../../pool/guild/GuildPresencePool";
+import { GuildVoiceStatePool } from "../../pool/guild/GuildVoiceStatePool";
+import { GuildChannelPool } from "../../pool/guild/GuildChannelPool";
+import { GuildMemberPool } from "../../pool/guild/GuildMemberPool";
+import { GuildIntegrationPool } from "../../pool/guild/GuildIntegrationPool";
+
 export class Guild extends Resource {
   /**
    * @param {Client} client The client instance.
@@ -19,6 +27,48 @@ export class Guild extends Resource {
      * @type {string}
      */
     this.id = data.id;
+
+    /**
+     * The ban pool, handles caching of guild bans.
+     * @type {GuildBanPool}
+     */
+    this.bans = new GuildBanPool(this);
+
+    /**
+     * The role pool, handles caching of guild roles.
+     * @type {GuildRolePool}
+     */
+    this.roles = new GuildRolePool(this);
+
+    /**
+     * The presence pool, handles caching of presences.
+     * @type {GuildPresencePool}
+     */
+    this.presences = new GuildPresencePool(this);
+
+    /**
+     * The voice state pool, handles caching of voice states.
+     * @type {GuildVoiceStatePool}
+     */
+    this.voiceStates = new GuildVoiceStatePool(this);
+
+    /**
+     * The guild channel pool, handles caching of guild channels.
+     * @type {GuildChannelPool}
+     */
+    this.channels = new GuildChannelPool(this);
+
+    /**
+     * The guild member pool, handles caching of guild members.
+     * @type {GuildMemberPool}
+     */
+    this.members = new GuildMemberPool(this);
+
+    /**
+     * The integration pool, handles caching of integrations.
+     * @type {GuildIntegrationPool}
+     */
+    this.integrations = new GuildIntegrationPool(this);
 
     this._patch(data);
   }
@@ -202,5 +252,41 @@ export class Guild extends Resource {
      * @type {boolean}
      */
     this.unavailable = data.unavailable ?? false;
+
+    if (data.roles) {
+      this.roles.clear();
+      for (const role of data.roles) {
+        this.roles.add(role, this);
+      }
+    }
+
+    if (data.presences) {
+      for (const presence of data.presences) {
+        this.presences.add(presence);
+      }
+    }
+
+    if (data.members) {
+      this.members.clear();
+      for (const member of data.members) {
+        this.members.add(member);
+      }
+    }
+
+    // if (data.channels) {
+    //   this.channels.clear();
+    //   for (const channel of data.channels) {
+    //     this.client.channels.add(channel, this);
+    //   }
+    // }
+
+    if (data.voice_states) {
+      this.voiceStates.clear();
+      for (const voiceState of data.voice_states) {
+        this.voiceStates.add(voiceState, this);
+      }
+    }
+
+    return this;
   }
 }
