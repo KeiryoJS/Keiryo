@@ -41,7 +41,7 @@ These are some optional packages you can install.
     > - or the native **zlib** module (no installation)
 
 
-- **[etf.js](https://npmjs.com/erlpack)** for significantly faster websocket (de)serialization. 
+- **[erlpack](https://npmjs.com/erlpack)** for significantly faster websocket (de)serialization. 
 - **[bufferutil](https://npmjs.com/bufferutil)** for a much faster websocket connection.
     > And **[utf-8-validate](https://npmjs.com/utf-8-validate)** for faster websocket processing.
 
