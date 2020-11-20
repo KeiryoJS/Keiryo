@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Collection } from "@neocord/utils";
+import { Collection } from "../../utils";
 
 /**
  * This file takes some code from dirigeants :)

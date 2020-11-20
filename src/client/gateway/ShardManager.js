@@ -4,8 +4,6 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Intents } from "@neocord/utils";
-
 import { Shard } from "./Shard";
 import { EventHandler } from "./events/EventHandler";
 import {
@@ -16,7 +14,8 @@ import {
   mergeObjects,
   ShardEvent,
   sleep,
-  Status
+  Status,
+  Intents
 } from "../../utils";
 
 const unrecoverable = Object.values(GatewayCloseCode).slice(1),
@@ -181,6 +180,20 @@ export class ShardManager extends Emitter {
   }
 
   /**
+   * Broadcasts a discord packet to every shard.
+   * @param {DiscordPacket} packet The packet to broadcast.
+   * @param {boolean} [prioritized=false] Whether to prioritize this packet..
+   * @returns {DiscordPacket} The broadcasted packet.
+   */
+  broadcast(packet, prioritized = false) {
+    for (const [ , shard ] of this.shards) {
+      shard.send(packet, prioritized);
+    }
+
+    return packet;
+  }
+
+  /**
    * Connects all shards.
    * @return {Promise<void>}
    */
@@ -229,7 +242,7 @@ export class ShardManager extends Emitter {
     this.#shards = shards.length;
     this.#queue = new Set(shards.map(id => new Shard(this, id)));
 
-    const e = this.useEtf ? "ETF" : "JSON",
+    const e = this.options.useEtf ? "ETF" : "JSON",
       c = this.compression ? `the '${this.compression}' module for zlib` : "no";
 
     this._debug(`Using ${e} encoding and ${c} compression.`);

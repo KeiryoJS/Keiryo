@@ -12,7 +12,10 @@ import { CachingHelper } from "./CachingHelper";
 
 import { UserPool } from "../external/pool/UserPool";
 import { RelationshipPool } from "../external/pool/RelationshipPool";
+import { GuildPool } from "../external/pool/guild/GuildPool";
+
 import { resources } from "../external/resource/Resources";
+import { ClientPresence } from "../external/resource/user/ClientPresence";
 
 export class Client extends Emitter {
   /**
@@ -49,6 +52,14 @@ export class Client extends Emitter {
       this.#token = options.token;
     }
 
+    /**
+     * The options provided to the client.
+     * @type {ClientOptions}
+     */
+    Object.defineProperty(this, "options", {
+      value: options
+    });
+
     this.#ws = new ShardManager(this, options.ws);
     this.#rest = new RestHandler(this, options.rest);
     this.#caching = new CachingHelper(options.caching);
@@ -64,6 +75,22 @@ export class Client extends Emitter {
      * @type {RelationshipPool}
      */
     this.relationships = new RelationshipPool(this);
+
+    /**
+     * All cached guilds.
+     * @type {GuildPool}
+     */
+    this.guilds = new GuildPool(this);
+
+    /**
+     * The client presence.
+     * @type {ClientPresence}
+     */
+    this.presence = new ClientPresence(this);
+  }
+
+  get partials() {
+    return this.options.partials;
   }
 
   /**
@@ -99,7 +126,7 @@ export class Client extends Emitter {
   }
 
   /**
-   * Fetches the current logged in user.
+   * Fetches the current user.
    * @return {Promise<ClientUser>}
    */
   async fetchSelf() {

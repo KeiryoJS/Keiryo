@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Collection } from "@neocord/utils";
+import { Collection } from "../../utils";
 import { ResourcePool } from "../abstract/ResourcePool";
 import { resources } from "../resource/Resources";
 
@@ -15,7 +15,7 @@ export class RelationshipPool extends ResourcePool {
   constructor(client) {
     super(client, {
       limit: client.caching.limitFor("relationship"),
-      class: resources.get("ClientUser")
+      class: resources.get("Relationship")
     });
   }
 

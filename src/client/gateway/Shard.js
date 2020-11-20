@@ -45,6 +45,12 @@ export class Shard extends Emitter {
   #bucket;
 
   /**
+   * The rate-limit bucket for presence updates.
+   * @type {Bucket}
+   */
+  #presenceBucket;
+
+  /**
    * The current connection.
    * @type {WebSocket}
    */
@@ -108,8 +114,9 @@ export class Shard extends Emitter {
     // Private shit
     this.#seq = -1;
     this.#closingSeq = 0;
-    this.#bucket = new Bucket(120, 6e4);
     this.#queue = [];
+    this.#bucket = new Bucket(120, 6e4, { reservedTokens: 5 });
+    this.#presenceBucket = new Bucket(5, 6e4);
   }
 
   /**
@@ -151,13 +158,22 @@ export class Shard extends Emitter {
    */
   send(data, prioritized = false) {
     if (this.connected) {
+      let _i = 0, _w = 1;
       const func = () => {
+        if (++_i < _w) {
+          return;
+        }
+
         const encoded = this.#serialization.encode(data);
         this.#ws.send(encoded);
       };
 
-      this.#bucket.queue(func, prioritized);
-      return;
+      if (data.op === GatewayOp.PRESENCE_UPDATE) {
+        ++_w;
+        this.#presenceBucket.queue(func, prioritized);
+      }
+
+      return this.#bucket.queue(func, prioritized);
     }
 
     this.#queue[prioritized ? "unshift" : "push"](data);
@@ -244,7 +260,7 @@ export class Shard extends Emitter {
     qs.append("v", this.manager.options.version.toString());
 
     // Step 2.1 - Serialization
-    const encoding = this.manager.useEtf ? "etf" : "json";
+    const encoding = this.manager.options.useEtf ? "etf" : "json";
     qs.append("encoding", encoding);
     this.#serialization = Serialization.create(encoding);
 
