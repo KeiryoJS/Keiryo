@@ -3,7 +3,7 @@
 node_modules/
 src/
 
-
+swcrc
 .eslintignore
 .prettierrc.json
 .gitignore

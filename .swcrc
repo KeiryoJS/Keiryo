@@ -1,0 +1,34 @@
+[
+  {
+    "test": [
+      ".*.js"
+    ],
+    "jsc": {
+      "target": "es2020",
+      "loose": true,
+      "parser": {
+        "dynamicImport": true,
+        "classPrivateProperty": true,
+        "classProperty": true,
+        "nullishCoalescing": true,
+        "optionalChaining": true,
+        "syntax": "ecmascript"
+      }
+    },
+    "module": {
+      "type": "commonjs"
+    }
+  },
+  {
+    "test": [
+      ".*.ts"
+    ],
+    "jsc": {
+      "target": "es2020",
+      "loose": true,
+      "parser": {
+        "syntax": "typescript"
+      }
+    }
+  }
+]
