@@ -4,15 +4,13 @@
       ".*.js"
     ],
     "jsc": {
-      "target": "es2020",
-      "loose": true,
+      "target": "es2019",
       "parser": {
-        "dynamicImport": true,
-        "classPrivateProperty": true,
         "classProperty": true,
-        "nullishCoalescing": true,
-        "optionalChaining": true,
-        "syntax": "ecmascript"
+        "dynamicImport": true,
+        "syntax": "ecmascript",
+        "decorators": true,
+        "decoratorsBeforeExport": true
       }
     },
     "module": {
@@ -25,10 +23,12 @@
     ],
     "jsc": {
       "target": "es2020",
-      "loose": true,
       "parser": {
         "syntax": "typescript"
       }
+    },
+    "module": {
+      "type": "commonjs"
     }
   }
 ]
