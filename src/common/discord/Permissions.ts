@@ -39,6 +39,8 @@ export enum Permission {
   MANGE_ROLES = 1 << 28,
   MANAGE_WEBHOOKS = 1 << 29,
   MANAGE_EMOJIS = 1 << 30,
+  USE_SLASH_COMMANDS = 1 <<31,
+  REQUEST_TO_SPEAK = 1 << 32,
 }
 
 export class Permissions extends BitField<PermissionResolvable> {
