@@ -532,10 +532,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-discord-api-types@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.5.0.tgz#de49a6cb92b0a7b739cc7473a47dd3236aa89555"
-  integrity sha512-KaEpt4FWkbCIfXhexvWMloKbemwv2BX9m6ZGSkjzfoKYVWLv4lBgHuDzIB4No5QenGd/NElKN+V/1hcrz2XKeQ==
+discord-api-types@^0.18.0:
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.18.0.tgz#96ff73bcd7cf7b65be3a3db0acee83256d243c40"
+  integrity sha512-KxS+opGqrNbzo+wb3SxOqfuv/xX2CyrwEjCQLTI68gzjbSMn55h6o7JtPkWAXItadkNrUWyDqMMsfOz8DnpiNA==
 
 discord.js-docgen@discordjs/docgen:
   version "0.9.0"
