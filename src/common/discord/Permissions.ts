@@ -41,6 +41,9 @@ export enum Permission {
   MANAGE_EMOJIS = 1 << 30,
   USE_SLASH_COMMANDS = 1 <<31,
   REQUEST_TO_SPEAK = 1 << 32,
+  MANAGE_THREADS = 1 << 34,
+  USE_PUBLIC_THREADS = 1 << 35,
+  USE_PRIVATE_THREADS = 1 << 36
 }
 
 export class Permissions extends BitField<PermissionResolvable> {
