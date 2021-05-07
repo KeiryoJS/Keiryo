@@ -71,7 +71,7 @@ export class Client extends EventEmitter {
    */
   async connect(token = this.token) {
     if (!token) {
-      throw new Error("You must provide a token.");
+      throw new Error("Client#Token: You must provide a token.");
     }
 
     this.rest.token = token;
