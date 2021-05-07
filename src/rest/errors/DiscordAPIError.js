@@ -7,11 +7,12 @@
 export class DiscordAPIError extends Error {
   /**
    * @param {object} data The data sent by discord.
+   * @param {number} code The error code reported by discord.
    * @param {number} status The status code of the response.
    * @param {string} method The method of the request that erred.
    * @param {string} route The route that errored.
    */
-  constructor(data, status, method, route) {
+  constructor(data, status, method, route, code) {
     const flattened = DiscordAPIError.flattenErrors(data.errors ?? data).join("\n");
     super(data.message && flattened
       ? `${data.message}\n${flattened}`
