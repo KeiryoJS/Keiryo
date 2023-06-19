@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@neocord/eslint-config": "neo-cord/eslint-config",
-    "@types/node": "^14.11.2",
+    "@types/node": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "discord.js-docgen": "discordjs/docgen",
